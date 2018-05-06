@@ -6,7 +6,5 @@
 
 
 # Node stuff
-static/css/*
-static/images/*
 static/node_modules
 static/node_modules/*

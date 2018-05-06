@@ -1,0 +1,49 @@
+.register-form {
+  width: 300px;
+  margin-left: calc((100vw / 2) - 150px);
+  margin-top: 100px;
+  padding-top: 50px;
+  text-align: center;
+}
+
+.login-welcome {
+  text-align: center;
+  margin-top: 20vh;
+  cursor: pointer;
+}
+
+.header-bar {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  height: 50px;
+  /* box-shadow: 0px 1px 4px grey; */
+}
+
+.logo {
+  width: 134px;
+  height: 50px;
+  /* background-image: url('../images/zmags_logo_black.jpg'); */
+  /* background-size: 134px 70px; */
+  /* left: 0;
+  top: 0; */
+  padding-top: 0px;
+  margin-left: 30px;
+  right: 120;
+  position: absolute;
+}
+
+.home-button {
+  top: 7;
+  right: 20;
+  position: absolute;
+}
+
+.single-test-run-button {
+  margin-top: 6px !important;
+  margin-right: 15px !important;
+}
+
+.content-wrapper {
+  margin-top: 50px;
+}
