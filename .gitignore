@@ -1,0 +1,13 @@
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+
+# Node stuff
+static/css/*
+static/images/*
+static/js/*
+static/node_modules
+static/node_modules/*
