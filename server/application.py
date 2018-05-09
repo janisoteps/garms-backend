@@ -12,8 +12,9 @@ import numpy as np
 from marshmallow import Schema, fields
 from operator import itemgetter
 import string
-from sqlalchemy import func
+from sqlalchemy import func, any_
 import re
+from color_text import color_check
 
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -300,6 +301,92 @@ def search():
 
         # print(BColors.WARNING + 'Marshmallow Result: ' + BColors.ENDC + str(result_list))
         # response_list = list(str(query))
+        # Make it HTTP friendly
+        res = jsonify(res=result_list)
+        print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+
+        return res
+
+
+# Search for products with a search string
+@app.route("/api/text", methods=['get'])
+def text():
+    if request.method == 'GET':
+        search_string = request.args.get('string')
+
+        # cleaned_string = search_string.translate(' ', "!@£$%^&*()<>?/|~`.,:;#+=-_")
+
+        string_list = search_string.strip().lower().split()
+
+        linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after']
+
+        string_list_clean = [e for e in string_list if e.isalpha() and e not in linking_words]
+
+        # string_list = cleaned_string.split()
+        # print(string_list_clean)
+        color_word_dict = color_check(string_list_clean)
+
+        print(color_word_dict)
+        word_list = color_word_dict['words']
+        color_list = color_word_dict['colors']
+
+        # id_list = db.session.query(Product).filter(
+        #     (func.lower(Product.name).contains(word_list[0]))).order_by(
+        #     func.random()).limit(50).all()
+
+        id_list = []
+        if 2 > len(word_list) > 0 and len(color_list) > 0:
+            print('1 word and is color')
+            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
+                func.lower(Product.color_name).contains(color_list[0]))).order_by(func.random()).limit(50).all()
+            # id_list += db.session.query(Product).filter((Product.img_cats_sc_txt.contains(word_list[0])) & (
+            #     Product.color_name.contains(color_list[0]))).order_by(func.random()).limit(50).all()
+
+        elif 3 > len(word_list) > 1 and len(color_list) > 0:
+            print('2 words and is color')
+            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
+                func.lower(Product.name).contains(word_list[1])) & (
+                func.lower(Product.color_name).contains(color_list[0]))).order_by(func.random()).limit(50).all()
+
+        elif 3 > len(word_list) > 1:
+            print('2 words, no color')
+            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
+                func.lower(Product.name).contains(word_list[1]))).order_by(func.random()).limit(50).all()
+
+        elif 4 > len(word_list) > 2:
+            print('3 words, no color')
+            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
+                func.lower(Product.name).contains(word_list[1])) & (
+                                                            func.lower(Product.name).contains(word_list[2]))).order_by(
+                func.random()).limit(50).all()
+            # word_len = len(word_list)
+            # for i in range(0, word_len):
+            #     id_list += db.session.query(Product).filter(
+            #         (func.lower(Product.name).contains(word_list[i]))).order_by(
+            #         func.random()).limit(30).all()
+
+        elif len(color_list) > 0:
+            print('only color')
+            color_len = len(color_list)
+            for k in range(0, color_len):
+                id_list += db.session.query(Product).filter(
+                    (func.lower(Product.color_name).contains(color_list[k]))).order_by(
+                    func.random()).limit(30).all()
+
+        else:
+            return json.dumps('BAD REQUEST')
+
+        # Declare Marshmallow schema so that SqlAlchemy object can be serialized
+        product_schema = ProductSchema()
+
+        result_list = []
+        for prod_id in id_list:
+            prod_id_str = str(prod_id)
+            text_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
+            prod_search = db.session.query(Product).filter((Product.id == text_prod_id)).first()
+            prod_serial = product_schema.dump(prod_search)
+            result_list.append(prod_serial)
+
         # Make it HTTP friendly
         res = jsonify(res=result_list)
         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))

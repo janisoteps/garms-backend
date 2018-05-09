@@ -43,22 +43,22 @@ class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
     img_hash = db.Column(db.String(40), index=True, unique=True)
-    name = db.Column(db.String)
-    shop = db.Column(db.String)
-    brand = db.Column(db.String)
+    name = db.Column(db.Text, index=True)
+    shop = db.Column(db.Text)
+    brand = db.Column(db.Text, index=True)
     price = db.Column(db.Float)
     saleprice = db.Column(db.Float)
     currency = db.Column(db.String)
     sale = db.Column(db.Boolean)
     sex = db.Column(db.String)
-    color_name = db.Column(db.String)  # Text color value from scraped resources
+    color_name = db.Column(db.Text, index=True)  # Text color value from scraped resources
     img_url = db.Column(db.String)  # Scraped image source
     prod_url = db.Column(db.String)
     img_cats_ai = db.Column(ARRAY(db.Integer))  # Image categories assigned by AI analysis turned from array to integer (0-49)
-    img_cats_ai_txt = db.Column(ARRAY(db.String))  # Image categories assigned by AI analysis text format
+    img_cats_ai_txt = db.Column(ARRAY(db.Text))  # Image categories assigned by AI analysis text format
     nr1_cat_ai = db.Column(db.Integer, index=True)
     img_cats_sc = db.Column(ARRAY(db.Integer))  # Image categories from scraped name turned from array to integer (0-137)
-    img_cats_sc_txt = db.Column(ARRAY(db.String))  # Image categories from scraped name in text format
+    img_cats_sc_txt = db.Column(ARRAY(db.Text))  # Image categories from scraped name in text format
     nr1_cat_sc = db.Column(db.Integer, index=True)
     color_1 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
     color_1_hex = db.Column(db.String)

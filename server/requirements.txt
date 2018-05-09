@@ -1,5 +1,6 @@
 alembic==0.9.9
 awsebcli==3.12.4
+Babel==2.5.3
 blessed==1.14.2
 botocore==1.10.6
 cement==2.8.2
@@ -10,15 +11,18 @@ dockerpty==0.4.1
 docopt==0.6.2
 docutils==0.14
 Flask==0.12.2
+Flask-Babel==0.11.2
 Flask-Login==0.4.1
 Flask-Migrate==2.1.1
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.3.2
+Flask-WTF==0.14.2
 itsdangerous==0.24
 Jinja2==2.10
 jmespath==0.9.3
 Mako==1.0.7
 MarkupSafe==1.0
+marshmallow==2.15.1
 numpy==1.14.2
 pathspec==0.5.5
 pbr==4.0.2
@@ -26,8 +30,10 @@ Pillow==5.1.0
 psycopg2==2.7.4
 python-dateutil==2.7.2
 python-editor==1.0.3
+pytz==2018.4
 PyYAML==3.12
 requests==2.9.1
+scipy==1.0.1
 selenium==3.11.0
 semantic-version==2.5.0
 six==1.11.0
@@ -40,3 +46,4 @@ termcolor==1.1.0
 wcwidth==0.1.7
 websocket-client==0.47.0
 Werkzeug==0.14.1
+WTForms==2.1
