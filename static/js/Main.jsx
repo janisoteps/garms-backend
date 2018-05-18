@@ -1,35 +1,39 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
-import TestList from './TestList'
+// import TestList from './TestList'
 import Register from './Register'
 import Login from './Login'
 import Logout from './Logout'
+import SearchChoice from './SearchChoice'
+import ImageSearch from './ImageSearch'
+
 
 // The Main component renders one of the provided
 // Routes (provided that one matches). The / route will only match
 // when the pathname is exactly the string "/"
 
 class Main extends React.Component {
-  constructor(props) {
-    super(props);
-  }
+    constructor(props) {
+        super(props);
+    }
 
-  componentDidMount(){
-  }
+    componentDidMount(){
+    }
 
-  render() {
-    console.log('Main isAuth: ',this.props);
-    return (
-      <main>
-        <Switch>
-          <Route exact path='/' component={TestList}/>
-          <Route path='/register' component={Register}/>
-          <Route path='/login' isAuth={this.props} component={Login}/>
-          <Route path='/logout' isAuth={this.props.isAuth} component={Logout}/>
-        </Switch>
-      </main>
-    )
-  }
+    render() {
+        console.log('Main isAuth: ',this.props);
+        return (
+            <main>
+                <Switch>
+                    <Route exact path='/' component={SearchChoice}/>
+                    <Route path='/register' component={Register}/>
+                    <Route path='/login' isAuth={this.props} component={Login}/>
+                    <Route path='/logout' isAuth={this.props.isAuth} component={Logout}/>
+                    <Route path='/imagesearch' component={ImageSearch}/>
+                </Switch>
+            </main>
+        )
+    }
 }
 
 export default Main;

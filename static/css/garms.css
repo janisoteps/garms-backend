@@ -1,49 +1,112 @@
 .register-form {
-  width: 300px;
-  margin-left: calc((100vw / 2) - 150px);
-  margin-top: 100px;
-  padding-top: 50px;
-  text-align: center;
+    width: 300px;
+    margin-left: calc((100vw / 2) - 150px);
+    margin-top: 100px;
+    padding-top: 50px;
+    text-align: center;
 }
 
 .login-welcome {
-  text-align: center;
-  margin-top: 20vh;
-  cursor: pointer;
+    text-align: center;
+    margin-top: 20vh;
+    cursor: pointer;
 }
 
 .header-bar {
-  width: 100%;
-  position: fixed;
-  top: 0;
-  height: 50px;
-  /* box-shadow: 0px 1px 4px grey; */
+    width: 100%;
+    position: fixed;
+    top: 0;
+    height: 50px;
 }
 
 .logo {
-  width: 134px;
-  height: 50px;
-  /* background-image: url('../images/zmags_logo_black.jpg'); */
-  /* background-size: 134px 70px; */
-  /* left: 0;
-  top: 0; */
-  padding-top: 0px;
-  margin-left: 30px;
-  right: 120;
-  position: absolute;
+    width: 134px;
+    height: 50px;
+    padding-top: 0px;
+    margin-left: 30px;
+    right: 120px;
+    position: absolute;
 }
 
 .home-button {
-  top: 7;
-  right: 20;
-  position: absolute;
+    top: 7px;
+    right: 20px;
+    position: absolute;
 }
 
 .single-test-run-button {
-  margin-top: 6px !important;
-  margin-right: 15px !important;
+    margin-top: 6px !important;
+    margin-right: 15px !important;
 }
 
 .content-wrapper {
-  margin-top: 50px;
+    margin-top: 50px;
+}
+
+.search-choice{
+    width: 200px;
+    text-align: center;
+    margin-left: calc((100vw - 150px) / 2);
+}
+
+.dropzone{
+    width: 80vw;
+    height: 70vh;
+    margin-left: 10vw;
+    margin-top: 100px;
+    text-align: center;
+}
+
+/*.dropzone-target{*/
+  /*width: 100%;*/
+  /*height: 100%;*/
+/*}*/
+
+.image-dropzone{
+    width: 100%;
+    height: 100%;
+    background-color: ghostwhite;
+    padding-top: 30vh;
+}
+
+.preview-container{
+    width: 100vw;
+    text-align: center;
+}
+
+.image-preview{
+    max-height: 60vh;
+    width: auto;
+    /*margin-left: calc((100vw - 300px) / 2);*/
+    margin-top: 90px;
+}
+
+.search-button{
+    width: 200px;
+    margin-left: calc((100vw - 200px) / 2);
+    border-style: solid;
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: #c4c4c4;
+    cursor: pointer;
+    margin-top: 30px;
+    text-align: center;
+    font-size: 2rem;
+    padding-top: 10px;
+    margin-bottom: 800px;
+}
+
+.product-tile{
+    text-align: center;
+    margin: 15px;
+    width: 80vw;
+    max-width: 620px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    display: inline-block;
+}
+
+.result-pane{
+    text-align: center;
+    width: 100vw;
 }

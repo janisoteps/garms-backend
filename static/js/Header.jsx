@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Grid, Row, Col } from "react-bootstrap";
+// import { Button, Grid, Row, Col } from "react-bootstrap";
 require('../css/garms.css');
 import RaisedButton from 'material-ui/RaisedButton';
 import { Link } from 'react-router-dom';

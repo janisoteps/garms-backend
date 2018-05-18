@@ -15,7 +15,8 @@ import string
 from sqlalchemy import func, any_
 import re
 from color_text import color_check
-
+import asyncio
+import aiohttp
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config.from_object(Config)
@@ -44,10 +45,12 @@ class ProductSchema(Schema):
     color_name = fields.String()  # Text color value from scraped resources
     img_url = fields.String()  # Scraped image source
     prod_url = fields.String()
-    img_cats_ai = fields.List(fields.Integer())  # Image categories assigned by AI analysis turned from array to integer (0-49)
+    img_cats_ai = fields.List(
+        fields.Integer())  # Image categories assigned by AI analysis turned from array to integer (0-49)
     img_cats_ai_txt = fields.List(fields.String())  # Image categories assigned by AI analysis text format
     nr1_cat_ai = fields.Integer()
-    img_cats_sc = fields.List(fields.Integer())  # Image categories from scraped name turned from array to integer (0-137)
+    img_cats_sc = fields.List(
+        fields.Integer())  # Image categories from scraped name turned from array to integer (0-137)
     img_cats_sc_txt = fields.List(fields.String())  # Image categories from scraped name in text format
     nr1_cat_sc = fields.Integer()
     color_1 = fields.List(fields.Integer())  # Array of 3 integers from 0 to 255 representing 1 RGB value
@@ -90,6 +93,24 @@ def hex_to_rgb(value):
     # print('length: ', str(lv))
     # print('Value: ', str(value))
     return tuple(int(value[i:i + int(lv / 3)], 16) for i in range(0, lv, int(lv / 3)))
+
+
+async def call_url(url, image):
+    print('Starting {}'.format(url))
+    response = await aiohttp.get(url)
+    data = await response.text()
+    print('{}: {} bytes: {}'.format(url, len(data), data))
+    return data
+
+
+async def send_file(url, image_file):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, data={
+            'image': image_file
+        }) as response:
+            data = await response.text()
+            print(data)
+            return data
 
 
 # # # # # # # API functions
@@ -225,7 +246,9 @@ def search():
         # q = db.session.query(Product)
 
         # Start off by doing the initial query looking for categories
-        id_list = db.session.query(Product).filter((Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc)).order_by(func.random()).limit(500).all()
+        id_list = db.session.query(Product).filter(
+            (Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc)).order_by(func.random()).limit(
+            500).all()
         # print('Query object: ', str(id_list))
 
         # Declare Marshmallow schema so that SqlAlchemy object can be serialized
@@ -268,8 +291,11 @@ def search():
             print('Color RGB: ', str(color1_rgb))
             # Use euclidean distance to measure how similar the color is in RGB space
             # And then to measure how close the siamese encoding is 64 dimensional space
-            distance_color = int(spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color1_rgb, dtype=int), w=None))
-            distance_siam = int(spatial.distance.euclidean(np.array(siamese_64, dtype=int), np.array(test_siamese_64, dtype=int), w=None))
+            distance_color = int(
+                spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color1_rgb, dtype=int), w=None))
+            distance_siam = int(
+                spatial.distance.euclidean(np.array(siamese_64, dtype=int), np.array(test_siamese_64, dtype=int),
+                                           w=None))
 
             distance = distance_color + distance_siam
 
@@ -303,7 +329,7 @@ def search():
         # response_list = list(str(query))
         # Make it HTTP friendly
         res = jsonify(res=result_list)
-        print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+        # print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
 
         return res
 
@@ -346,7 +372,8 @@ def text():
             print('2 words and is color')
             id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
                 func.lower(Product.name).contains(word_list[1])) & (
-                func.lower(Product.color_name).contains(color_list[0]))).order_by(func.random()).limit(50).all()
+                                                            func.lower(Product.color_name).contains(
+                                                                color_list[0]))).order_by(func.random()).limit(50).all()
 
         elif 3 > len(word_list) > 1:
             print('2 words, no color')
@@ -394,9 +421,80 @@ def text():
         return res
 
 
+@app.route("/api/image", methods=['POST'])
+def image():
+    if request.method == 'POST':
+        if request.files.get("image"):
+            # Get the image file from client post request
+            post_image = request.files["image"].read()
+            print('Got image search request')
+            # Two AI APIs have been successfully built
+            color_api = 'http://34.246.218.185/api/color'
+            cat_api = 'http://34.243.167.38/api/cats'
+            api_urls = [color_api, cat_api]
+
+            tasks = [send_file(url, post_image) for url in api_urls]
+            loop = asyncio.get_event_loop()
+            # Gather responses from APIs using asyncio
+            color_response, cat_response = loop.run_until_complete(asyncio.gather(*tasks))
+
+            img_cats_ai = json.loads(cat_response)['res']['img_cats_ai']
+            # If AI has recognized any categories, retrieve a random selection of n prods from db with that category
+            if len(img_cats_ai) > 0:
+                nr1_cat_ai = img_cats_ai[0]
+                id_list = db.session.query(Product).filter((Product.nr1_cat_ai == nr1_cat_ai)).order_by(func.random()).limit(500).all()
+            else:
+                return json.dumps('Not recognized')
+
+            # Declare Marshmallow schema so that SqlAlchemy object can be serialized
+            product_schema = ProductSchema()
+
+            # Go through the 1000 prods returned from db and order by color sim, then return top 30
+            color_1 = json.loads(color_response)['res']['color_1']
+            dist_list = []
+            for prod_id in id_list:
+                prod_id_str = str(prod_id)
+                image_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
+
+                color1_rgb = re.search('(?<=color1=\[).{5,13}(?=\])', prod_id_str)[0]
+                color1_rgb = color1_rgb.replace(" ", "").strip('\'[]')
+                color1_rgb = color1_rgb.split(',')
+                color1_rgb = [int(i) for i in color1_rgb]
+
+                distance_color = int(
+                    spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color1_rgb, dtype=int), w=None))
+
+                print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
+
+                item_obj = {'id': image_prod_id, 'distance': distance_color}
+
+                dist_list.append(item_obj)
+
+            # Closest colors at top
+            sorted_list = sorted(dist_list, key=itemgetter('distance'))
+
+            # Only top results are returned
+            top_list = sorted_list[0:30]
+
+            # Now return db fields of these top similar prods to client
+            result_list = []
+            for obj in top_list:
+                result_obj_id = obj['id']
+                prod_search = db.session.query(Product).filter((Product.id == result_obj_id)).first()
+                prod_serial = product_schema.dump(prod_search)
+                result_list.append(prod_serial)
+
+            # Make it HTTP friendly
+            res = jsonify(res=result_list)
+
+            # res = jsonify(res=response)
+            print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+
+            return res
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', threaded=True, port=5000)
-
 
 # if root_url == developer_url:
 #     if __name__ == "__main__":

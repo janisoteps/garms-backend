@@ -13,7 +13,7 @@ const config = {
         ]
       },
       {
-        test: /\.jsx?$/,
+        test: /\.(js|jsx)?$/,
         exclude: /node_modules/,
         use: [
           {
