@@ -13,9 +13,16 @@ const config = {
         ]
       },
       {
-        test: /\.jsx?/,
+        test: /\.(js|jsx)?$/,
         exclude: /node_modules/,
-        use: 'babel-loader'
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    presets: ['react']
+                }
+            }
+        ],
       },
       {
           test: /\.(png|svg|jpg|gif)$/,

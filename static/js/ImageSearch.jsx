@@ -1,13 +1,17 @@
 // ImageSearch.jsx
 import React from "react";
 require('../css/garms.css');
+require('../css/ball-atom.css');
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { withCookies, Cookies } from 'react-cookie';
 import { instanceOf } from 'prop-types';
-// import { Route } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import Dropzone from 'react-dropzone';
 // const pica = require('pica')();
 import ProductResults from './ProductResults';
+import Paper from 'material-ui/Paper';
+import RaisedButton from 'material-ui/RaisedButton';
+
 
 class ImageSearch extends React.Component  {
     static propTypes = {
@@ -22,12 +26,14 @@ class ImageSearch extends React.Component  {
             email: '',
             pwd: '',
             files: [],
-            results: []
+            results: [],
+            colors: {}
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.onDrop = this.onDrop.bind(this);
-        this.doSearch = this.doSearch.bind(this);
+        this.getColors = this.getColors.bind(this);
+        this.colorImageSearch = this.colorImageSearch.bind(this);
     }
 
     handleChange(event) {
@@ -65,13 +71,36 @@ class ImageSearch extends React.Component  {
         });
     }
 
-    doSearch(){
+    // doSearch(){
+    //     let imageFile = this.state.files[0];
+    //
+    //     const data = new FormData();
+    //     data.append('image', imageFile);
+    //
+    //     fetch(window.location.origin + '/api/image', {
+    //         method: 'post',
+    //         body: data
+    //     }).then(response => {
+    //         return response.json();
+    //     }).then(data => {
+    //         console.log(data);
+    //         this.setState({
+    //             results: data.res
+    //         });
+    //     });
+    // }
+
+    getColors(){
+        this.setState({
+            loading: true
+        });
+
         let imageFile = this.state.files[0];
 
-        const data = new FormData();
+        let data = new FormData();
         data.append('image', imageFile);
 
-        fetch(window.location.origin + '/api/image', {
+        fetch(window.location.origin + '/api/color', {
             method: 'post',
             body: data
         }).then(response => {
@@ -79,8 +108,38 @@ class ImageSearch extends React.Component  {
         }).then(data => {
             console.log(data);
             this.setState({
-                results: data.res
+                colors: data.res,
+                loading: false
             });
+        });
+    }
+
+    colorImageSearch(colorNr){
+        let imageFile = this.state.files[0];
+        let color_data = new FormData();
+        color_data.append('image', imageFile);
+
+        let colorName = 'color_' + colorNr;
+        let colorValue = this.state.colors[colorName].toString().replace(/\s+/g, '');
+        color_data.append('color', colorValue);
+
+        this.setState({
+            colors: {},
+            loading: true
+        });
+
+        fetch(window.location.origin + '/api/colorimage', {
+            method: 'post',
+            body: color_data
+        }).then(response => {
+            return response.json();
+        }).then(data => {
+            console.log(data);
+            this.setState({
+                results: data.res,
+                loading: false
+            });
+
         });
     }
 
@@ -89,7 +148,7 @@ class ImageSearch extends React.Component  {
         let preview = this.state.files.length > 0 ? (
             <div className="preview-container">
                 <img className="image-preview" src={this.state.files[0].preview} />
-                <div className="search-button" onClick={this.doSearch}><p>search</p></div>
+                <div className="search-button" onClick={this.getColors}><p>search</p></div>
             </div>
         ) : (
             <p> </p>
@@ -102,7 +161,7 @@ class ImageSearch extends React.Component  {
                 {preview}
                 <section>
                     <div className="dropzone">
-                        <Dropzone className="image-dropzone" onDrop={(files) => this.onDrop(files)} accept="image/jpeg, image/png">
+                        <Dropzone className="image-dropzone" onDrop={(files) => this.onDrop(files)} accept="image/jpeg">
                             <p>Drop image here or click to select image to upload.</p>
                         </Dropzone>
                     </div>
@@ -136,18 +195,80 @@ class ImageSearch extends React.Component  {
             </div>
         );
 
-        let searchOrResults = this.state.results.length > 0 ? (
-            <ProductResults results={this.state.results}/>
-        ) : (
-            searchForm
-        );
+        if(this.state.results){
+            var searchOrResults = this.state.results.length > 0 ? (
+                <ProductResults results={this.state.results}/>
+            ) : (
+                searchForm
+            );
+        } else {
+            searchOrResults = (
+                <div className="overlay">
+                    <Paper zDepth={1} className="color-modal">
+                        <h3>Can't recognize the outfit, try a better quality photo</h3>
+                        <RaisedButton className="ok-button" label="OK" onClick={() => { window.location.reload(); }} />
+                    </Paper>
+                </div>
+            )
+        }
 
-        // let searchBody =
+
+        if(Object.keys(this.state.colors).length > 0){
+            var colorStyle1 = {
+                width: '70px',
+                height: '70px',
+                borderRadius: '30px',
+                backgroundColor: this.state.colors.color_1_hex,
+                margin: '10px',
+                display: 'inline-block',
+                cursor: 'pointer'
+            };
+            var colorStyle2 = {
+                width: '70px',
+                height: '70px',
+                borderRadius: '30px',
+                backgroundColor: this.state.colors.color_2_hex,
+                margin: '10px',
+                display: 'inline-block',
+                cursor: 'pointer'
+            };
+            var colorStyle3 = {
+                width: '70px',
+                height: '70px',
+                borderRadius: '30px',
+                backgroundColor: this.state.colors.color_3_hex,
+                margin: '10px',
+                display: 'inline-block',
+                cursor: 'pointer'
+            };
+        }
 
         return (
             <MuiThemeProvider>
                 <div>
                     {searchOrResults}
+
+                    {(Object.keys(this.state.colors).length > 0) && (
+                        <div className="overlay">
+                            <Paper zDepth={1} className="color-modal">
+                                <p>I found these colors in your photo, choose which one to search for:</p>
+                                <div style={colorStyle1} onClick={() => this.colorImageSearch(1)} />
+                                <div style={colorStyle2} onClick={() => this.colorImageSearch(2)} />
+                                <div style={colorStyle3} onClick={() => this.colorImageSearch(3)} />
+                            </Paper>
+                        </div>
+                    )}
+
+                    {(this.state.loading === true) && (
+                        <div className="overlay">
+                            <div className="la-ball-atom la-3x">
+                                <div />
+                                <div />
+                                <div />
+                                <div />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </MuiThemeProvider>
         );

@@ -1,7 +1,7 @@
 {
-  "name": "testsuite",
+  "name": "Garms",
   "version": "1.0.0",
-  "description": "Test server to run selenium tests",
+  "description": "Smartest fashion visual search in the world",
   "main": "index.js",
   "scripts": {
     "build": "webpack -p --progress --config webpack.prodconfig.js",

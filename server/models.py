@@ -121,7 +121,7 @@ class Product(db.Model):
     # def find_similar(self, img_cats_ai, img_cats_ai_txt, nr1_cat_ai, color_1, color_2, siamese_64):
 
     def __repr__(self):
-        return '<id=[{}] color1={} siam=[{}]>'.format(self.id, self.color_1, self.siamese_64)
+        return '<id=[{}] name=@{}@ color1={} siam=[{}]>'.format(self.id, self.name, self.color_1, self.siamese_64)
 
     def return_name(self):
         return self.name

@@ -493,6 +493,131 @@ def image():
             return res
 
 
+@app.route("/api/color", methods=['POST'])
+def color():
+    if request.method == 'POST':
+        if request.files.get("image"):
+            print('Got color search request')
+            post_image = request.files["image"].read()
+            color_api = 'http://34.246.218.185/api/color'
+
+            task = send_file(color_api, post_image)
+
+            loop = asyncio.get_event_loop()
+
+            # Gather response from API using asyncio
+            color_response = loop.run_until_complete(task)
+
+            color_1 = json.loads(color_response)['res']['color_1']
+            color_1_hex = json.loads(color_response)['res']['color_1_hex']
+
+            color_2 = json.loads(color_response)['res']['color_2']
+            color_2_hex = json.loads(color_response)['res']['color_2_hex']
+
+            color_3 = json.loads(color_response)['res']['color_3']
+            color_3_hex = json.loads(color_response)['res']['color_3_hex']
+
+            results = {
+                'color_1': color_1,
+                'color_1_hex': color_1_hex,
+                'color_2': color_2,
+                'color_2_hex': color_2_hex,
+                'color_3': color_3,
+                'color_3_hex': color_3_hex
+            }
+
+            # Make it HTTP friendly
+            res = jsonify(res=results)
+
+            return res
+
+
+@app.route("/api/colorimage", methods=['POST'])
+def colorimage():
+    if request.method == 'POST':
+        if request.files.get("image"):
+            post_image = request.files["image"].read()
+            cat_api = 'http://34.243.167.38/api/cats'
+            post_color = request.form['color'].strip('\'[]').split(',')
+
+            task = send_file(cat_api, post_image)
+
+            loop = asyncio.get_event_loop()
+
+            # Gather response from API using asyncio
+            cat_response = loop.run_until_complete(task)
+
+            img_cats_ai = json.loads(cat_response)['res']['img_cats_ai']
+            img_cats_ai_txt = json.loads(cat_response)['res']['img_cats_ai_txt']
+
+            # If AI has recognized any categories, retrieve a random selection of n prods from db with that category
+            if len(img_cats_ai) > 0:
+                # nr1_cat_ai = img_cats_ai[0]
+                nr1_cat_ai_txt = img_cats_ai_txt[0]
+                # id_list = db.session.query(Product).filter((Product.nr1_cat_ai == nr1_cat_ai)).order_by(
+                #     func.random()).limit(500).all()
+                id_list = db.session.query(Product).filter(Product.img_cats_sc_txt.any(nr1_cat_ai_txt)).order_by(
+                    func.random()).limit(500).all()
+            else:
+                return json.dumps(False)
+
+            dist_list = []
+            for prod_id in id_list:
+                prod_id_str = str(prod_id)
+                image_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
+
+                color1_rgb = re.search('(?<=color1=\[).{5,13}(?=\])', prod_id_str)[0]
+                color1_rgb = color1_rgb.replace(" ", "").strip('\'[]')
+                color1_rgb = color1_rgb.split(',')
+                color1_rgb = [int(i) for i in color1_rgb]
+
+                try:
+                    image_prod_name = re.search('(?<=name=@).{5,80}(?=@)', prod_id_str)[0]
+                except:
+                    image_prod_name = None
+                    
+                if image_prod_name is not None:
+                    image_prod_name = image_prod_name.strip('\'[]')
+                    image_prod_name_arr = image_prod_name.lower().split(' ')
+
+                    print('name array: ', str(image_prod_name_arr))
+
+                    distance_color = int(
+                        spatial.distance.euclidean(np.array(post_color, dtype=int), np.array(color1_rgb, dtype=int), w=None))
+
+                    if nr1_cat_ai_txt in image_prod_name_arr:
+                        print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
+
+                        item_obj = {'id': image_prod_id, 'distance': distance_color}
+
+                        dist_list.append(item_obj)
+
+            # Closest colors at top
+            sorted_list = sorted(dist_list, key=itemgetter('distance'))
+
+            # Only top results are returned
+            top_list = sorted_list[0:30]
+
+            # Declare Marshmallow schema so that SqlAlchemy object can be serialized
+            product_schema = ProductSchema()
+
+            # Now return db fields of these top similar prods to client
+            result_list = []
+            for obj in top_list:
+                result_obj_id = obj['id']
+                prod_search = db.session.query(Product).filter((Product.id == result_obj_id)).first()
+                prod_serial = product_schema.dump(prod_search)
+                result_list.append(prod_serial)
+
+            # Make it HTTP friendly
+            res = jsonify(res=result_list)
+
+            # res = jsonify(res=response)
+            print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+
+            return res
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', threaded=True, port=5000)
 

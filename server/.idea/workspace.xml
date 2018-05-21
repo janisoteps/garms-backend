@@ -14,8 +14,8 @@
       <file leaf-file-name="application.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/application.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1841">
-              <caret line="429" column="43" lean-forward="false" selection-start-line="429" selection-start-column="43" selection-end-line="429" selection-end-column="43" />
+            <state relative-caret-position="347">
+              <caret line="577" column="19" lean-forward="true" selection-start-line="577" selection-start-column="19" selection-end-line="577" selection-end-column="19" />
               <folding>
                 <element signature="e#16#27#0" expanded="true" />
                 <element signature="e#7279#7407#0" expanded="false" />
@@ -77,8 +77,8 @@
       <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="975">
-              <caret line="71" column="22" lean-forward="false" selection-start-line="71" selection-start-column="22" selection-end-line="71" selection-end-column="22" />
+            <state relative-caret-position="572">
+              <caret line="124" column="0" lean-forward="true" selection-start-line="124" selection-start-column="0" selection-end-line="124" selection-end-column="0" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
               </folding>
@@ -198,7 +198,9 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager />
+    <breakpoint-manager>
+      <option name="time" value="1" />
+    </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
@@ -285,16 +287,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="975">
-          <caret line="71" column="22" lean-forward="false" selection-start-line="71" selection-start-column="22" selection-end-line="71" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/color_text.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -313,10 +305,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="572">
+          <caret line="124" column="0" lean-forward="true" selection-start-line="124" selection-start-column="0" selection-end-line="124" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/application.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1841">
-          <caret line="429" column="43" lean-forward="false" selection-start-line="429" selection-start-column="43" selection-end-line="429" selection-end-column="43" />
+        <state relative-caret-position="347">
+          <caret line="577" column="19" lean-forward="true" selection-start-line="577" selection-start-column="19" selection-end-line="577" selection-end-column="19" />
           <folding>
             <element signature="e#16#27#0" expanded="true" />
             <element signature="e#7279#7407#0" expanded="false" />
