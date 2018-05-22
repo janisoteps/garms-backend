@@ -17,37 +17,39 @@ class SearchChoice extends React.Component {
 
         return (
             <MuiThemeProvider>
-                <div className="search-choice">
-                    <Route render={({ history }) => (
-                        <Paper style={{
-                            height: '20vh',
-                            width: '80vw',
-                            maxWidth: '600px',
-                            backgroundColor: '#7c5e93',
-                            color: 'white',
-                            display: 'inline-block',
-                            paddingTop: 'calc(10vh - 20px)',
-                            cursor: 'pointer'
-                        }} zDepth={2} onClick={() => { history.push('/imagesearch') }}>
-                            <h2>Take / Upload Photo</h2>
-                        </Paper>
-                    )} />
-                </div>
-                <div className="search-choice">
-                    <Route render={({ history }) => (
-                        <Paper style={{
-                            height: '20vh',
-                            width: '80vw',
-                            maxWidth: '600px',
-                            backgroundColor: '#5f5d92',
-                            color: 'white',
-                            display: 'inline-block',
-                            paddingTop: 'calc(10vh - 20px)',
-                            cursor: 'pointer'
-                        }} zDepth={2} onClick={() => { history.push('/textsearch') }}>
-                            <h2>Type Your Search</h2>
-                        </Paper>
-                    )} />
+                <div>
+                    <div className="search-choice">
+                        <Route render={({ history }) => (
+                            <Paper style={{
+                                height: '20vh',
+                                width: '80vw',
+                                maxWidth: '600px',
+                                backgroundColor: '#7c5e93',
+                                color: 'white',
+                                display: 'inline-block',
+                                paddingTop: 'calc(10vh - 20px)',
+                                cursor: 'pointer'
+                            }} zDepth={2} onClick={() => { history.push('/imagesearch') }}>
+                                <h2>Take / Upload Photo</h2>
+                            </Paper>
+                        )} />
+                    </div>
+                    <div className="search-choice">
+                        <Route render={({ history }) => (
+                            <Paper style={{
+                                height: '20vh',
+                                width: '80vw',
+                                maxWidth: '600px',
+                                backgroundColor: '#5f5d92',
+                                color: 'white',
+                                display: 'inline-block',
+                                paddingTop: 'calc(10vh - 20px)',
+                                cursor: 'pointer'
+                            }} zDepth={2} onClick={() => { history.push('/textsearch') }}>
+                                <h2>Type Your Search</h2>
+                            </Paper>
+                        )} />
+                    </div>
                 </div>
             </MuiThemeProvider>
         )

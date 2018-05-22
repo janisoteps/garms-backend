@@ -3,8 +3,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from application import login
-import scipy.spatial as spatial
-import numpy as np
+# import scipy.spatial as spatial
+# import numpy as np
 
 
 @login.user_loader
@@ -36,7 +36,8 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        # return '<User {}>'.format(self.username)
+        return '<id=[{}] username=@{}@ favorites=[{}]>'.format(self.id, self.username, self.favorites_ids)
 
 
 class Product(db.Model):
@@ -118,19 +119,17 @@ class Product(db.Model):
         self.color_2_hex = color_2_hex
         self.siamese_64 = siamese_64
 
-    # def find_similar(self, img_cats_ai, img_cats_ai_txt, nr1_cat_ai, color_1, color_2, siamese_64):
-
     def __repr__(self):
         return '<id=[{}] name=@{}@ color1={} siam=[{}]>'.format(self.id, self.name, self.color_1, self.siamese_64)
 
     def return_name(self):
         return self.name
 
-    def color_dist(self, color_array):
-        own_color = self.color_1
-        print('Query color: ', str(color_array))
-        # print()
-        distance = int(spatial.distance.euclidean(np.array(color_array, dtype=int), np.array(own_color, dtype=int), w=None))
-        print('Distance: ', str(distance))
-        return '{}'.format(distance)
-        # return self.num > n - 5 and self.num <= n + 5
+    # def color_dist(self, color_array):
+    #     own_color = self.color_1
+    #     print('Query color: ', str(color_array))
+    #     # print()
+    #     distance = int(spatial.distance.euclidean(np.array(color_array, dtype=int), np.array(own_color, dtype=int), w=None))
+    #     print('Distance: ', str(distance))
+    #     return '{}'.format(distance)
+    #     # return self.num > n - 5 and self.num <= n + 5

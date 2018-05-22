@@ -17,6 +17,7 @@
     position: fixed;
     top: 0;
     height: 50px;
+    z-index: 500;
 }
 
 .logo {
@@ -92,10 +93,8 @@
 .search-button{
     width: 200px;
     margin-left: calc((100vw - 200px) / 2);
-    border-style: solid;
     border-radius: 3px;
-    border-width: 1px;
-    border-color: #c4c4c4;
+    border: 1px solid #c4c4c4;
     cursor: pointer;
     margin-top: 30px;
     text-align: center;
@@ -112,6 +111,7 @@
     padding-top: 15px;
     padding-bottom: 15px;
     display: inline-block;
+    position: relative;
 }
 
 .result-pane{
@@ -137,4 +137,28 @@
     background-color: rgba(20, 20, 47, 0.4);
     position: fixed;
     top: 0;
+}
+
+.add-to-favorites{
+    width: 64px;
+    height: 64px;
+    background: #fc94a5 url('../images/favorite_white.svg') no-repeat center;
+    background-size: 48px 48px;
+    border-radius: 32px;
+    position: absolute;
+    margin-top: -150px;
+    right: -15px;
+    cursor: pointer;
+}
+
+.search-similar{
+    width: 64px;
+    height: 64px;
+    background: #dd9dfc url('../images/baseline-search-24px.svg') no-repeat center;
+    background-size: 48px 48px;
+    border-radius: 32px;
+    position: absolute;
+    margin-top: -70px;
+    right: -15px;
+    cursor: pointer;
 }

@@ -5,7 +5,7 @@ require('../css/ball-atom.css');
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import { withCookies, Cookies } from 'react-cookie';
 import { instanceOf } from 'prop-types';
-import { Route } from 'react-router-dom';
+// import { Route } from 'react-router-dom';
 import Dropzone from 'react-dropzone';
 // const pica = require('pica')();
 import ProductResults from './ProductResults';
@@ -13,6 +13,7 @@ import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 
 
+//Component to search for products using an uploaded image
 class ImageSearch extends React.Component  {
     static propTypes = {
         cookies: instanceOf(Cookies).isRequired
@@ -27,15 +28,18 @@ class ImageSearch extends React.Component  {
             pwd: '',
             files: [],
             results: [],
-            colors: {}
+            colors: {},
+            mainColor: ''
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.onDrop = this.onDrop.bind(this);
         this.getColors = this.getColors.bind(this);
         this.colorImageSearch = this.colorImageSearch.bind(this);
+        this.similarImageSearch = this.similarImageSearch.bind(this);
     }
 
+    // Handles login input change
     handleChange(event) {
         let value =  event.target.value;
         let name = event.target.name;
@@ -44,6 +48,7 @@ class ImageSearch extends React.Component  {
         });
     }
 
+    //Submits login request to server and sets state/cookies if successful
     handleSubmit(event) {
         // alert('A name was submitted: ' + this.state.value);
         event.preventDefault();
@@ -65,6 +70,7 @@ class ImageSearch extends React.Component  {
             });
     }
 
+    // When file is uploaded adds the file to state from drop zone
     onDrop(acceptedFiles, rejectedFiles) {
         this.setState({
             files: acceptedFiles
@@ -90,6 +96,7 @@ class ImageSearch extends React.Component  {
     //     });
     // }
 
+    // Sends color extraction request to server, sets state to colors in response
     getColors(){
         this.setState({
             loading: true
@@ -114,6 +121,8 @@ class ImageSearch extends React.Component  {
         });
     }
 
+    // Once user has selected color from their image sends request to server to
+    // analyse the image category and find the best color matches
     colorImageSearch(colorNr){
         let imageFile = this.state.files[0];
         let color_data = new FormData();
@@ -125,7 +134,8 @@ class ImageSearch extends React.Component  {
 
         this.setState({
             colors: {},
-            loading: true
+            loading: true,
+            mainColor: colorValue
         });
 
         fetch(window.location.origin + '/api/colorimage', {
@@ -143,8 +153,44 @@ class ImageSearch extends React.Component  {
         });
     }
 
+    // Sends similar product search request to server if user clicks on magnifying glass button
+    // Updates results state with the response
+    similarImageSearch(nr1_cat_ai, nr1_cat_sc, color_1, siamese_64){
+
+        console.log('Similar image search launched');
+        this.setState({
+            loading: true
+        });
+
+        let mainColor = color_1.toString().replace(/\s+/g, '');
+        // let mainColor = this.state.mainColor;
+        let siam_64 = siamese_64.toString().replace(/\s+/g, '');
+
+        let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai + '&nr1_cat_sc=' + nr1_cat_sc + '&color_1=[' + mainColor + ']&siamese_64=[' + siam_64 + ']';
+
+        console.log('search string: ', searchString);
+
+        fetch(searchString, {
+            method: 'get',
+        }).then(function(response) {
+            return response.json();
+        }).then(data => {
+                console.log(data);
+                this.setState({
+                    results: data.res,
+                    loading: false
+                });
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
+                window.scrollTo(0, 0);
+            });
+    }
+
     render () {
 
+        // Element that shows preview of just uploaded photo
         let preview = this.state.files.length > 0 ? (
             <div className="preview-container">
                 <img className="image-preview" src={this.state.files[0].preview} />
@@ -153,9 +199,8 @@ class ImageSearch extends React.Component  {
         ) : (
             <p> </p>
         );
-        console.log(this.state.files);
-        // var setLoginState = this.props.setLoginState;
-        // console.log('Login file isAuth', this.state.isAuth);
+
+        // Shows either image drop zone or login form if not authorized
         let searchForm = this.state.isAuth === true || this.state.isAuth == "true" ? (
             <div>
                 {preview}
@@ -165,13 +210,6 @@ class ImageSearch extends React.Component  {
                             <p>Drop image here or click to select image to upload.</p>
                         </Dropzone>
                     </div>
-                    <aside>
-                        <ul>
-                            {
-                                this.state.files.map(f => <li key={f.name}>{f.name} - {f.size} bytes</li>)
-                            }
-                        </ul>
-                    </aside>
                 </section>
             </div>
         ) : (
@@ -195,9 +233,12 @@ class ImageSearch extends React.Component  {
             </div>
         );
 
+        // Nested logic: if results object is not falsy then show either product result component if state has results
+        // Or show a response saying that image wasn't recognized
+        //                 <ProductResults simImgSearch={() => { this.similarImageSearch() }} results={this.state.results}/>
         if(this.state.results){
             var searchOrResults = this.state.results.length > 0 ? (
-                <ProductResults results={this.state.results}/>
+                <ProductResults simImgSearch={(nr1_cat_ai, nr1_cat_sc, color_1, siamese_64) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, color_1, siamese_64) }} results={this.state.results}/>
             ) : (
                 searchForm
             );
@@ -212,7 +253,7 @@ class ImageSearch extends React.Component  {
             )
         }
 
-
+        // Dynamic CSS for image color choice modal
         if(Object.keys(this.state.colors).length > 0){
             var colorStyle1 = {
                 width: '70px',
@@ -243,21 +284,31 @@ class ImageSearch extends React.Component  {
             };
         }
 
+        // if colors are set in state show choice modal to select one main color
+        let ColorChoiceModal = () => {
+            if(Object.keys(this.state.colors).length > 0){
+                return(
+                    <div className="overlay">
+                        <Paper zDepth={1} className="color-modal">
+                            <p>I found these colors in your photo, choose which one to search for:</p>
+                            <div style={colorStyle1} onClick={() => this.colorImageSearch(1)} />
+                            <div style={colorStyle2} onClick={() => this.colorImageSearch(2)} />
+                            <div style={colorStyle3} onClick={() => this.colorImageSearch(3)} />
+                        </Paper>
+                    </div>
+                )
+            } else {
+                return('')
+            }
+        };
+
+        // Main render
         return (
             <MuiThemeProvider>
                 <div>
                     {searchOrResults}
 
-                    {(Object.keys(this.state.colors).length > 0) && (
-                        <div className="overlay">
-                            <Paper zDepth={1} className="color-modal">
-                                <p>I found these colors in your photo, choose which one to search for:</p>
-                                <div style={colorStyle1} onClick={() => this.colorImageSearch(1)} />
-                                <div style={colorStyle2} onClick={() => this.colorImageSearch(2)} />
-                                <div style={colorStyle3} onClick={() => this.colorImageSearch(3)} />
-                            </Paper>
-                        </div>
-                    )}
+                    <ColorChoiceModal />
 
                     {(this.state.loading === true) && (
                         <div className="overlay">

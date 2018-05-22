@@ -248,7 +248,7 @@ def search():
         # Start off by doing the initial query looking for categories
         id_list = db.session.query(Product).filter(
             (Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc)).order_by(func.random()).limit(
-            500).all()
+            1000).all()
         # print('Query object: ', str(id_list))
 
         # Declare Marshmallow schema so that SqlAlchemy object can be serialized
@@ -297,7 +297,7 @@ def search():
                 spatial.distance.euclidean(np.array(siamese_64, dtype=int), np.array(test_siamese_64, dtype=int),
                                            w=None))
 
-            distance = distance_color + distance_siam
+            distance = (distance_color * 2) + (distance_siam * 0.5)
 
             print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
             print(BColors.OKGREEN + 'Siamese distance: ' + BColors.ENDC + str(distance_siam))
@@ -575,7 +575,7 @@ def colorimage():
                     image_prod_name = re.search('(?<=name=@).{5,80}(?=@)', prod_id_str)[0]
                 except:
                     image_prod_name = None
-                    
+
                 if image_prod_name is not None:
                     image_prod_name = image_prod_name.strip('\'[]')
                     image_prod_name_arr = image_prod_name.lower().split(' ')
@@ -619,7 +619,7 @@ def colorimage():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', threaded=True, port=5000)
+    app.run(host='0.0.0.0', processes=5, port=5000)
 
 # if root_url == developer_url:
 #     if __name__ == "__main__":

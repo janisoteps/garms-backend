@@ -28,7 +28,7 @@ class App extends React.Component {
 
   componentDidMount(){
     const { cookies } = this.props;
-    console.log('Updating state')
+    // console.log('Updating state')
     this.setState({ isAuth: cookies.get('isAuth') });
   }
 
@@ -61,7 +61,7 @@ class App extends React.Component {
   }
 
   render() {
-    console.log(this.state);
+    // console.log(this.state);
     const body = this.state.isAuth == true || this.state.isAuth == "true" ? (
       <Main isAuth={this.state.isAuth} />
     ) : (
