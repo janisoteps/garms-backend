@@ -18,8 +18,8 @@
       <file leaf-file-name="ImageSearch.jsx" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/ImageSearch.jsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="369">
-              <caret line="167" lean-forward="true" selection-start-line="167" selection-end-line="167" />
+            <state relative-caret-position="50">
+              <caret line="391" column="21" lean-forward="true" selection-start-line="391" selection-start-column="21" selection-end-line="391" selection-end-column="21" />
               <folding>
                 <element signature="e#108#175#0" expanded="true" />
                 <element signature="e#389#435#0" expanded="true" />
@@ -67,8 +67,8 @@
       <file leaf-file-name="garms.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/css/garms.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2445">
-              <caret line="163" column="1" selection-start-line="163" selection-start-column="1" selection-end-line="163" selection-end-column="1" />
+            <state relative-caret-position="157">
+              <caret line="120" lean-forward="true" selection-start-line="120" selection-end-line="120" />
             </state>
           </provider>
         </entry>
@@ -103,10 +103,10 @@
         <option value="$PROJECT_DIR$/js/Header.jsx" />
         <option value="$PROJECT_DIR$/webpack.prodconfig.js" />
         <option value="$PROJECT_DIR$/package.json" />
-        <option value="$PROJECT_DIR$/css/garms.css" />
         <option value="$PROJECT_DIR$/js/SearchChoice.jsx" />
         <option value="$PROJECT_DIR$/js/App.jsx" />
         <option value="$PROJECT_DIR$/js/ProductResults.jsx" />
+        <option value="$PROJECT_DIR$/css/garms.css" />
         <option value="$PROJECT_DIR$/js/ImageSearch.jsx" />
       </list>
     </option>
@@ -203,12 +203,12 @@
       <updated>1525475279102</updated>
       <workItem from="1525475280739" duration="1711000" />
       <workItem from="1525904593739" duration="47826000" />
-      <workItem from="1526964404975" duration="3040000" />
+      <workItem from="1526964404975" duration="11659000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="52577000" />
+    <option name="totallyTimeSpent" value="61196000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="6" y="23" width="1624" height="950" extended-state="0" />
@@ -364,13 +364,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/css/garms.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2445">
-          <caret line="163" column="1" selection-start-line="163" selection-start-column="1" selection-end-line="163" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/App.jsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="870">
@@ -401,10 +394,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/css/garms.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="157">
+          <caret line="120" lean-forward="true" selection-start-line="120" selection-end-line="120" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/ImageSearch.jsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="369">
-          <caret line="167" lean-forward="true" selection-start-line="167" selection-end-line="167" />
+        <state relative-caret-position="50">
+          <caret line="391" column="21" lean-forward="true" selection-start-line="391" selection-start-column="21" selection-end-line="391" selection-end-column="21" />
           <folding>
             <element signature="e#108#175#0" expanded="true" />
             <element signature="e#389#435#0" expanded="true" />

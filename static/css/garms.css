@@ -121,12 +121,12 @@
 
 .color-modal{
     z-index: 20;
-    width: 400px;
-    height: 200px;
+    width: 500px;
+    height: 380px;
     text-align: center;
     position: fixed;
     top: 200px;
-    margin-left: calc(50vw - 200px);
+    margin-left: calc(50vw - 250px);
     padding: 30px;
 }
 
@@ -162,3 +162,34 @@
     right: -15px;
     cursor: pointer;
 }
+
+.colorcat-search-button{
+    background-color: #8c64a2;
+    border-radius: 13px;
+    width: 100px;
+    font-size: x-large;
+    color: white;
+    display: inline-block;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.cat-choice{
+    background-color: #ece8ee;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 5px;
+    display: inline-block;
+    padding: 10px;
+}
+
+.cat-choice-main{
+    background-color: #ece8ee;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 5px;
+    display: inline-block;
+    padding: 10px;
+    border: solid thick #7f649c;
+}
+
