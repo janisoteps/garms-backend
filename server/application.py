@@ -285,7 +285,7 @@ def search():
         # Closest colors at top
         sorted_color_list = sorted(color_dist_list, key=itemgetter('color_distance'))
 
-        top_color_list = sorted_color_list[0:150]
+        top_color_list = sorted_color_list[0:250]
 
         siamese_dist_list = []
         for prod_obj in top_color_list:
@@ -341,13 +341,14 @@ def text():
     if request.method == 'GET':
         search_string = request.args.get('string')
 
-        # cleaned_string = search_string.translate(' ', "!@£$%^&*()<>?/|~`.,:;#+=-_")
+        print('Text search with string: ', str(search_string))
+        # cleaned_string = search_string.translate(' ', "!@£$%^&*()<>?/|~`.,:;#+=_")
 
         string_list = search_string.strip().lower().split()
-
+        print('string list', str(string_list))
         linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after']
 
-        string_list_clean = [e for e in string_list if e.isalpha() and e not in linking_words]
+        string_list_clean = [e for e in string_list if e not in linking_words]
 
         # string_list = cleaned_string.split()
         # print(string_list_clean)
@@ -364,14 +365,14 @@ def text():
         id_list = []
         if 2 > len(word_list) > 0 and len(color_list) > 0:
             print('1 word and is color')
-            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
+            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[-1])) & (
                 func.lower(Product.color_name).contains(color_list[0]))).order_by(func.random()).limit(50).all()
             # id_list += db.session.query(Product).filter((Product.img_cats_sc_txt.contains(word_list[0])) & (
             #     Product.color_name.contains(color_list[0]))).order_by(func.random()).limit(50).all()
 
         elif 3 > len(word_list) > 1 and len(color_list) > 0:
             print('2 words and is color')
-            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
+            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[-1])) & (
                 func.lower(Product.name).contains(word_list[1])) & (
                                                             func.lower(Product.color_name).contains(
                                                                 color_list[0]))).order_by(func.random()).limit(50).all()
@@ -392,6 +393,9 @@ def text():
             #     id_list += db.session.query(Product).filter(
             #         (func.lower(Product.name).contains(word_list[i]))).order_by(
             #         func.random()).limit(30).all()
+        elif 2 > len(word_list) > 0:
+            print('1 word, no color')
+            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[-1]))).order_by(func.random()).limit(50).all()
 
         elif len(color_list) > 0:
             print('only color')
@@ -415,8 +419,12 @@ def text():
             prod_serial = product_schema.dump(prod_search)
             result_list.append(prod_serial)
 
+        main_cat = ''
+        if len(word_list) > 0:
+            main_cat = word_list[-1]
+
         # Make it HTTP friendly
-        res = jsonify(res=result_list)
+        res = jsonify(res=result_list, mainCat=main_cat)
         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
 
         return res

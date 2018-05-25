@@ -6,6 +6,7 @@ import Login from './Login'
 import Logout from './Logout'
 import SearchChoice from './SearchChoice'
 import ImageSearch from './ImageSearch'
+import TextSearch from './TextSearch'
 
 
 // The Main component renders one of the provided
@@ -25,11 +26,12 @@ class Main extends React.Component {
         return (
             <main>
                 <Switch>
-                    <Route exact path='/' component={SearchChoice}/>
-                    <Route path='/register' component={Register}/>
-                    <Route path='/login' isAuth={this.props} component={Login}/>
-                    <Route path='/logout' isAuth={this.props.isAuth} component={Logout}/>
-                    <Route path='/imagesearch' component={ImageSearch}/>
+                    <Route exact path='/' component={SearchChoice} />
+                    <Route path='/register' component={Register} />
+                    <Route path='/login' isAuth={this.props} component={Login} />
+                    <Route path='/logout' isAuth={this.props.isAuth} component={Logout} />
+                    <Route path='/imagesearch' component={ImageSearch} />
+                    <Route path='/textsearch' isAuth={this.props.isAuth} component={TextSearch} />
                 </Switch>
             </main>
         )

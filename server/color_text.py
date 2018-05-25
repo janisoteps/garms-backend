@@ -238,6 +238,7 @@ colors = [
 
 def color_check(word_list):
     result_dict = {'colors': [], 'words': []}
+    print('color check input: ', str(word_list))
     for word in word_list:
         if word in colors:
             result_dict['colors'].append(word)

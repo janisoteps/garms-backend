@@ -83,25 +83,6 @@ class ImageSearch extends React.Component  {
         });
     }
 
-    // doSearch(){
-    //     let imageFile = this.state.files[0];
-    //
-    //     const data = new FormData();
-    //     data.append('image', imageFile);
-    //
-    //     fetch(window.location.origin + '/api/image', {
-    //         method: 'post',
-    //         body: data
-    //     }).then(response => {
-    //         return response.json();
-    //     }).then(data => {
-    //         console.log(data);
-    //         this.setState({
-    //             results: data.res
-    //         });
-    //     });
-    // }
-
     // Sends color extraction request to server, sets state to colors in response
     getColors(){
         this.setState({
@@ -169,6 +150,7 @@ class ImageSearch extends React.Component  {
         this.setState({
             colors: {},
             cats: [],
+            files: [],
             loading: true,
             mainColor: colorValue
         });
@@ -223,7 +205,7 @@ class ImageSearch extends React.Component  {
 
     // Sends similar product search request to server if user clicks on magnifying glass button
     // Updates results state with the response
-    similarImageSearch(nr1_cat_ai, nr1_cat_sc, color_1, siamese_64){
+    similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64){
 
         console.log('Similar image search launched');
         this.setState({
@@ -286,14 +268,18 @@ class ImageSearch extends React.Component  {
         // Shows either image drop zone or login form if not authorized
         let searchForm = this.state.isAuth === true || this.state.isAuth == "true" ? (
             <div>
-                {preview}
-                <section>
-                    <div className="dropzone">
-                        <Dropzone className="image-dropzone" onDrop={(files) => this.onDrop(files)} accept="image/jpeg">
-                            <p>Drop image here or click to select image to upload.</p>
-                        </Dropzone>
-                    </div>
-                </section>
+                { this.state.files.length > 0 ? (
+                        preview
+                    ) : (
+                        <section>
+                            <div className="dropzone">
+                                <Dropzone className="image-dropzone" onDrop={(files) => this.onDrop(files)} accept="image/jpeg">
+                                    <div className="drop-text"><h1>Drop image here or click to select image to upload</h1></div>
+                                </Dropzone>
+                            </div>
+                        </section>
+                    )
+                }
             </div>
         ) : (
             <div className="register-form">
@@ -321,14 +307,14 @@ class ImageSearch extends React.Component  {
         //                 <ProductResults simImgSearch={() => { this.similarImageSearch() }} results={this.state.results}/>
         if(this.state.results){
             var searchOrResults = this.state.results.length > 0 ? (
-                <ProductResults simImgSearch={(nr1_cat_ai, nr1_cat_sc, color_1, siamese_64) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, color_1, siamese_64) }} results={this.state.results}/>
+                <ProductResults simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) }} results={this.state.results}/>
             ) : (
                 searchForm
             );
         } else {
             searchOrResults = (
                 <div className="overlay">
-                    <Paper zDepth={1} className="color-modal">
+                    <Paper zDepth={1} className="error-modal">
                         <h3>Can't recognize the outfit, try a better quality photo</h3>
                         <RaisedButton className="ok-button" label="OK" onClick={() => { window.location.reload(); }} />
                     </Paper>
