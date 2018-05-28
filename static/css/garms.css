@@ -173,6 +173,18 @@
     background-size: 48px 48px;
     border-radius: 32px;
     position: absolute;
+    margin-top: -230px;
+    right: -15px;
+    cursor: pointer;
+}
+
+.color-picker{
+    width: 64px;
+    height: 64px;
+    background: #fca3e1 url('../images/icons8-color-dropper-96.png') no-repeat center;
+    background-size: 48px 48px;
+    border-radius: 32px;
+    position: absolute;
     margin-top: -150px;
     right: -15px;
     cursor: pointer;

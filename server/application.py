@@ -58,6 +58,8 @@ class ProductSchema(Schema):
     color_1_int = fields.String()  # the closest color approximation to 125 color cats in int
     color_2 = fields.List(fields.Integer())
     color_2_hex = fields.String()
+    color_3 = fields.List(fields.Integer())
+    color_3_hex = fields.String()
     siamese_64 = fields.List(fields.Integer())
 
 
@@ -192,6 +194,8 @@ def commit():
         color_1_int = data['color_1_int']
         color_2 = data['color_2']
         color_2_hex = data['color_2_hex']
+        color_3 = data['color_3']
+        color_3_hex = data['color_3_hex']
         siamese_64 = data['siamese_64']
 
         product_submission = Product(
@@ -218,12 +222,52 @@ def commit():
             color_1_int=color_1_int,
             color_2=color_2,
             color_2_hex=color_2_hex,
+            color_3=color_3,
+            color_3_hex=color_3_hex,
             siamese_64=siamese_64
         )
 
-        db.session.add(product_submission)
-        db.session.commit()
-        return json.dumps(True)
+        try:
+            existing_product = Product.query.filter_by(img_hash=img_hash).first()
+        except:
+            existing_product = None
+
+        if existing_product is None:
+            print('Adding a new product')
+            db.session.add(product_submission)
+            db.session.commit()
+            return json.dumps(True)
+
+        else:
+            print('Updating existing product')
+            existing_product.name = name
+            existing_product.shop = shop
+            existing_product.brand = brand
+            existing_product.price = price
+            existing_product.saleprice = saleprice
+            existing_product.currency = currency
+            existing_product.sale = sale
+            existing_product.sex = sex
+            existing_product.color_name = color_name
+            existing_product.img_url = img_url
+            existing_product.prod_url = prod_url
+            existing_product.img_cats_ai = img_cats_ai
+            existing_product.img_cats_ai_txt = img_cats_ai_txt
+            existing_product.nr1_cat_ai = nr1_cat_ai
+            existing_product.img_cats_sc = img_cats_sc
+            existing_product.img_cats_sc_txt = img_cats_sc_txt
+            existing_product.nr1_cat_sc = nr1_cat_sc
+            existing_product.color_1 = color_1
+            existing_product.color_1_hex = color_1_hex
+            existing_product.color_1_int = color_1_int
+            existing_product.color_2 = color_2
+            existing_product.color_2_hex = color_2_hex
+            existing_product.color_3 = color_3
+            existing_product.color_3_hex = color_3_hex
+            existing_product.siamese_64 = siamese_64
+
+            db.session.commit()
+            return json.dumps(True)
 
 
 # Search for similar products based on selected product
@@ -438,7 +482,7 @@ def image():
             post_image = request.files["image"].read()
             print('Got image search request')
             # Two AI APIs have been successfully built
-            color_api = 'http://34.246.218.185/api/color'
+            color_api = 'http://34.242.36.122/api/color'
             cat_api = 'http://34.243.167.38/api/cats'
             api_urls = [color_api, cat_api]
 
@@ -508,7 +552,7 @@ def color():
         if request.files.get("image"):
             print('Got color search request')
             post_image = request.files["image"].read()
-            color_api = 'http://34.246.218.185/api/color'
+            color_api = 'http://34.242.36.122/api/color'
 
             task = send_file(color_api, post_image)
 
@@ -549,14 +593,16 @@ def colorcat():
             print('Got color and category predict request')
 
             # Two AI APIs have been successfully built
-            color_api = 'http://34.246.218.185/api/color'
+            color_api = 'http://34.242.36.122/api/color'
             cat_api = 'http://34.243.167.38/api/cats'
-            api_urls = [color_api, cat_api]
+            siamese_api = 'http://34.248.44.245:5000/api/encoding'
+
+            api_urls = [color_api, cat_api, siamese_api]
 
             tasks = [send_file(url, post_image) for url in api_urls]
             loop = asyncio.get_event_loop()
             # Gather responses from APIs using asyncio
-            color_response, cat_response = loop.run_until_complete(asyncio.gather(*tasks))
+            color_response, cat_response, siamese_response = loop.run_until_complete(asyncio.gather(*tasks))
 
             img_cats_ai_txt = json.loads(cat_response)['res']['img_cats_ai_txt']
             color_1 = json.loads(color_response)['res']['color_1']
@@ -565,6 +611,7 @@ def colorcat():
             color_2_hex = json.loads(color_response)['res']['color_2_hex']
             color_3 = json.loads(color_response)['res']['color_3']
             color_3_hex = json.loads(color_response)['res']['color_3_hex']
+            siamese_64 = json.loads(siamese_response)['res']['siamese_64']
 
             results = {
                 'img_cats_ai_txt': img_cats_ai_txt,
@@ -575,7 +622,8 @@ def colorcat():
                     'color_2_hex': color_2_hex,
                     'color_3': color_3,
                     'color_3_hex': color_3_hex
-                }
+                },
+                'siamese_64': siamese_64
             }
 
             # Make it HTTP friendly
@@ -590,11 +638,13 @@ def colorcatsearch():
     if request.method == 'GET':
         cat_ai_txt = request.args.get('cat_ai_txt')
         color_rgb = request.args.get('color_rgb').strip('\'[]').split(',')
+        siamese_64 = request.args.get('siamese_64').strip('\'[]').split(',')
+        siamese_64 = [int(float(i)) for i in siamese_64]
 
         id_list = db.session.query(Product).filter(Product.img_cats_sc_txt.any(cat_ai_txt)).order_by(
             func.random()).limit(1000).all()
 
-        dist_list = []
+        color_dist_list = []
         for prod_id in id_list:
             prod_id_str = str(prod_id)
             image_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
@@ -622,15 +672,38 @@ def colorcatsearch():
                 if cat_ai_txt in image_prod_name_arr:
                     print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
 
-                    item_obj = {'id': image_prod_id, 'distance': distance_color}
+                    item_obj = {'id': image_prod_id, 'distance': distance_color, 'prod_string': prod_id_str}
 
-                    dist_list.append(item_obj)
+                    color_dist_list.append(item_obj)
 
         # Closest colors at top
-        sorted_list = sorted(dist_list, key=itemgetter('distance'))
+        color_sorted_list = sorted(color_dist_list, key=itemgetter('distance'))
+        top_color_list = color_sorted_list[0:200]
+
+        # Find most similar as per close cropped siamese encoding euclidean distance
+        siamese_dist_list = []
+        for prod_obj in top_color_list:
+            test_siamese_64 = re.search('(?<=siam=\[).+(?=\])', prod_obj['prod_string'])[0]
+            test_siamese_64 = test_siamese_64.replace(" ", "").strip('\'[]')
+            # print('Siamese before splitting: ', str(test_siamese_64))
+            test_siamese_64 = test_siamese_64.split(',')
+            test_siamese_64 = [int(float(i)) for i in test_siamese_64]
+
+            distance_siam = int(
+                spatial.distance.euclidean(np.array(siamese_64, dtype=int), np.array(test_siamese_64, dtype=int),
+                                           w=None))
+
+            print(BColors.OKGREEN + 'Siamese distance: ' + BColors.ENDC + str(distance_siam))
+
+            # distance = prod_obj['color_distance'] + distance_siam
+            distance = distance_siam
+
+            item_obj = {'id': prod_obj['id'], 'distance': distance}
+
+            siamese_dist_list.append(item_obj)
 
         # Only top results are returned
-        top_list = sorted_list[0:30]
+        top_list = siamese_dist_list[0:30]
 
         # Declare Marshmallow schema so that SqlAlchemy object can be serialized
         product_schema = ProductSchema()

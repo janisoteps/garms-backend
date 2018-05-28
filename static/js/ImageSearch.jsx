@@ -32,7 +32,8 @@ class ImageSearch extends React.Component  {
             mainColor: '',
             mainColorNr: 1,
             cats: [],
-            mainCat: ''
+            mainCat: '',
+            siamese_64: []
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -130,6 +131,7 @@ class ImageSearch extends React.Component  {
                 colors: data.res.colors,
                 cats: data.res['img_cats_ai_txt'],
                 mainCat: data.res['img_cats_ai_txt'][0],
+                siamese_64: data.res['siamese_64'],
                 loading: false
             });
         });
@@ -143,6 +145,7 @@ class ImageSearch extends React.Component  {
 
         let colorName = 'color_' + this.state.mainColor;
         let colorValue = this.state.colors[colorName].toString().replace(/\s+/g, '');
+        let siameseValue = this.state.siamese_64.toString().replace(/\s+/g, '');
         // color_data.append('color', colorValue);
 
         let catName = this.state.mainCat;
@@ -155,7 +158,7 @@ class ImageSearch extends React.Component  {
             mainColor: colorValue
         });
 
-        let searchString = window.location.origin + '/api/colorcatsearch?cat_ai_txt=' + catName + '&color_rgb=' + colorValue;
+        let searchString = window.location.origin + '/api/colorcatsearch?cat_ai_txt=' + catName + '&color_rgb=' + colorValue + '&siamese_64=' + siameseValue;
 
         fetch(searchString, {
             method: 'get'

@@ -59,13 +59,15 @@ class Product(db.Model):
     img_cats_ai_txt = db.Column(ARRAY(db.Text))  # Image categories assigned by AI analysis text format
     nr1_cat_ai = db.Column(db.Integer, index=True)
     img_cats_sc = db.Column(ARRAY(db.Integer))  # Image categories from scraped name turned from array to integer (0-137)
-    img_cats_sc_txt = db.Column(ARRAY(db.Text))  # Image categories from scraped name in text format
+    img_cats_sc_txt = db.Column(ARRAY(db.Text), index=True)  # Image categories from scraped name in text format
     nr1_cat_sc = db.Column(db.Integer, index=True)
     color_1 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
     color_1_hex = db.Column(db.String)
     color_1_int = db.Column(db.Integer, index=True)  # the closest color approximation to 125 color cats in int
     color_2 = db.Column(ARRAY(db.Integer))
     color_2_hex = db.Column(db.String)
+    color_3 = db.Column(ARRAY(db.Integer))
+    color_3_hex = db.Column(db.String)
     siamese_64 = db.Column(ARRAY(db.Integer))  # Array of 64 integers from 0 to 32 to represent visual encoding
 
     def __init__(self,
@@ -92,6 +94,8 @@ class Product(db.Model):
                  color_1_int,
                  color_2,
                  color_2_hex,
+                 color_3,
+                 color_3_hex,
                  siamese_64):
 
         self.img_hash = img_hash
@@ -117,6 +121,8 @@ class Product(db.Model):
         self.color_1_int = color_1_int
         self.color_2 = color_2
         self.color_2_hex = color_2_hex
+        self.color_3 = color_3
+        self.color_3_hex = color_3_hex
         self.siamese_64 = siamese_64
 
     def __repr__(self):
