@@ -604,6 +604,11 @@ def colorcat():
             # Gather responses from APIs using asyncio
             color_response, cat_response, siamese_response = loop.run_until_complete(asyncio.gather(*tasks))
 
+            if np.isnan(float(json.loads(siamese_response)['res']['siamese_64'][0])):
+                siamese_retry_task = send_file(siamese_api, post_image)
+                siamese_retry_response = loop.run_until_complete(siamese_retry_task)
+                siamese_response = siamese_retry_response
+
             img_cats_ai_txt = json.loads(cat_response)['res']['img_cats_ai_txt']
             color_1 = json.loads(color_response)['res']['color_1']
             color_1_hex = json.loads(color_response)['res']['color_1_hex']
