@@ -30,8 +30,8 @@ class Main extends React.Component {
                     <Route path='/register' component={Register} />
                     <Route path='/login' isAuth={this.props} component={Login} />
                     <Route path='/logout' isAuth={this.props.isAuth} component={Logout} />
-                    <Route path='/imagesearch' component={ImageSearch} />
-                    <Route path='/textsearch' isAuth={this.props.isAuth} component={TextSearch} />
+                    <Route path='/imagesearch' sex={this.props.sex} component={ImageSearch} />
+                    <Route path='/textsearch' sex={this.props.sex} isAuth={this.props.isAuth} component={TextSearch} />
                 </Switch>
             </main>
         )

@@ -24,6 +24,7 @@ class ImageSearch extends React.Component  {
         const { cookies } = this.props;
         this.state = {
             isAuth: cookies.get('isAuth'),
+            sex: cookies.get('sex'),
             email: '',
             pwd: '',
             files: [],
@@ -146,7 +147,7 @@ class ImageSearch extends React.Component  {
         let colorName = 'color_' + this.state.mainColor;
         let colorValue = this.state.colors[colorName].toString().replace(/\s+/g, '');
         let siameseValue = this.state.siamese_64.toString().replace(/\s+/g, '');
-        // color_data.append('color', colorValue);
+        let sex = this.state.sex;
 
         let catName = this.state.mainCat;
 
@@ -158,7 +159,10 @@ class ImageSearch extends React.Component  {
             mainColor: colorValue
         });
 
-        let searchString = window.location.origin + '/api/colorcatsearch?cat_ai_txt=' + catName + '&color_rgb=' + colorValue + '&siamese_64=' + siameseValue;
+        let searchString = window.location.origin + '/api/colorcatsearch?cat_ai_txt=' + catName
+            + '&color_rgb=' + colorValue
+            + '&siamese_64=' + siameseValue
+            + '&sex=' + sex;
 
         fetch(searchString, {
             method: 'get'
@@ -219,7 +223,7 @@ class ImageSearch extends React.Component  {
         // let mainColor = this.state.mainColor;
         let siam_64 = siamese_64.toString().replace(/\s+/g, '');
 
-        let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai + '&main_cat=' + this.state.mainCat + '&nr1_cat_sc=' + nr1_cat_sc + '&color_1=[' + mainColor + ']&siamese_64=[' + siam_64 + ']';
+        let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai + '&main_cat=' + this.state.mainCat + '&nr1_cat_sc=' + nr1_cat_sc + '&color_1=[' + mainColor + ']&siamese_64=[' + siam_64 + ']&sex=' + this.state.sex;
 
         console.log('search string: ', searchString);
 

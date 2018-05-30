@@ -2,14 +2,9 @@ from application import db
 from sqlalchemy.dialects.postgresql import ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from application import login
+# from application import login
 # import scipy.spatial as spatial
 # import numpy as np
-
-
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
 
 
 class User(UserMixin, db.Model):
@@ -20,11 +15,13 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     fb_id = db.Column(db.String, index=True, unique=True)
     favorites_ids = db.Column(ARRAY(db.String))
+    sex = db.Column(db.String)
 
-    def __init__(self, username, email, password, fb_id, favorites_ids):
+    def __init__(self, username, email, sex, password, fb_id, favorites_ids):
         self.password_hash = self.set_password(password)
         self.username = username
         self.email = email
+        self.sex = sex
         self.fb_id = fb_id
         self.favorites_ids = favorites_ids
 
@@ -37,7 +34,7 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         # return '<User {}>'.format(self.username)
-        return '<id=[{}] username=@{}@ favorites=[{}]>'.format(self.id, self.username, self.favorites_ids)
+        return '<id=[{}] username=@{}@ favorites=${}$ sex=*{}*>'.format(self.id, self.username, self.favorites_ids, self.sex)
 
 
 class Product(db.Model):

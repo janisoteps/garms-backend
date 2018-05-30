@@ -4,7 +4,7 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flask_migrate import Migrate
-from flask_login import LoginManager, login_required, current_user, login_user, logout_user
+# from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app
 import scipy.spatial as spatial
@@ -20,8 +20,8 @@ import aiohttp
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config.from_object(Config)
-login = LoginManager(app)
-login.login_view = 'login'
+# login = LoginManager(app)
+# login.login_view = 'login'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -124,16 +124,32 @@ def index(path):
     return render_template('index.html')
 
 
-@app.route("/api/register")
+@app.route('/api/register', methods=['POST'])
 def register():
-    return create_user()
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        email = data['email']
+        pwd = data['pwd']
+        sex = data['sex']
+        username = data['username']
+        fb_id = str(np.random.random() * 1000)
 
+        user = User.query.filter_by(email=email).first()
 
-@app.route('/api/authping', methods=['GET'])
-def loginsess():
-    if request.method == 'GET':
-        if current_user.is_authenticated:
+        if user is None:
+            reg_submission = User(
+                username=username,
+                email=email,
+                sex=sex,
+                password=pwd,
+                fb_id=fb_id,
+                favorites_ids=''
+            )
+            db.session.add(reg_submission)
+            db.session.commit()
+
             return json.dumps(True)
+
         else:
             return json.dumps(False)
 
@@ -148,13 +164,28 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user is None or not user.check_password(pwd):
             return json.dumps(False)
-        login_user(user, remember=True)
-        return json.dumps(True)
+
+        else:
+            user_str = str(user)
+            user_id = re.search('(?<=id=\[).{0,8}(?=\])', user_str)[0]
+            username = re.search('(?<=username=\@).{0,64}(?=\@)', user_str)[0]
+            favorites = re.search('(?<=favorites=\$).{0,64}(?=\$)', user_str)[0]
+            sex = re.search('(?<=sex=\*).{0,64}(?=\*)', user_str)[0]
+
+            user_dict = {
+                'user_id': user_id,
+                'username': username,
+                'favorites': favorites,
+                'sex': sex
+            }
+
+            res = jsonify(auth=True, res=user_dict)
+
+            return res
 
 
 @app.route('/api/logout')
 def logout():
-    logout_user()
     return json.dumps('OK')
 
 
@@ -281,12 +312,13 @@ def search():
         # color_2 = request.args.get('color_2')
         siamese_64 = request.args.get('siamese_64').strip('\'[]').split(',')
         siamese_64 = [int(float(i)) for i in siamese_64]
+        sex = request.args.get('sex')
         if color_1 is None:
             return json.dumps('BAD REQUEST')
 
         # Start off by doing the initial query looking for categories
         id_list = db.session.query(Product).filter(
-            (Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc) | (Product.img_cats_sc_txt.any(main_cat))).order_by(func.random()).limit(
+            ((Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc) | (Product.img_cats_sc_txt.any(main_cat))) & (Product.sex == sex)).order_by(func.random()).limit(
             1000).all()
 
         # Declare Marshmallow schema so that SqlAlchemy object can be serialized
@@ -645,8 +677,9 @@ def colorcatsearch():
         color_rgb = request.args.get('color_rgb').strip('\'[]').split(',')
         siamese_64 = request.args.get('siamese_64').strip('\'[]').split(',')
         siamese_64 = [int(float(i)) for i in siamese_64]
+        sex = request.args.get('sex')
 
-        id_list = db.session.query(Product).filter(Product.img_cats_sc_txt.any(cat_ai_txt)).order_by(
+        id_list = db.session.query(Product).filter(Product.img_cats_sc_txt.any(cat_ai_txt) & (Product.sex == sex)).order_by(
             func.random()).limit(1000).all()
 
         color_dist_list = []

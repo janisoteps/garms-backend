@@ -67,7 +67,7 @@ class Login extends React.Component  {
           </h2>
           <br></br>
           <h3>
-            Start Eploring
+            Start Exploring
           </h3>
         </div>
       )} />
