@@ -20,34 +20,25 @@ class SearchChoice extends React.Component {
                 <div>
                     <div className="search-choice">
                         <Route render={({ history }) => (
-                            <Paper style={{
-                                height: '20vh',
-                                width: '80vw',
-                                maxWidth: '600px',
-                                backgroundColor: '#7c5e93',
-                                color: 'white',
-                                display: 'inline-block',
-                                paddingTop: 'calc(10vh - 20px)',
-                                cursor: 'pointer'
-                            }} zDepth={2} onClick={() => { history.push('/imagesearch') }}>
-                                <h2>Take / Upload Photo</h2>
-                            </Paper>
+                            <div
+                                className="search-choice-button"
+                                onClick={() => { history.push('/imagesearch') }}>
+                                <div className="search-choice-title">
+                                    <div className="image-search-icon"></div>
+                                    <div className="search-choice-text">Search from photo</div>
+                                </div>
+                            </div>
                         )} />
-                    </div>
-                    <div className="search-choice">
+
                         <Route render={({ history }) => (
-                            <Paper style={{
-                                height: '20vh',
-                                width: '80vw',
-                                maxWidth: '600px',
-                                backgroundColor: '#5f5d92',
-                                color: 'white',
-                                display: 'inline-block',
-                                paddingTop: 'calc(10vh - 20px)',
-                                cursor: 'pointer'
-                            }} zDepth={2} onClick={() => { history.push('/textsearch') }}>
-                                <h2>Type Your Search</h2>
-                            </Paper>
+                            <div
+                                className="search-choice-button"
+                                onClick={() => { history.push('/textsearch') }}>
+                                <div className="search-choice-title">
+                                    <div className="text-search-icon"></div>
+                                    <div className="search-choice-text">Type your search</div>
+                                </div>
+                            </div>
                         )} />
                     </div>
                 </div>
@@ -58,5 +49,3 @@ class SearchChoice extends React.Component {
 
 export default SearchChoice;
 
-
-{/*<RaisedButton buttonStyle={{height: '70px'}} fullWidth={true} primary={true} className="home-button" label="Take / Upload Photo" onClick={() => { history.push('/imagesearch') }} />*/}

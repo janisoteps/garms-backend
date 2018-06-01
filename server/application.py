@@ -136,6 +136,7 @@ def register():
 
         user = User.query.filter_by(email=email).first()
 
+        # If no such email exists in DB create a new user submission
         if user is None:
             reg_submission = User(
                 username=username,
@@ -157,7 +158,7 @@ def register():
 @app.route('/api/login', methods=['POST'])
 def login():
     if request.method == 'POST':
-        print(str(request))
+        # print(str(request))
         data = request.get_json(force=True)
         email = data['email']
         pwd = data['pwd']
@@ -167,16 +168,19 @@ def login():
 
         else:
             user_str = str(user)
-            user_id = re.search('(?<=id=\[).{0,8}(?=\])', user_str)[0]
-            username = re.search('(?<=username=\@).{0,64}(?=\@)', user_str)[0]
-            favorites = re.search('(?<=favorites=\$).{0,64}(?=\$)', user_str)[0]
-            sex = re.search('(?<=sex=\*).{0,64}(?=\*)', user_str)[0]
-
+            user_id = re.search(r'(?<=id=\[).{0,8}(?=\])', user_str)[0]
+            username = re.search(r'(?<=username=#).{0,64}(?=#)', user_str)[0]
+            favorites = re.search(r'(?<=favorites=\$).{0,99999}(?=\$)', user_str)[0]
+            # print(favorites)
+            sex = re.search(r'(?<=sex=\*).{0,64}(?=\*)', user_str)[0]
+            user_email = re.search(r'(?<=email=%).{0,64}(?=%)', user_str)[0]
+            # print(username)
             user_dict = {
                 'user_id': user_id,
                 'username': username,
                 'favorites': favorites,
-                'sex': sex
+                'sex': sex,
+                'email': user_email
             }
 
             res = jsonify(auth=True, res=user_dict)
@@ -184,14 +188,53 @@ def login():
             return res
 
 
+@app.route("/api/addfav", methods=['POST'])
+def addfav():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # print(data)
+        img_hash = data['img_hash']
+        if len(img_hash) == 40:
+            user_email = data['email']
+
+            user = User.query.filter_by(email=user_email).first()
+
+            user.favorites_ids = list(user.favorites_ids)
+            user.favorites_ids.append(img_hash)
+
+            db.session.commit()
+            return json.dumps(True)
+
+
+@app.route("/api/favorites", methods=['GET'])
+def favorites():
+    if request.method == 'GET':
+        email = request.args.get('email')
+
+        user = User.query.filter_by(email=email).first()
+        user_str = str(user)
+        favs = re.search(r'(?<=favorites=\$).{0,99999}(?=\$)', user_str)[0]
+        favs = favs.replace(" ", "").strip('[]').split(',')
+        favs = [i.strip('\'') for i in favs]
+
+        # Declare Marshmallow schema so that SqlAlchemy object can be serialized
+        product_schema = ProductSchema()
+
+        result_list = []
+        for img_hash in favs:
+            print('Search img hash: ', str(img_hash))
+            prod_search = db.session.query(Product).filter((Product.img_hash == img_hash)).first()
+            prod_serial = product_schema.dump(prod_search)
+            result_list.append(prod_serial)
+
+        res = jsonify(res=result_list)
+
+        return res
+
+
 @app.route('/api/logout')
 def logout():
     return json.dumps('OK')
-
-
-@app.route("/api/favs")
-def favs():
-    return 'Here will be favs'
 
 
 # Upload new product to database
@@ -396,14 +439,6 @@ def search():
             prod_serial = product_schema.dump(prod_search)
             result_list.append(prod_serial)
 
-        # serialized = product_schema.dump(query)
-        # result = product_schema.dump(query)
-        # names = query.return_name()
-        # for match in cat_match_list:
-        #     dist = sc.spatial.distance.euclidean(np.array(match.color_1), np.array(color_1), w=None)
-
-        # print(BColors.WARNING + 'Marshmallow Result: ' + BColors.ENDC + str(result_list))
-        # response_list = list(str(query))
         # Make it HTTP friendly
         res = jsonify(res=result_list)
         # print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
@@ -416,6 +451,7 @@ def search():
 def text():
     if request.method == 'GET':
         search_string = request.args.get('string')
+        sex = request.args.get('sex')
 
         print('Text search with string: ', str(search_string))
         # cleaned_string = search_string.translate(' ', "!@£$%^&*()<>?/|~`.,:;#+=_")
@@ -426,41 +462,33 @@ def text():
 
         string_list_clean = [e for e in string_list if e not in linking_words]
 
-        # string_list = cleaned_string.split()
-        # print(string_list_clean)
         color_word_dict = color_check(string_list_clean)
 
         print(color_word_dict)
         word_list = color_word_dict['words']
         color_list = color_word_dict['colors']
 
-        # id_list = db.session.query(Product).filter(
-        #     (func.lower(Product.name).contains(word_list[0]))).order_by(
-        #     func.random()).limit(50).all()
-
         id_list = []
         if 2 > len(word_list) > 0 and len(color_list) > 0:
             print('1 word and is color')
-            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[-1])) & (
+            id_list += db.session.query(Product).filter((Product.sex == sex) & (func.lower(Product.name).contains(word_list[-1])) & (
                 func.lower(Product.color_name).contains(color_list[0]))).order_by(func.random()).limit(50).all()
-            # id_list += db.session.query(Product).filter((Product.img_cats_sc_txt.contains(word_list[0])) & (
-            #     Product.color_name.contains(color_list[0]))).order_by(func.random()).limit(50).all()
 
         elif 3 > len(word_list) > 1 and len(color_list) > 0:
             print('2 words and is color')
-            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[-1])) & (
+            id_list += db.session.query(Product).filter((Product.sex == sex) & (func.lower(Product.name).contains(word_list[-1])) & (
                 func.lower(Product.name).contains(word_list[1])) & (
                                                             func.lower(Product.color_name).contains(
                                                                 color_list[0]))).order_by(func.random()).limit(50).all()
 
         elif 3 > len(word_list) > 1:
             print('2 words, no color')
-            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
+            id_list += db.session.query(Product).filter((Product.sex == sex) & (func.lower(Product.name).contains(word_list[0])) & (
                 func.lower(Product.name).contains(word_list[1]))).order_by(func.random()).limit(50).all()
 
         elif 4 > len(word_list) > 2:
             print('3 words, no color')
-            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[0])) & (
+            id_list += db.session.query(Product).filter((Product.sex == sex) & (func.lower(Product.name).contains(word_list[0])) & (
                 func.lower(Product.name).contains(word_list[1])) & (
                                                             func.lower(Product.name).contains(word_list[2]))).order_by(
                 func.random()).limit(50).all()
@@ -471,14 +499,14 @@ def text():
             #         func.random()).limit(30).all()
         elif 2 > len(word_list) > 0:
             print('1 word, no color')
-            id_list += db.session.query(Product).filter((func.lower(Product.name).contains(word_list[-1]))).order_by(func.random()).limit(50).all()
+            id_list += db.session.query(Product).filter((Product.sex == sex) & (func.lower(Product.name).contains(word_list[-1]))).order_by(func.random()).limit(50).all()
 
         elif len(color_list) > 0:
             print('only color')
             color_len = len(color_list)
             for k in range(0, color_len):
                 id_list += db.session.query(Product).filter(
-                    (func.lower(Product.color_name).contains(color_list[k]))).order_by(
+                    (Product.sex == sex) & (func.lower(Product.color_name).contains(color_list[k]))).order_by(
                     func.random()).limit(30).all()
 
         else:

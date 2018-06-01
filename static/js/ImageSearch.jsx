@@ -3,8 +3,8 @@ import React from "react";
 require('../css/garms.css');
 require('../css/ball-atom.css');
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import { withCookies, Cookies } from 'react-cookie';
-import { instanceOf } from 'prop-types';
+// import { withCookies, Cookies } from 'react-cookie';
+// import { instanceOf } from 'prop-types';
 // import { Route } from 'react-router-dom';
 import Dropzone from 'react-dropzone';
 // const pica = require('pica')();
@@ -15,17 +15,17 @@ import RaisedButton from 'material-ui/RaisedButton';
 
 //Component to search for products using an uploaded image
 class ImageSearch extends React.Component  {
-    static propTypes = {
-        cookies: instanceOf(Cookies).isRequired
-    };
+    // static propTypes = {
+    //     cookies: instanceOf(Cookies).isRequired
+    // };
 
     constructor(props) {
         super(props);
-        const { cookies } = this.props;
+        // const { cookies } = this.props;
         this.state = {
-            isAuth: cookies.get('isAuth'),
-            sex: cookies.get('sex'),
-            email: '',
+            isAuth: this.props.isAuth,
+            sex: this.props.sex,
+            email: this.props.email,
             pwd: '',
             files: [],
             results: [],
@@ -261,6 +261,7 @@ class ImageSearch extends React.Component  {
     }
 
     render () {
+        // console.log('User email: ', this.state.email);
 
         // Element that shows preview of just uploaded photo
         let preview = this.state.files.length > 0 ? (
@@ -279,9 +280,12 @@ class ImageSearch extends React.Component  {
                         preview
                     ) : (
                         <section>
-                            <div className="dropzone">
+                            <div className="image-search-area">
                                 <Dropzone className="image-dropzone" onDrop={(files) => this.onDrop(files)} accept="image/jpeg">
-                                    <div className="drop-text"><h1>Drop image here or click to select image to upload</h1></div>
+                                    <div className="image-search-title">
+                                        <div className="image-search-icon-alt"></div>
+                                        <div className="search-choice-text">Drop image here or tap to select image</div>
+                                    </div>
                                 </Dropzone>
                             </div>
                         </section>
@@ -313,8 +317,9 @@ class ImageSearch extends React.Component  {
         // Or show a response saying that image wasn't recognized
         //                 <ProductResults simImgSearch={() => { this.similarImageSearch() }} results={this.state.results}/>
         if(this.state.results){
+            // console.log('ImageSearch email: ', this.state.email);
             var searchOrResults = this.state.results.length > 0 ? (
-                <ProductResults simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) }} results={this.state.results}/>
+                <ProductResults email={this.state.email} simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) }} results={this.state.results}/>
             ) : (
                 searchForm
             );
@@ -446,4 +451,5 @@ class ImageSearch extends React.Component  {
     }
 }
 
-export default withCookies(ImageSearch);
+// export default withCookies(ImageSearch);
+export default ImageSearch;

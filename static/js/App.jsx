@@ -18,7 +18,9 @@ class App extends React.Component {
         super(props);
         const {cookies} = this.props;
         this.state = {
-            isAuth: cookies.get('isAuth')
+            isAuth: cookies.get('isAuth'),
+            sex: cookies.get('sex'),
+            email: cookies.get('email')
         };
         this.handleLoginChange = this.handleLoginChange.bind(this);
         this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
@@ -62,20 +64,28 @@ class App extends React.Component {
                 cookies.set('isAuth', data['auth'], {path: '/'});
                 cookies.set('sex', data['res']['sex'], {path: '/'});
                 cookies.set('username', data['res']['username'], {path: '/'});
+                cookies.set('email', data['res']['email'], {path: '/'});
                 this.setState({
                     isAuth: data['auth'],
                     sex: data['res']['sex'],
                     username: data['res']['username'],
+                    email: data['res']['email'],
                     pwd: ''
                 });
-                return
+                window.location.reload();
             });
     };
 
     render() {
-        // console.log(this.state);
+        // console.log('App.jsx state: ', this.state);
+        let isUserAuth = this.state.isAuth;
         const body = this.state.isAuth == true || this.state.isAuth == "true" ? (
-            <Main isAuth={this.state.isAuth} sex={this.state.sex} />
+            <Main
+                isAuth={this.state.isAuth}
+                sex={this.state.sex}
+                username={this.state.username}
+                email={this.state.email}
+            />
         ) : (
             <div className="register-form">
                 <p>Log in your Garms account</p>
@@ -100,7 +110,7 @@ class App extends React.Component {
         return (
             <MuiThemeProvider>
                 <div>
-                    <Header isAuth={this.state.isAuth}/>
+                    <Header isAuth={isUserAuth}/>
                     <div className="content-wrapper">
                         {body}
                     </div>

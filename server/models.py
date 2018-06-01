@@ -34,7 +34,8 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         # return '<User {}>'.format(self.username)
-        return '<id=[{}] username=@{}@ favorites=${}$ sex=*{}*>'.format(self.id, self.username, self.favorites_ids, self.sex)
+        return '<id=[{}] username=#{}# favorites=${}$ sex=*{}* email=%{}%>'\
+            .format(self.id, self.username, self.favorites_ids, self.sex, self.email)
 
 
 class Product(db.Model):

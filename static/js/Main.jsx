@@ -7,6 +7,7 @@ import Logout from './Logout'
 import SearchChoice from './SearchChoice'
 import ImageSearch from './ImageSearch'
 import TextSearch from './TextSearch'
+import Profile from './Profile'
 
 
 // The Main component renders one of the provided
@@ -22,16 +23,40 @@ class Main extends React.Component {
     }
 
     render() {
-        console.log('Main isAuth: ',this.props);
+        // console.log('Main isAuth: ',this.props.isAuth);
+        // console.log('Main sex: ',this.props.sex);
+        // console.log('Main email: ', this.props.email);
+        console.log('Main username: ', this.props.username);
         return (
             <main>
                 <Switch>
                     <Route exact path='/' component={SearchChoice} />
                     <Route path='/register' component={Register} />
-                    <Route path='/login' isAuth={this.props} component={Login} />
-                    <Route path='/logout' isAuth={this.props.isAuth} component={Logout} />
-                    <Route path='/imagesearch' sex={this.props.sex} component={ImageSearch} />
-                    <Route path='/textsearch' sex={this.props.sex} isAuth={this.props.isAuth} component={TextSearch} />
+                    <Route path='/login' component={Login} />
+                    <Route path='/logout' component={Logout} />
+                    <Route path='/imagesearch' render={(props) => <ImageSearch
+                        {...props}
+                        sex={this.props.sex}
+                        isAuth={this.props.isAuth}
+                        email={this.props.email}
+                        />}
+                    />
+                    <Route path='/textsearch'
+                           render={(props) => <TextSearch
+                           {...props} sex={this.props.sex}
+                           isAuth={this.props.isAuth}
+                           email={this.props.email}
+                        />}
+                    />
+                    <Route path='/profile'
+                           render={(props) => <Profile
+                               {...props}
+                               username={this.props.username}
+                               sex={this.props.sex}
+                               isAuth={this.props.isAuth}
+                               email={this.props.email}
+                           />}
+                    />
                 </Switch>
             </main>
         )

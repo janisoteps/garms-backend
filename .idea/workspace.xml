@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b28208ea-fd2b-4d7f-ad3f-4bda46883a6b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/server/.idea/workspace.xml" afterPath="$PROJECT_DIR$/server/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/server/application.py" afterPath="$PROJECT_DIR$/server/application.py" />
       <change beforePath="$PROJECT_DIR$/server/models.py" afterPath="$PROJECT_DIR$/server/models.py" />
@@ -10,7 +9,14 @@
       <change beforePath="$PROJECT_DIR$/static/css/garms.css" afterPath="$PROJECT_DIR$/static/css/garms.css" />
       <change beforePath="$PROJECT_DIR$/static/dist/bundle.js" afterPath="$PROJECT_DIR$/static/dist/bundle.js" />
       <change beforePath="$PROJECT_DIR$/static/dist/main.css" afterPath="$PROJECT_DIR$/static/dist/main.css" />
+      <change beforePath="$PROJECT_DIR$/static/js/App.jsx" afterPath="$PROJECT_DIR$/static/js/App.jsx" />
+      <change beforePath="$PROJECT_DIR$/static/js/Header.jsx" afterPath="$PROJECT_DIR$/static/js/Header.jsx" />
+      <change beforePath="$PROJECT_DIR$/static/js/ImageSearch.jsx" afterPath="$PROJECT_DIR$/static/js/ImageSearch.jsx" />
+      <change beforePath="$PROJECT_DIR$/static/js/Logout.jsx" afterPath="$PROJECT_DIR$/static/js/Logout.jsx" />
+      <change beforePath="$PROJECT_DIR$/static/js/Main.jsx" afterPath="$PROJECT_DIR$/static/js/Main.jsx" />
       <change beforePath="$PROJECT_DIR$/static/js/ProductResults.jsx" afterPath="$PROJECT_DIR$/static/js/ProductResults.jsx" />
+      <change beforePath="$PROJECT_DIR$/static/js/SearchChoice.jsx" afterPath="$PROJECT_DIR$/static/js/SearchChoice.jsx" />
+      <change beforePath="$PROJECT_DIR$/static/js/TextSearch.jsx" afterPath="$PROJECT_DIR$/static/js/TextSearch.jsx" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -24,8 +30,8 @@
       <file leaf-file-name="application.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/application.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-327">
-              <caret line="214" column="13" lean-forward="true" selection-start-line="214" selection-start-column="13" selection-end-line="214" selection-end-column="13" />
+            <state relative-caret-position="447">
+              <caret line="216" column="36" lean-forward="false" selection-start-line="216" selection-start-column="36" selection-end-line="216" selection-end-column="36" />
               <folding>
                 <element signature="e#16#27#0" expanded="true" />
               </folding>
@@ -80,8 +86,8 @@
       <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="538">
-              <caret line="70" column="49" lean-forward="false" selection-start-line="70" selection-start-column="49" selection-end-line="70" selection-end-column="49" />
+            <state relative-caret-position="133">
+              <caret line="43" column="12" lean-forward="false" selection-start-line="43" selection-start-column="4" selection-end-line="43" selection-end-column="12" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
               </folding>
@@ -1388,7 +1394,7 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="136" />
+    <option name="x" value="49" />
     <option name="y" value="32" />
     <option name="width" value="1540" />
     <option name="height" value="867" />
@@ -1408,7 +1414,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -1431,6 +1436,7 @@
         </subPane>
       </pane>
       <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1493,7 +1499,7 @@
     <option name="totallyTimeSpent" value="249000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="136" y="32" width="1540" height="867" extended-state="0" />
+    <frame x="49" y="32" width="1540" height="867" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -1612,13 +1618,7 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/__init__.py" />
-    <entry file="file://$PROJECT_DIR$/static/js/TestList.jsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/TestList.jsx" />
     <entry file="file://$PROJECT_DIR$/static/js/index.jsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1890,8 +1890,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="538">
-          <caret line="70" column="49" lean-forward="false" selection-start-line="70" selection-start-column="49" selection-end-line="70" selection-end-column="49" />
+        <state relative-caret-position="133">
+          <caret line="43" column="12" lean-forward="false" selection-start-line="43" selection-start-column="4" selection-end-line="43" selection-end-column="12" />
           <folding>
             <element signature="e#0#26#0" expanded="true" />
           </folding>
@@ -1900,8 +1900,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/application.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-327">
-          <caret line="214" column="13" lean-forward="true" selection-start-line="214" selection-start-column="13" selection-end-line="214" selection-end-column="13" />
+        <state relative-caret-position="447">
+          <caret line="216" column="36" lean-forward="false" selection-start-line="216" selection-start-column="36" selection-end-line="216" selection-end-column="36" />
           <folding>
             <element signature="e#16#27#0" expanded="true" />
           </folding>

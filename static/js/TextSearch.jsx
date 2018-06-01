@@ -16,10 +16,11 @@ class TextSearch extends React.Component  {
 
     constructor(props) {
         super(props);
-        // const {cookies} = this.props;
+        console.log('constructor sex: ', this.props.sex);
         this.state = {
             isAuth: this.props.isAuth,
-            email: '',
+            sex: this.props.sex,
+            email: this.props.email,
             pwd: '',
             files: [],
             results: [],
@@ -73,7 +74,7 @@ class TextSearch extends React.Component  {
 
         console.log('Main cat: ', mainCat, ' , Img cat sc txt: ', img_cat_sc_txt);
 
-        let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai + '&main_cat=' + mainCat + '&nr1_cat_sc=' + nr1_cat_sc + '&color_1=[' + color_1 + ']&siamese_64=[' + siam_64 + ']';
+        let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai + '&main_cat=' + mainCat + '&nr1_cat_sc=' + nr1_cat_sc + '&color_1=[' + color_1 + ']&siamese_64=[' + siam_64 + ']&sex=' + this.state.sex;
 
         // console.log('search string: ', searchString);
 
@@ -116,7 +117,7 @@ class TextSearch extends React.Component  {
         inputArray.forEach(word => searchString += '+' + word);
 
         console.log('String search with: ', searchString);
-        fetch(window.location.origin + '/api/text?string=' + searchString, {
+        fetch(window.location.origin + '/api/text?string=' + searchString + '&sex=' + this.state.sex, {
             method: 'get'
         }).then(function(response) { return response.json(); })
             .then(data => {
@@ -196,7 +197,7 @@ class TextSearch extends React.Component  {
                     <NoResults />
                     {
                         this.state.results.length > 0 ? (
-                            <ProductResults simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) }} results={this.state.results}/>
+                            <ProductResults email={this.state.email} simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) }} results={this.state.results}/>
                         ) : (
                             SearchBox
                         )

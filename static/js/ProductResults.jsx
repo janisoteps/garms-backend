@@ -8,11 +8,14 @@ import Paper from 'material-ui/Paper';
 class ProductResults extends React.Component  {
     constructor(props) {
         super(props);
-        this.simImSrc = this.simImSrc.bind(this);
         this.state = {
-            pickerExpanded: 0
+            pickerExpanded: 0,
+            email: this.props.email,
+            faveDrawerWidth: '64px'
         };
         this.expandDrawer = this.expandDrawer.bind(this);
+        this.simImSrc = this.simImSrc.bind(this);
+        this.addToFavs = this.addToFavs.bind(this);
     }
 
     simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64){
@@ -35,10 +38,32 @@ class ProductResults extends React.Component  {
         }
     };
 
+    addToFavs = (img_hash) => {
+        let email = this.state.email;
+        // console.log('Add faves email: ', email);
+        fetch(window.location.origin + '/api/addfav', {
+            method: 'post',
+            body: JSON.stringify({email: email, img_hash: img_hash})
+        }).then(function(response) { return response.json(); })
+            .then(data => {
+                console.log(data);
+                this.setState({
+                    faveDrawerWidth: '244px'
+                });
+
+                setTimeout(() =>{
+                    this.setState({
+                        faveDrawerWidth: '64px'
+                    });
+                }, 2000);
+            });
+    };
+
     render () {
         let tiles = this.props.results.map(product => {
             // console.log('Product data passed to result list: ', product[0]);
             let productInfo = product[0];
+            let img_hash = productInfo.img_hash;
             let brand = productInfo.brand;
             let color_1 = productInfo.color_1;
             let color_1_hex = productInfo.color_1_hex;
@@ -130,6 +155,7 @@ class ProductResults extends React.Component  {
 
             let pickerDrawerStyle = {
                 height: '64px',
+                transition: '300ms ease-in-out',
                 width: pickerDrawerWidth,
                 borderRadius: '32px',
                 backgroundColor: '#FFFFFF',
@@ -140,8 +166,26 @@ class ProductResults extends React.Component  {
                 overflow: 'hidden'
             };
 
+            let faveDrawerStyle = {
+                height: '64px',
+                transition: 'width 300ms ease-in-out',
+                width: this.state.faveDrawerWidth,
+                borderRadius: '32px',
+                backgroundColor: '#FFFFFF',
+                marginTop: '-230px',
+                right: '-15px',
+                position: 'absolute',
+                textAlign: 'left',
+                overflow: 'hidden',
+                lineHeight: '64px',
+                verticalAlign: 'middle',
+                fontSize: '1.5rem',
+                paddingLeft: '10px',
+                paddingTop: '2px'
+            };
+
             let ColorPicker = () => {
-              return (
+                return (
                   <div>
                       <div style={pickerDrawerStyle}>
                           <div
@@ -156,7 +200,7 @@ class ProductResults extends React.Component  {
                       </div>
                       <div style={pickerStyle} onClick={() => { this.expandDrawer(id, this.state.pickerExpanded); }}></div>
                   </div>
-              )
+                )
             };
 
             return (
@@ -165,11 +209,10 @@ class ProductResults extends React.Component  {
                     <div className="product-brand"><p>{brand} from {shop}</p></div>
                     <img className="product-image" src={img_url} />
                     <div className={sale ? 'product-price-sale' : 'product-price'}>{sale ? currency+saleprice+', was '+currency+price : currency+price}</div>
-                    <div className="add-to-favorites" ></div>
+                    <div style={faveDrawerStyle} >Added to faves</div>
+                    <div className="add-to-favorites" onClick={() => { this.addToFavs(img_hash); }}></div>
                     <div className="search-similar" onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64); }}></div>
-                    {/*<div className="color-picker"></div>*/}
                     <ColorPicker/>
-                    {/*onClick={(nr1_cat_ai, nr1_cat_sc, color_1, siamese_64) => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, color_1, siamese_64); }}*/}
                 </Paper>
             );
         });
