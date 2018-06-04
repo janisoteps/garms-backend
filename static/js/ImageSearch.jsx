@@ -34,7 +34,8 @@ class ImageSearch extends React.Component  {
             mainColorNr: 1,
             cats: [],
             mainCat: '',
-            siamese_64: []
+            siamese_64: [],
+            sexPickerWidth: '56px'
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -45,6 +46,8 @@ class ImageSearch extends React.Component  {
         this.getColorsCats = this.getColorsCats.bind(this);
         this.colorCatImageSearch = this.colorCatImageSearch.bind(this);
         this.setColorCat = this.setColorCat.bind(this);
+        this.changeSex = this.changeSex.bind(this);
+        this.expandSexSelector = this.expandSexSelector.bind(this);
     }
 
     // Handles login input change
@@ -212,9 +215,9 @@ class ImageSearch extends React.Component  {
 
     // Sends similar product search request to server if user clicks on magnifying glass button
     // Updates results state with the response
-    similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64){
+    similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id){
 
-        console.log('Similar image search launched');
+        // console.log('Similar image search launched, prod id: ', prod_id);
         this.setState({
             loading: true
         });
@@ -223,7 +226,13 @@ class ImageSearch extends React.Component  {
         // let mainColor = this.state.mainColor;
         let siam_64 = siamese_64.toString().replace(/\s+/g, '');
 
-        let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai + '&main_cat=' + this.state.mainCat + '&nr1_cat_sc=' + nr1_cat_sc + '&color_1=[' + mainColor + ']&siamese_64=[' + siam_64 + ']&sex=' + this.state.sex;
+        let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai
+            + '&main_cat=' + this.state.mainCat
+            + '&nr1_cat_sc=' + nr1_cat_sc
+            + '&color_1=[' + mainColor
+            + ']&siamese_64=[' + siam_64
+            + ']&sex=' + this.state.sex
+            + '&id=' + prod_id;
 
         console.log('search string: ', searchString);
 
@@ -260,6 +269,30 @@ class ImageSearch extends React.Component  {
         }
     }
 
+    changeSex(sex){
+        this.props.changeSex(sex);
+        this.setState({
+            sex: sex
+        });
+        // this.expandSexSelector();
+    }
+
+    expandSexSelector(){
+        let currentWidth = this.state.sexPickerWidth;
+
+        console.log('Expanding sex selector ', currentWidth);
+        if(currentWidth === '56px'){
+            this.setState({
+                sexPickerWidth: '270px'
+            });
+        } else {
+            this.setState({
+                sexPickerWidth: '56px'
+            });
+        }
+    }
+
+    // -------------------------- MAIN RENDER FUNCTION ----------------------------
     render () {
         // console.log('User email: ', this.state.email);
 
@@ -319,7 +352,7 @@ class ImageSearch extends React.Component  {
         if(this.state.results){
             // console.log('ImageSearch email: ', this.state.email);
             var searchOrResults = this.state.results.length > 0 ? (
-                <ProductResults email={this.state.email} simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64) }} results={this.state.results}/>
+                <ProductResults email={this.state.email} simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, id) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, id) }} results={this.state.results}/>
             ) : (
                 searchForm
             );
@@ -427,6 +460,93 @@ class ImageSearch extends React.Component  {
             }
         };
 
+        let SexSelector = () => {
+            let sexPickerStyle = {
+                position: 'fixed',
+                right: '0',
+                top: '70px',
+                overflow: 'hidden',
+                transition: 'width 300ms ease-in-out',
+                width: this.state.sexPickerWidth,
+                height: '56px',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '28px 0px 0px 28px',
+                boxShadow: '1px 1px 3px 0 rgba(0, 0, 0, 0.4)'
+            };
+
+            let selectorHiderStyle = {
+                position: 'fixed',
+                right: '0',
+                top: '70px',
+                overflow: 'hidden',
+                transition: 'width 300ms ease-in-out',
+                width: '56px',
+                height: '56px',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '28px 0px 0px 28px'
+            };
+
+            let sexOptionStyle1 = {
+                display: 'inline-block',
+                lineHeight: '33px',
+                height: '56px',
+                verticalAlign: 'middle',
+                borderRadius: '28px',
+                cursor: 'pointer',
+                padding: this.state.sex !== 'women' ? '10px' : '5px',
+                borderWidth: this.state.sex === 'women' && '5px',
+                borderColor: this.state.sex === 'women' && '#7f649c',
+                borderStyle: this.state.sex === 'women' && 'solid'
+            };
+
+            let sexOptionStyle2 = {
+                display: 'inline-block',
+                lineHeight: '33px',
+                height: '56px',
+                verticalAlign: 'middle',
+                borderRadius: '28px',
+                cursor: 'pointer',
+                padding: this.state.sex !== 'men' ? '10px' : '5px',
+                borderWidth: this.state.sex === 'men' && '5px',
+                borderColor: this.state.sex === 'men' && '#7f649c',
+                borderStyle: this.state.sex === 'men' && 'solid'
+            };
+
+            let sexOptionStyle3 = {
+                display: 'inline-block',
+                lineHeight: '33px',
+                height: '56px',
+                verticalAlign: 'middle',
+                borderRadius: '28px',
+                cursor: 'pointer',
+                padding: this.state.sex !== '' ? '10px' : '5px',
+                borderWidth: this.state.sex === '' && '5px',
+                borderColor: this.state.sex === '' && '#7f649c',
+                borderStyle: this.state.sex === '' && 'solid'
+            };
+
+            console.log('Image search sex: ', this.state.sex);
+
+            return(
+                <div>
+                    <div style={sexPickerStyle}>
+                        <div style={sexOptionStyle1} onClick={() => {this.changeSex('women')}}>women</div>
+                        <div style={sexOptionStyle2} onClick={() => {this.changeSex('men')}}>men</div>
+                        <div style={sexOptionStyle3} onClick={() => {this.changeSex('')}}>both</div>
+                    </div>
+                    <div style={selectorHiderStyle}></div>
+                    <div className="sex-selector" onClick={this.expandSexSelector}></div>
+                </div>
+            )
+        };
+
+        let CatSelector = () => {
+
+            return(
+                <div className="cat-selector"></div>
+            )
+        };
+
         // Main render
         return (
             <MuiThemeProvider>
@@ -434,6 +554,10 @@ class ImageSearch extends React.Component  {
                     {searchOrResults}
 
                     <ColorChoiceModal />
+
+                    <SexSelector />
+
+                    <CatSelector />
 
                     {(this.state.loading === true) && (
                         <div className="overlay">

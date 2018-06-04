@@ -23,6 +23,7 @@
     height: 50px;
     z-index: 500;
     text-align: right;
+    background-color: rgba(255, 255, 255, 0.7);
 }
 
 .logo {
@@ -179,6 +180,28 @@
     padding-bottom: 15px;
     display: inline-block;
     position: relative;
+}
+
+.profile-product-tile{
+    text-align: center;
+    margin: 2vw;
+    width: 45vw;
+    max-width: 620px;
+    padding-top: 15px;
+    padding-bottom: 5px;
+    display: inline-block;
+    position: relative;
+    font-size: 1rem;
+}
+
+.profile-product-tile a{
+    font-size: 1rem;
+    color: #5f5d92;
+}
+
+.product-brand-profile{
+    font-size: 0.8rem;
+    color: #5f5d92;
 }
 
 .result-pane{
@@ -380,4 +403,49 @@
 
 .login-button{
     margin-bottom: 20px;
+}
+
+.greeting-text{
+    margin: 10px;
+}
+
+.profile-product-delete{
+    width: 30px;
+    height: 30px;
+    background: #ffffff url('../images/baseline-delete_forever-24px.svg') no-repeat center;
+    background-size: 24px 24px;
+    border-radius: 15px;
+    position: absolute;
+    margin-top: -25px;
+    right: -10px;
+    cursor: pointer;
+    box-shadow: 1px -1px 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+.sex-selector{
+    position: fixed;
+    right: 0;
+    top: 70px;
+    width: 56px;
+    height: 56px;
+    background: #ffffff url('../images/baseline-wc-24px.svg') no-repeat center;
+    opacity : 0.7;
+    background-size: 42px 42px;
+    cursor: pointer;
+    border-radius: 28px 0px 0px 28px;
+    box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+.cat-selector{
+    position: fixed;
+    right: 0;
+    top: 151px;
+    width: 56px;
+    height: 56px;
+    background: #ffffff url('../images/baseline-style-24px.svg') no-repeat center;
+    opacity : 0.7;
+    background-size: 42px 42px;
+    cursor: pointer;
+    border-radius: 28px 0px 0px 28px;
+    box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.4);
 }

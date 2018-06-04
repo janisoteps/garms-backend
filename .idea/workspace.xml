@@ -2,21 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b28208ea-fd2b-4d7f-ad3f-4bda46883a6b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/server/.idea/workspace.xml" afterPath="$PROJECT_DIR$/server/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/server/application.py" afterPath="$PROJECT_DIR$/server/application.py" />
-      <change beforePath="$PROJECT_DIR$/server/models.py" afterPath="$PROJECT_DIR$/server/models.py" />
       <change beforePath="$PROJECT_DIR$/static/.idea/workspace.xml" afterPath="$PROJECT_DIR$/static/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/static/css/garms.css" afterPath="$PROJECT_DIR$/static/css/garms.css" />
-      <change beforePath="$PROJECT_DIR$/static/dist/bundle.js" afterPath="$PROJECT_DIR$/static/dist/bundle.js" />
-      <change beforePath="$PROJECT_DIR$/static/dist/main.css" afterPath="$PROJECT_DIR$/static/dist/main.css" />
-      <change beforePath="$PROJECT_DIR$/static/js/App.jsx" afterPath="$PROJECT_DIR$/static/js/App.jsx" />
-      <change beforePath="$PROJECT_DIR$/static/js/Header.jsx" afterPath="$PROJECT_DIR$/static/js/Header.jsx" />
-      <change beforePath="$PROJECT_DIR$/static/js/ImageSearch.jsx" afterPath="$PROJECT_DIR$/static/js/ImageSearch.jsx" />
-      <change beforePath="$PROJECT_DIR$/static/js/Logout.jsx" afterPath="$PROJECT_DIR$/static/js/Logout.jsx" />
-      <change beforePath="$PROJECT_DIR$/static/js/Main.jsx" afterPath="$PROJECT_DIR$/static/js/Main.jsx" />
-      <change beforePath="$PROJECT_DIR$/static/js/ProductResults.jsx" afterPath="$PROJECT_DIR$/static/js/ProductResults.jsx" />
-      <change beforePath="$PROJECT_DIR$/static/js/SearchChoice.jsx" afterPath="$PROJECT_DIR$/static/js/SearchChoice.jsx" />
-      <change beforePath="$PROJECT_DIR$/static/js/TextSearch.jsx" afterPath="$PROJECT_DIR$/static/js/TextSearch.jsx" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -30,8 +16,8 @@
       <file leaf-file-name="application.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/application.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="447">
-              <caret line="216" column="36" lean-forward="false" selection-start-line="216" selection-start-column="36" selection-end-line="216" selection-end-column="36" />
+            <state relative-caret-position="522">
+              <caret line="221" column="0" lean-forward="false" selection-start-line="221" selection-start-column="0" selection-end-line="221" selection-end-column="0" />
               <folding>
                 <element signature="e#16#27#0" expanded="true" />
               </folding>
@@ -1900,8 +1886,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server/application.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="447">
-          <caret line="216" column="36" lean-forward="false" selection-start-line="216" selection-start-column="36" selection-end-line="216" selection-end-column="36" />
+        <state relative-caret-position="522">
+          <caret line="221" column="0" lean-forward="false" selection-start-line="221" selection-start-column="0" selection-end-line="221" selection-end-column="0" />
           <folding>
             <element signature="e#16#27#0" expanded="true" />
           </folding>

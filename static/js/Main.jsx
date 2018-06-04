@@ -17,9 +17,12 @@ import Profile from './Profile'
 class Main extends React.Component {
     constructor(props) {
         super(props);
+
+        this.changeSex = this.changeSex.bind(this);
     }
 
-    componentDidMount(){
+    changeSex(sex){
+        this.props.changeSex(sex);
     }
 
     render() {
@@ -39,6 +42,7 @@ class Main extends React.Component {
                         sex={this.props.sex}
                         isAuth={this.props.isAuth}
                         email={this.props.email}
+                        changeSex={(sex) => {this.changeSex(sex);}}
                         />}
                     />
                     <Route path='/textsearch'
@@ -46,6 +50,7 @@ class Main extends React.Component {
                            {...props} sex={this.props.sex}
                            isAuth={this.props.isAuth}
                            email={this.props.email}
+                           changeSex={(sex) => {this.changeSex(sex);}}
                         />}
                     />
                     <Route path='/profile'

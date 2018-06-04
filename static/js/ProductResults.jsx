@@ -10,6 +10,7 @@ class ProductResults extends React.Component  {
         super(props);
         this.state = {
             pickerExpanded: 0,
+            faveDrawerExpanded: 0,
             email: this.props.email,
             faveDrawerWidth: '64px'
         };
@@ -18,11 +19,12 @@ class ProductResults extends React.Component  {
         this.addToFavs = this.addToFavs.bind(this);
     }
 
-    simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64){
+    simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id){
         this.setState({
             pickerExpanded: 0
         });
-        this.props.simImgSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64);
+        console.log('Product results passed id: ', prod_id);
+        this.props.simImgSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id);
     }
 
     expandDrawer = (id, pickerId) => {
@@ -38,7 +40,7 @@ class ProductResults extends React.Component  {
         }
     };
 
-    addToFavs = (img_hash) => {
+    addToFavs = (img_hash, id) => {
         let email = this.state.email;
         // console.log('Add faves email: ', email);
         fetch(window.location.origin + '/api/addfav', {
@@ -47,13 +49,14 @@ class ProductResults extends React.Component  {
         }).then(function(response) { return response.json(); })
             .then(data => {
                 console.log(data);
+
                 this.setState({
-                    faveDrawerWidth: '244px'
+                    faveDrawerExpanded: id
                 });
 
                 setTimeout(() =>{
                     this.setState({
-                        faveDrawerWidth: '64px'
+                        faveDrawerExpanded: 0
                     });
                 }, 2000);
             });
@@ -71,7 +74,7 @@ class ProductResults extends React.Component  {
             let color_2_hex = productInfo.color_2_hex;
             let color_3 = productInfo.color_3;
             let color_3_hex = productInfo.color_3_hex;
-            let id = productInfo.id;
+            let prod_id = productInfo.id;
             let img_cat_sc_txt = productInfo.img_cats_sc_txt[productInfo.img_cats_sc_txt.length - 1];
             let nr1_cat_ai = productInfo.nr1_cat_ai;
             let nr1_cat_sc = productInfo.nr1_cat_sc;
@@ -147,7 +150,7 @@ class ProductResults extends React.Component  {
 
             var pickerDrawerWidth;
 
-            if (this.state.pickerExpanded === id){
+            if (this.state.pickerExpanded === prod_id){
                 pickerDrawerWidth = '250px';
             } else {
                 pickerDrawerWidth = '64px';
@@ -155,7 +158,7 @@ class ProductResults extends React.Component  {
 
             let pickerDrawerStyle = {
                 height: '64px',
-                transition: '300ms ease-in-out',
+                transition: 'width 300ms ease-in-out',
                 width: pickerDrawerWidth,
                 borderRadius: '32px',
                 backgroundColor: '#FFFFFF',
@@ -166,10 +169,18 @@ class ProductResults extends React.Component  {
                 overflow: 'hidden'
             };
 
+            var faveDrawerWidth;
+
+            if (this.state.faveDrawerExpanded === prod_id){
+                faveDrawerWidth = '244px';
+            } else {
+                faveDrawerWidth = '64px';
+            }
+
             let faveDrawerStyle = {
                 height: '64px',
                 transition: 'width 300ms ease-in-out',
-                width: this.state.faveDrawerWidth,
+                width: faveDrawerWidth,
                 borderRadius: '32px',
                 backgroundColor: '#FFFFFF',
                 marginTop: '-230px',
@@ -190,28 +201,28 @@ class ProductResults extends React.Component  {
                       <div style={pickerDrawerStyle}>
                           <div
                               style={colorStyle1}
-                              onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64); }} />
+                              onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id); }} />
                           <div
                               style={colorStyle2}
-                              onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_2, siamese_64); }} />
+                              onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_2, siamese_64, prod_id); }} />
                           <div
                               style={colorStyle3}
-                              onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_3, siamese_64); }} />
+                              onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_3, siamese_64, prod_id); }} />
                       </div>
-                      <div style={pickerStyle} onClick={() => { this.expandDrawer(id, this.state.pickerExpanded); }}></div>
+                      <div style={pickerStyle} onClick={() => { this.expandDrawer(prod_id, this.state.pickerExpanded); }}></div>
                   </div>
                 )
             };
 
             return (
-                <Paper zDepth={1} className="product-tile" key={id}>
+                <Paper zDepth={1} className="product-tile" key={prod_id}>
                     <div className="product-name">{name}</div>
                     <div className="product-brand"><p>{brand} from {shop}</p></div>
                     <img className="product-image" src={img_url} />
                     <div className={sale ? 'product-price-sale' : 'product-price'}>{sale ? currency+saleprice+', was '+currency+price : currency+price}</div>
                     <div style={faveDrawerStyle} >Added to faves</div>
-                    <div className="add-to-favorites" onClick={() => { this.addToFavs(img_hash); }}></div>
-                    <div className="search-similar" onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64); }}></div>
+                    <div className="add-to-favorites" onClick={() => { this.addToFavs(img_hash, prod_id); }}></div>
+                    <div className="search-similar" onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id); }}></div>
                     <ColorPicker/>
                 </Paper>
             );

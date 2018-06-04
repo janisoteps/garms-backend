@@ -24,6 +24,7 @@ class App extends React.Component {
         };
         this.handleLoginChange = this.handleLoginChange.bind(this);
         this.handleLoginSubmit = this.handleLoginSubmit.bind(this);
+        this.changeSex = this.changeSex.bind(this);
     }
 
     componentWillMount() {
@@ -45,6 +46,13 @@ class App extends React.Component {
         let name = event.target.name;
         this.setState({
             [name]: value
+        });
+    }
+
+    changeSex(sex){
+        console.log('Changins App.jsx sex to: ', sex);
+        this.setState({
+            sex: sex
         });
     }
 
@@ -85,6 +93,7 @@ class App extends React.Component {
                 sex={this.state.sex}
                 username={this.state.username}
                 email={this.state.email}
+                changeSex={(sex) => {this.changeSex(sex);}}
             />
         ) : (
             <div className="register-form">

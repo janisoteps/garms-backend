@@ -203,7 +203,39 @@ def addfav():
             user.favorites_ids.append(img_hash)
 
             db.session.commit()
+
             return json.dumps(True)
+
+
+@app.route("/api/removefav", methods=['POST'])
+def removefav():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        img_hash = data['img_hash']
+        if len(img_hash) == 40:
+            user_email = data['email']
+
+            user = User.query.filter_by(email=user_email).first()
+
+            user.favorites_ids = list(user.favorites_ids)
+
+            if img_hash in user.favorites_ids:
+                user.favorites_ids.remove(img_hash)
+
+                db.session.commit()
+
+            # Declare Marshmallow schema so that SqlAlchemy object can be serialized
+            product_schema = ProductSchema()
+
+            result_list = []
+            for img_hash in user.favorites_ids:
+                prod_search = db.session.query(Product).filter((Product.img_hash == img_hash)).first()
+                prod_serial = product_schema.dump(prod_search)
+                result_list.append(prod_serial)
+
+            res = jsonify(res=result_list)
+
+            return res
 
 
 @app.route("/api/favorites", methods=['GET'])
@@ -356,6 +388,8 @@ def search():
         siamese_64 = request.args.get('siamese_64').strip('\'[]').split(',')
         siamese_64 = [int(float(i)) for i in siamese_64]
         sex = request.args.get('sex')
+        request_prod_id = request.args.get('id')
+
         if color_1 is None:
             return json.dumps('BAD REQUEST')
 
@@ -406,6 +440,7 @@ def search():
 
         top_color_list = sorted_color_list[0:250]
 
+        # Calculate siamese encoding distances
         siamese_dist_list = []
         for prod_obj in top_color_list:
             test_siamese_64 = re.search('(?<=siam=\[).+(?=\])', prod_obj['prod_string'])[0]
@@ -413,6 +448,8 @@ def search():
             # print('Siamese before splitting: ', str(test_siamese_64))
             test_siamese_64 = test_siamese_64.split(',')
             test_siamese_64 = [int(float(i)) for i in test_siamese_64]
+
+            color_distance = prod_obj['color_distance']
 
             distance_siam = int(
                 spatial.distance.euclidean(np.array(siamese_64, dtype=int), np.array(test_siamese_64, dtype=int),
@@ -422,12 +459,23 @@ def search():
 
             distance = prod_obj['color_distance'] + distance_siam
 
-            item_obj = {'id': prod_obj['id'], 'distance': distance}
+            item_obj = {'id': prod_obj['id'], 'siam_distance': distance, 'color_distance': color_distance}
 
             siamese_dist_list.append(item_obj)
 
-        # Closest colors at top
-        sorted_list = sorted(siamese_dist_list, key=itemgetter('distance'))
+        # Make sure we return the original request image back on top
+        if not any(d['id'] == request_prod_id for d in siamese_dist_list):
+            siamese_dist_list.insert(0, {'id': request_prod_id, 'siam_distance': -1000, 'color_distance': -1000})
+        else:
+            request_prod = next(item for item in siamese_dist_list if item['id'] == request_prod_id)
+            request_prod['siam_distance'] = -1000
+            request_prod['color_distance'] = -1000
+
+        # Closest siamese at top
+        sorted_siam_list = sorted(siamese_dist_list, key=itemgetter('siam_distance'))
+        top_siam_list = sorted_siam_list[0:100]
+
+        sorted_list = sorted(top_siam_list, key=itemgetter('color_distance'))
 
         # Only top results are returned
         top_list = sorted_list[0:30]
