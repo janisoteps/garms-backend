@@ -381,6 +381,7 @@ def commit():
 def search():
     if request.method == 'GET':
         main_cat = request.args.get('main_cat')
+        main_cat2 = request.args.get('main_cat2')
         nr1_cat_ai = request.args.get('nr1_cat_ai')
         nr1_cat_sc = request.args.get('nr1_cat_sc')
         color_1 = request.args.get('color_1').strip('\'[]').split(',')
@@ -396,7 +397,7 @@ def search():
         # Start off by doing the initial query looking for categories
         id_list = db.session.query(Product).filter(
             ((Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc) | (Product.img_cats_sc_txt.any(main_cat))) & (Product.sex == sex)).order_by(func.random()).limit(
-            1000).all()
+            2000).all()
 
         # Declare Marshmallow schema so that SqlAlchemy object can be serialized
         product_schema = ProductSchema()
@@ -411,6 +412,14 @@ def search():
             color1_rgb = color1_rgb.replace(" ", "").strip('\'[]')
             color1_rgb = color1_rgb.split(',')
             color1_rgb = [int(i) for i in color1_rgb]
+
+            try:
+                color2_rgb = re.search(r'(?<=color2=\*).{5,13}(?=\*)', prod_id_str)[0]
+                color2_rgb = color2_rgb.replace(" ", "").strip('\'[]')
+                color2_rgb = color2_rgb.split(',')
+                color2_rgb = [int(i) for i in color2_rgb]
+            except:
+                color2_rgb = color1_rgb
 
             print('Color RGB: ', str(color1_rgb))
 
@@ -429,15 +438,36 @@ def search():
                     distance_color = int(
                         spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color1_rgb, dtype=int), w=None))
 
+                    distance_color2 = int(
+                        spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color2_rgb, dtype=int),
+                                                   w=None))
+
+                    distance_color = distance_color + distance_color2
+
                     print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
 
-                    item_obj = {'id': color_prod_id, 'color_distance': distance_color, 'prod_string': prod_id_str}
+                    main_cat2_dist = 1
+                    if main_cat2 in image_prod_name_arr:
+                        main_cat2_dist = 0
+
+                    item_obj = {
+                        'id': color_prod_id,
+                        'color_distance': distance_color,
+                        'prod_string': prod_id_str,
+                        'main_cat2_dist': main_cat2_dist
+                    }
 
                     color_dist_list.append(item_obj)
 
-        # Closest colors at top
-        sorted_color_list = sorted(color_dist_list, key=itemgetter('color_distance'))
+        # Try to keep only those items that match both categories
+        maincat_list = [d for d in color_dist_list if d['main_cat2_dist'] == 0]
 
+        # Revert to to single main category match if that removes too many results
+        if len(maincat_list) < 10:
+            maincat_list = color_dist_list
+
+        # Closest colors at top
+        sorted_color_list = sorted(maincat_list, key=itemgetter('color_distance'))
         top_color_list = sorted_color_list[0:250]
 
         # Calculate siamese encoding distances
@@ -473,7 +503,7 @@ def search():
 
         # Closest siamese at top
         sorted_siam_list = sorted(siamese_dist_list, key=itemgetter('siam_distance'))
-        top_siam_list = sorted_siam_list[0:100]
+        top_siam_list = sorted_siam_list[0:60]
 
         sorted_list = sorted(top_siam_list, key=itemgetter('color_distance'))
 

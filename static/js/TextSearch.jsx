@@ -7,6 +7,8 @@ import TextField from 'material-ui/TextField';
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import ProductResults from './ProductResults';
+import CatPicker from './CatPicker';
+
 
 //Component to search for products using text input
 class TextSearch extends React.Component  {
@@ -27,9 +29,11 @@ class TextSearch extends React.Component  {
             mainColorNr: 1,
             cats: [],
             mainCat: '',
+            mainCat2: '',
             searchString: '',
             noResult: false,
-            sexPickerWidth: '56px'
+            sexPickerWidth: '56px',
+            catsOn: false
         };
 
         this.similarImageSearch = this.similarImageSearch.bind(this);
@@ -39,6 +43,8 @@ class TextSearch extends React.Component  {
         this.changeSex = this.changeSex.bind(this);
         this.changeSex = this.changeSex.bind(this);
         this.expandSexSelector = this.expandSexSelector.bind(this);
+        this.showCatPicker = this.showCatPicker.bind(this);
+        this.setMainCats = this.setMainCats.bind(this);
     }
 
     //Handle text input change
@@ -79,6 +85,7 @@ class TextSearch extends React.Component  {
 
         let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai
             + '&main_cat=' + mainCat
+            + '&main_cat2=' + this.state.mainCat2
             + '&nr1_cat_sc=' + nr1_cat_sc
             + '&color_1=[' + color_1
             + ']&siamese_64=[' + siam_64
@@ -170,6 +177,24 @@ class TextSearch extends React.Component  {
         }
     }
 
+    showCatPicker(){
+        if(this.state.catsOn === false){
+            this.setState({
+                catsOn: true
+            });
+        } else {
+            this.setState({
+                catsOn: false
+            });
+        }
+    }
+
+    setMainCats(mainCat, mainCat2){
+        this.setState({
+            mainCat: mainCat,
+            mainCat2: mainCat2
+        });
+    }
 
     // ------------------------ MAIN RENDER FUNCTION ----------------------------
     render () {
@@ -305,9 +330,9 @@ class TextSearch extends React.Component  {
         };
 
         let CatSelector = () => {
-
+            console.log('Clicked cat selector');
             return(
-                <div className="cat-selector"></div>
+                <div className="cat-selector" onClick={this.showCatPicker}></div>
             )
         };
 
@@ -328,6 +353,15 @@ class TextSearch extends React.Component  {
                     <SexSelector />
 
                     <CatSelector />
+
+                    {(this.state.catsOn === true) && (
+                        <CatPicker
+                            showCatPicker={this.showCatPicker}
+                            setMainCats={(mainCat, mainCat2) => {this.setMainCats(mainCat, mainCat2);}}
+                            mainCat={this.state.mainCat}
+                            mainCat2={this.state.mainCat2}
+                        />
+                    )}
                 </div>
             </MuiThemeProvider>
         )

@@ -124,7 +124,7 @@ class Product(db.Model):
         self.siamese_64 = siamese_64
 
     def __repr__(self):
-        return '<id=[{}] name=@{}@ color1={} siam=[{}]>'.format(self.id, self.name, self.color_1, self.siamese_64)
+        return '<id=[{}] name=@{}@ color1={} color2=*{}* siam=[{}]>'.format(self.id, self.name, self.color_1, self.color_2, self.siamese_64)
 
     def return_name(self):
         return self.name

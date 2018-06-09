@@ -3,25 +3,18 @@ import React from "react";
 require('../css/garms.css');
 require('../css/ball-atom.css');
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-// import { withCookies, Cookies } from 'react-cookie';
-// import { instanceOf } from 'prop-types';
-// import { Route } from 'react-router-dom';
 import Dropzone from 'react-dropzone';
-// const pica = require('pica')();
 import ProductResults from './ProductResults';
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
+import CatPicker from './CatPicker';
 
 
 //Component to search for products using an uploaded image
 class ImageSearch extends React.Component  {
-    // static propTypes = {
-    //     cookies: instanceOf(Cookies).isRequired
-    // };
 
     constructor(props) {
         super(props);
-        // const { cookies } = this.props;
         this.state = {
             isAuth: this.props.isAuth,
             sex: this.props.sex,
@@ -34,8 +27,10 @@ class ImageSearch extends React.Component  {
             mainColorNr: 1,
             cats: [],
             mainCat: '',
+            mainCat2: '',
             siamese_64: [],
-            sexPickerWidth: '56px'
+            sexPickerWidth: '56px',
+            catsOn: false
         };
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -48,6 +43,8 @@ class ImageSearch extends React.Component  {
         this.setColorCat = this.setColorCat.bind(this);
         this.changeSex = this.changeSex.bind(this);
         this.expandSexSelector = this.expandSexSelector.bind(this);
+        this.showCatPicker = this.showCatPicker.bind(this);
+        this.setMainCats = this.setMainCats.bind(this);
     }
 
     // Handles login input change
@@ -228,6 +225,7 @@ class ImageSearch extends React.Component  {
 
         let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai
             + '&main_cat=' + this.state.mainCat
+            + '&main_cat2=' + this.state.mainCat2
             + '&nr1_cat_sc=' + nr1_cat_sc
             + '&color_1=[' + mainColor
             + ']&siamese_64=[' + siam_64
@@ -290,6 +288,25 @@ class ImageSearch extends React.Component  {
                 sexPickerWidth: '56px'
             });
         }
+    }
+
+    showCatPicker(){
+        if(this.state.catsOn === false){
+            this.setState({
+                catsOn: true
+            });
+        } else {
+            this.setState({
+                catsOn: false
+            });
+        }
+    }
+
+    setMainCats(mainCat, mainCat2){
+        this.setState({
+            mainCat: mainCat,
+            mainCat2: mainCat2
+        });
     }
 
     // -------------------------- MAIN RENDER FUNCTION ----------------------------
@@ -541,9 +558,9 @@ class ImageSearch extends React.Component  {
         };
 
         let CatSelector = () => {
-
+            console.log('Clicked cat selector');
             return(
-                <div className="cat-selector"></div>
+                <div className="cat-selector" onClick={this.showCatPicker}></div>
             )
         };
 
@@ -568,6 +585,15 @@ class ImageSearch extends React.Component  {
                                 <div />
                             </div>
                         </div>
+                    )}
+
+                    {(this.state.catsOn === true) && (
+                        <CatPicker
+                            showCatPicker={this.showCatPicker}
+                            setMainCats={(mainCat, mainCat2) => {this.setMainCats(mainCat, mainCat2);}}
+                            mainCat={this.state.mainCat}
+                            mainCat2={this.state.mainCat2}
+                        />
                     )}
                 </div>
             </MuiThemeProvider>
