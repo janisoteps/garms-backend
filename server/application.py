@@ -303,6 +303,7 @@ def commit():
         color_3 = data['color_3']
         color_3_hex = data['color_3_hex']
         siamese_64 = data['siamese_64']
+        pca_256 = data['pca']
 
         product_submission = Product(
             img_hash=img_hash,
@@ -330,7 +331,8 @@ def commit():
             color_2_hex=color_2_hex,
             color_3=color_3,
             color_3_hex=color_3_hex,
-            siamese_64=siamese_64
+            siamese_64=siamese_64,
+            pca_256=pca_256
         )
 
         try:
@@ -371,6 +373,7 @@ def commit():
             existing_product.color_3 = color_3
             existing_product.color_3_hex = color_3_hex
             existing_product.siamese_64 = siamese_64
+            existing_product.pca_256 = pca_256
 
             db.session.commit()
             return json.dumps(True)
@@ -396,8 +399,8 @@ def search():
 
         # Start off by doing the initial query looking for categories
         id_list = db.session.query(Product).filter(
-            ((Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc) | (Product.img_cats_sc_txt.any(main_cat))) & (Product.sex == sex)).order_by(func.random()).limit(
-            2000).all()
+            ((Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc) | (Product.img_cats_sc_txt.any(main_cat))) & (Product.sex == sex) & (Product.shop != 'Zalando')).order_by(func.random()).limit(
+            1500).all()
 
         # Declare Marshmallow schema so that SqlAlchemy object can be serialized
         product_schema = ProductSchema()
@@ -413,13 +416,13 @@ def search():
             color1_rgb = color1_rgb.split(',')
             color1_rgb = [int(i) for i in color1_rgb]
 
-            try:
-                color2_rgb = re.search(r'(?<=color2=\*).{5,13}(?=\*)', prod_id_str)[0]
-                color2_rgb = color2_rgb.replace(" ", "").strip('\'[]')
-                color2_rgb = color2_rgb.split(',')
-                color2_rgb = [int(i) for i in color2_rgb]
-            except:
-                color2_rgb = color1_rgb
+            # try:
+            #     color2_rgb = re.search(r'(?<=color2=\*).{5,13}(?=\*)', prod_id_str)[0]
+            #     color2_rgb = color2_rgb.replace(" ", "").strip('\'[]')
+            #     color2_rgb = color2_rgb.split(',')
+            #     color2_rgb = [int(i) for i in color2_rgb]
+            # except:
+            #     color2_rgb = color1_rgb
 
             print('Color RGB: ', str(color1_rgb))
 
@@ -438,13 +441,25 @@ def search():
                     distance_color = int(
                         spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color1_rgb, dtype=int), w=None))
 
-                    distance_color2 = int(
-                        spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color2_rgb, dtype=int),
-                                                   w=None))
+                    rgb_req = np.array(color_1, dtype=int)
+                    rgb_test = np.array(color1_rgb, dtype=int)
 
-                    distance_color = distance_color + distance_color2
+                    rgb_req_norm = rgb_req - np.amin(rgb_req)
+                    rgb_test_norm = rgb_test - np.amin(rgb_test)
+
+                    print('Norm Req Color RGB: ', str(rgb_req_norm))
+                    print('Norm Test Color RGB: ', str(rgb_test_norm))
+
+                    distance_color_norm = int(spatial.distance.euclidean(rgb_req_norm, rgb_test_norm, w=None))
+
+                    # distance_color2 = int(
+                    #     spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color2_rgb, dtype=int),
+                    #                                w=None))
+
+                    distance_color = distance_color + distance_color_norm
 
                     print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
+                    print('----------------------------')
 
                     main_cat2_dist = 1
                     if main_cat2 in image_prod_name_arr:
@@ -468,7 +483,7 @@ def search():
 
         # Closest colors at top
         sorted_color_list = sorted(maincat_list, key=itemgetter('color_distance'))
-        top_color_list = sorted_color_list[0:250]
+        top_color_list = sorted_color_list[0:150]
 
         # Calculate siamese encoding distances
         siamese_dist_list = []
@@ -503,12 +518,15 @@ def search():
 
         # Closest siamese at top
         sorted_siam_list = sorted(siamese_dist_list, key=itemgetter('siam_distance'))
-        top_siam_list = sorted_siam_list[0:60]
+        top_siam_list = sorted_siam_list[0:100]
 
         sorted_list = sorted(top_siam_list, key=itemgetter('color_distance'))
 
         # Only top results are returned
         top_list = sorted_list[0:30]
+
+        # # Only top results are returned
+        # top_list = top_color_list[0:30]
 
         result_list = []
         for obj in top_list:
@@ -732,7 +750,8 @@ def colorcat():
 
             # Two AI APIs have been successfully built
             color_api = 'http://34.242.36.122/api/color'
-            cat_api = 'http://34.243.167.38/api/cats'
+            # cat_api = 'http://34.243.167.38/api/cats'
+            cat_api = 'http://52.18.195.227/api/cats'
             siamese_api = 'http://34.248.44.245:5000/api/encoding'
 
             api_urls = [color_api, cat_api, siamese_api]
@@ -748,6 +767,12 @@ def colorcat():
                 siamese_response = siamese_retry_response
 
             img_cats_ai_txt = json.loads(cat_response)['res']['img_cats_ai_txt']
+            alt_cats_txt = json.loads(cat_response)['res']['alt_cats_txt']
+
+            for img_cat_ai in img_cats_ai_txt:
+                if img_cat_ai in alt_cats_txt:
+                    alt_cats_txt.remove(img_cat_ai)
+
             color_1 = json.loads(color_response)['res']['color_1']
             color_1_hex = json.loads(color_response)['res']['color_1_hex']
             color_2 = json.loads(color_response)['res']['color_2']
@@ -758,6 +783,7 @@ def colorcat():
 
             results = {
                 'img_cats_ai_txt': img_cats_ai_txt,
+                'alt_cats_txt': alt_cats_txt,
                 'colors': {
                     'color_1': color_1,
                     'color_1_hex': color_1_hex,
@@ -785,7 +811,7 @@ def colorcatsearch():
         siamese_64 = [int(float(i)) for i in siamese_64]
         sex = request.args.get('sex')
 
-        id_list = db.session.query(Product).filter(Product.img_cats_sc_txt.any(cat_ai_txt) & (Product.sex == sex)).order_by(
+        id_list = db.session.query(Product).filter(Product.img_cats_sc_txt.any(cat_ai_txt) & (Product.sex == sex) & (Product.shop != 'Zalando')).order_by(
             func.random()).limit(1000).all()
 
         color_dist_list = []

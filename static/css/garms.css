@@ -212,10 +212,10 @@
 .color-modal{
     z-index: 20;
     width: 500px;
-    height: 380px;
+    /*height: 380px;*/
     text-align: center;
     position: fixed;
-    top: 200px;
+    top: 100px;
     margin-left: calc(50vw - 250px);
     padding: 20px;
 }
@@ -519,4 +519,8 @@
 .cat-picker-title{
     width: 100%;
     text-align: center;
+}
+
+.alt-cat-selection{
+    font-size: 0.7rem;
 }

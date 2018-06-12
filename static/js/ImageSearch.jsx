@@ -26,6 +26,7 @@ class ImageSearch extends React.Component  {
             mainColor: '',
             mainColorNr: 1,
             cats: [],
+            altCats: [],
             mainCat: '',
             mainCat2: '',
             siamese_64: [],
@@ -131,6 +132,7 @@ class ImageSearch extends React.Component  {
             this.setState({
                 colors: data.res.colors,
                 cats: data.res['img_cats_ai_txt'],
+                altCats: data.res['alt_cats_txt'],
                 mainCat: data.res['img_cats_ai_txt'][0],
                 siamese_64: data.res['siamese_64'],
                 loading: false
@@ -428,9 +430,9 @@ class ImageSearch extends React.Component  {
         // stateless component
         let ColorChoiceModal = () => {
             if(Object.keys(this.state.colors).length > 0){
-                let cat1 = this.state.cats[0];
-                let cat2 = this.state.cats[1];
-                let cat3 = this.state.cats[2];
+                // let cat1 = this.state.cats[0];
+                // let cat2 = this.state.cats[1];
+                // let cat3 = this.state.cats[2];
 
                 let catClass = (cat) => {
                     if(this.state.mainCat === cat){
@@ -439,6 +441,18 @@ class ImageSearch extends React.Component  {
                         return 'cat-choice'
                     }
                 };
+
+                let mainCats = this.state.cats.map(cat => {
+                    return(
+                        <div className={catClass(cat)} onClick={() => this.setColorCat({'cat': cat})} >{cat}</div>
+                    )
+                });
+
+                let moreCats = this.state.altCats.map(altCat => {
+                    return(
+                        <div className={catClass(altCat)} onClick={() => this.setColorCat({'cat': altCat})} >{altCat}</div>
+                    )
+                });
 
                 if(Object.keys(this.state.cats).length > 0){
                     return(
@@ -451,9 +465,15 @@ class ImageSearch extends React.Component  {
                                 <div style={colorStyle3} onClick={() => this.setColorCat({'color': 3, 'cat':''})} />
                                 <p>choose which outfit type to search for:</p>
                                 <div>
-                                    <div className={catClass(cat1)} onClick={() => this.setColorCat({'cat': cat1})} >{cat1}</div>
-                                    <div className={catClass(cat2)} onClick={() => this.setColorCat({'cat': cat2})} >{cat2}</div>
-                                    <div className={catClass(cat3)} onClick={() => this.setColorCat({'cat': cat3})} >{cat3}</div>
+                                    {/*<div className={catClass(cat1)} onClick={() => this.setColorCat({'cat': cat1})} >{cat1}</div>*/}
+                                    {/*<div className={catClass(cat2)} onClick={() => this.setColorCat({'cat': cat2})} >{cat2}</div>*/}
+                                    {/*<div className={catClass(cat3)} onClick={() => this.setColorCat({'cat': cat3})} >{cat3}</div>*/}
+                                    {mainCats}
+                                </div>
+                                <br></br>
+                                <p>some more predictions:</p>
+                                <div className="alt-cat-selection">
+                                    {moreCats}
                                 </div>
                                 <div className="colorcat-search-button" onClick={() => this.colorCatImageSearch() } >go</div>
                             </Paper>

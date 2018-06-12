@@ -67,6 +67,7 @@ class Product(db.Model):
     color_3 = db.Column(ARRAY(db.Integer))
     color_3_hex = db.Column(db.String)
     siamese_64 = db.Column(ARRAY(db.Integer))  # Array of 64 integers from 0 to 32 to represent visual encoding
+    pca_256 = db.Column(ARRAY(db.Integer))  # Array of 256 integers from 0 to 32 to represent visual encoding
 
     def __init__(self,
                  img_hash,
@@ -94,7 +95,8 @@ class Product(db.Model):
                  color_2_hex,
                  color_3,
                  color_3_hex,
-                 siamese_64):
+                 siamese_64,
+                 pca_256):
 
         self.img_hash = img_hash
         self.name = name
@@ -122,6 +124,7 @@ class Product(db.Model):
         self.color_3 = color_3
         self.color_3_hex = color_3_hex
         self.siamese_64 = siamese_64
+        self.pca_256 = pca_256
 
     def __repr__(self):
         return '<id=[{}] name=@{}@ color1={} color2=*{}* siam=[{}]>'.format(self.id, self.name, self.color_1, self.color_2, self.siamese_64)

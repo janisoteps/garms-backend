@@ -135,7 +135,7 @@ class Profile extends React.Component  {
             <MuiThemeProvider>
                 <div className="profile-product-list">
                     <h2 style={greetingStyle}>Hi {this.state.username}!</h2>
-                    <h4 className="greeting-text">Below you will find items added to your faves</h4>
+                    <h4 className="greeting-text">Below you will find items added to your favorites</h4>
                     <br></br>
                     <div className="result-pane">
                         {favoritesList}
