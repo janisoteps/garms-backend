@@ -163,17 +163,34 @@ def login():
         email = data['email']
         pwd = data['pwd']
         user = User.query.filter_by(email=email).first()
+
+        # print('User: ', str(user))
         if user is None or not user.check_password(pwd):
             return json.dumps(False)
 
         else:
-            user_str = str(user)
-            user_id = re.search(r'(?<=id=\[).{0,8}(?=\])', user_str)[0]
-            username = re.search(r'(?<=username=#).{0,64}(?=#)', user_str)[0]
-            favorites = re.search(r'(?<=favorites=\$).{0,99999}(?=\$)', user_str)[0]
+            # user_str = str(user)
+            # user_id = re.search(r'(?<=id=\[).{0,8}(?=\])', user_str)[0]
+            # user_id = re.search(r'(?<=id=\[).{0,8}(?=\])', user_str).group(1)
+            user_id = user.id
+
+            # username = re.search(r'(?<=username=#).{0,64}(?=#)', user_str)[0]
+            # username = re.search(r'(?<=username=#).{0,64}(?=#)', user_str).group(1)
+            username = user.username
+
+            # favorites = re.search(r'(?<=favorites=\$).{0,99999}(?=\$)', user_str)[0]
+            # favorites = re.search(r'(?<=favorites=\$).{0,99999}(?=\$)', user_str).group(1)
+            favorites = user.favorites_ids
+
             # print(favorites)
-            sex = re.search(r'(?<=sex=\*).{0,64}(?=\*)', user_str)[0]
-            user_email = re.search(r'(?<=email=%).{0,64}(?=%)', user_str)[0]
+            # sex = re.search(r'(?<=sex=\*).{0,64}(?=\*)', user_str)[0]
+            # sex = re.search(r'(?<=sex=\*).{0,64}(?=\*)', user_str).group(1)
+            sex = user.sex
+
+            # user_email = re.search(r'(?<=email=%).{0,64}(?=%)', user_str)[0]
+            # user_email = re.search(r'(?<=email=%).{0,64}(?=%)', user_str).group(1)
+            user_email = user.email
+
             # print(username)
             user_dict = {
                 'user_id': user_id,
@@ -242,13 +259,8 @@ def removefav():
 def favorites():
     if request.method == 'GET':
         email = request.args.get('email')
-
         user = User.query.filter_by(email=email).first()
-        user_str = str(user)
-        favs = re.search(r'(?<=favorites=\$).{0,99999}(?=\$)', user_str)[0]
-        favs = favs.replace(" ", "").strip('[]').split(',')
-        favs = [i.strip('\'') for i in favs]
-
+        favs = user.favorites_ids
         # Declare Marshmallow schema so that SqlAlchemy object can be serialized
         product_schema = ProductSchema()
 
@@ -387,47 +399,45 @@ def search():
         main_cat2 = request.args.get('main_cat2')
         nr1_cat_ai = request.args.get('nr1_cat_ai')
         nr1_cat_sc = request.args.get('nr1_cat_sc')
-        color_1 = request.args.get('color_1').strip('\'[]').split(',')
-        # color_2 = request.args.get('color_2')
+        req_color_1 = request.args.get('color_1').strip('\'[]').split(',')
         siamese_64 = request.args.get('siamese_64').strip('\'[]').split(',')
         siamese_64 = [int(float(i)) for i in siamese_64]
         sex = request.args.get('sex')
-        request_prod_id = request.args.get('id')
+        request_prod_id = int(request.args.get('id'))
+        req_product = Product.query.filter_by(id=request_prod_id).first()
+        print('Request ID: ', str(request_prod_id))
 
-        if color_1 is None:
+        if req_color_1 is None:
             return json.dumps('BAD REQUEST')
 
         # Start off by doing the initial query looking for categories
         id_list = db.session.query(Product).filter(
-            ((Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc) | (Product.img_cats_sc_txt.any(main_cat))) & (Product.sex == sex) & (Product.shop != 'Zalando')).order_by(func.random()).limit(
+            ((Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc) | (
+                Product.img_cats_sc_txt.any(main_cat))) & (Product.sex == sex) & (Product.shop != 'Zalando')).order_by(
+            func.random()).limit(
             1500).all()
+        # id_list = db.session.query(Product).filter(
+        #     ((Product.nr1_cat_ai == nr1_cat_ai) | (Product.nr1_cat_sc == nr1_cat_sc) | (
+        #         Product.img_cats_sc_txt.any(main_cat))) & (Product.sex == sex)).order_by(
+        #     func.random()).limit(
+        #     1500).all()
 
         # Declare Marshmallow schema so that SqlAlchemy object can be serialized
         product_schema = ProductSchema()
 
         # Build a list of ids and color distances from query product
         color_dist_list = []
-        for prod_id in id_list:
-            prod_id_str = str(prod_id)
-            # Turn into list id, color and siamese encoding
-            color_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
-            color1_rgb = re.search('(?<=color1=\[).{5,13}(?=\])', prod_id_str)[0]
-            color1_rgb = color1_rgb.replace(" ", "").strip('\'[]')
-            color1_rgb = color1_rgb.split(',')
-            color1_rgb = [int(i) for i in color1_rgb]
+        for prod_obj in id_list:
 
-            # try:
-            #     color2_rgb = re.search(r'(?<=color2=\*).{5,13}(?=\*)', prod_id_str)[0]
-            #     color2_rgb = color2_rgb.replace(" ", "").strip('\'[]')
-            #     color2_rgb = color2_rgb.split(',')
-            #     color2_rgb = [int(i) for i in color2_rgb]
-            # except:
-            #     color2_rgb = color1_rgb
+            color_prod_id = prod_obj.id
+            # print('Color check product ID: ', str(color_prod_id))
+            color1_rgb = prod_obj.color_1
+            color2_rgb = prod_obj.color_2
 
-            print('Color RGB: ', str(color1_rgb))
+            # print('Color RGB: ', str(color1_rgb))
 
             try:
-                image_prod_name = re.search('(?<=name=@).{5,80}(?=@)', prod_id_str)[0]
+                image_prod_name = prod_obj.name
             except:
                 image_prod_name = None
 
@@ -439,36 +449,43 @@ def search():
                     # Use euclidean distance to measure how similar the color is in RGB space
                     # And then to measure how close the siamese encoding is 64 dimensional space
                     distance_color = int(
-                        spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color1_rgb, dtype=int), w=None))
-
-                    rgb_req = np.array(color_1, dtype=int)
+                        spatial.distance.euclidean(np.array(req_color_1, dtype=int), np.array(color1_rgb, dtype=int), w=None))
+                    rgb_req = np.array(req_color_1, dtype=int)
                     rgb_test = np.array(color1_rgb, dtype=int)
-
                     rgb_req_norm = rgb_req - np.amin(rgb_req)
                     rgb_test_norm = rgb_test - np.amin(rgb_test)
-
-                    print('Norm Req Color RGB: ', str(rgb_req_norm))
-                    print('Norm Test Color RGB: ', str(rgb_test_norm))
-
+                    # print('Norm Req Color RGB: ', str(rgb_req_norm))
+                    # print('Norm Test Color RGB: ', str(rgb_test_norm))
                     distance_color_norm = int(spatial.distance.euclidean(rgb_req_norm, rgb_test_norm, w=None))
-
-                    # distance_color2 = int(
-                    #     spatial.distance.euclidean(np.array(color_1, dtype=int), np.array(color2_rgb, dtype=int),
-                    #                                w=None))
-
                     distance_color = distance_color + distance_color_norm
 
-                    print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
+                    distance_color_2 = int(
+                        spatial.distance.euclidean(np.array(req_color_1, dtype=int), np.array(color2_rgb, dtype=int),
+                                                   w=None))
+                    rgb_req_2 = np.array(req_color_1, dtype=int)
+                    rgb_test_2 = np.array(color2_rgb, dtype=int)
+                    rgb_req_norm_2 = rgb_req_2 - np.amin(rgb_req_2)
+                    rgb_test_norm_2 = rgb_test_2 - np.amin(rgb_test_2)
+
+                    distance_color_norm_2 = int(spatial.distance.euclidean(rgb_req_norm_2, rgb_test_norm_2, w=None))
+                    distance_color_2 = distance_color_2 + distance_color_norm_2
+
+                    # print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
                     print('----------------------------')
 
                     main_cat2_dist = 1
                     if main_cat2 in image_prod_name_arr:
                         main_cat2_dist = 0
 
+                    if distance_color < distance_color_2:
+                        main_color_dist = distance_color
+                    else:
+                        main_color_dist = distance_color_2
+
                     item_obj = {
                         'id': color_prod_id,
-                        'color_distance': distance_color,
-                        'prod_string': prod_id_str,
+                        'color_distance': main_color_dist,
+                        'prod_obj': prod_obj,
                         'main_cat2_dist': main_cat2_dist
                     }
 
@@ -483,50 +500,67 @@ def search():
 
         # Closest colors at top
         sorted_color_list = sorted(maincat_list, key=itemgetter('color_distance'))
-        top_color_list = sorted_color_list[0:150]
+        top_color_list = sorted_color_list[0:250]
+
+        # Calculate PCA encoding distances
+        pca_dist_list = []
+        for color_obj in top_color_list:
+            req_pca = req_product.pca_256
+            test_pca = color_obj['prod_obj'].pca_256
+            if test_pca is not None:
+                color_distance = color_obj['color_distance']
+                distance_pca = int(
+                    spatial.distance.euclidean(np.array(req_pca, dtype=int), np.array(test_pca, dtype=int),
+                                               w=None))
+                item_obj = {
+                    'id': color_obj['id'],
+                    'distance_pca': distance_pca,
+                    'color_distance': color_distance,
+                    'prod_obj': color_obj['prod_obj']
+                }
+                pca_dist_list.append(item_obj)
+
+        # Closest PCA at top
+        sorted_pca_list = sorted(pca_dist_list, key=itemgetter('distance_pca'))
+        top_pca_list = sorted_pca_list[0:120]
 
         # Calculate siamese encoding distances
         siamese_dist_list = []
-        for prod_obj in top_color_list:
-            test_siamese_64 = re.search('(?<=siam=\[).+(?=\])', prod_obj['prod_string'])[0]
-            test_siamese_64 = test_siamese_64.replace(" ", "").strip('\'[]')
-            # print('Siamese before splitting: ', str(test_siamese_64))
-            test_siamese_64 = test_siamese_64.split(',')
-            test_siamese_64 = [int(float(i)) for i in test_siamese_64]
-
-            color_distance = prod_obj['color_distance']
-
+        for pca_obj in top_pca_list:
+            test_siamese_64 = pca_obj['prod_obj'].siamese_64
+            color_distance = pca_obj['color_distance']
             distance_siam = int(
                 spatial.distance.euclidean(np.array(siamese_64, dtype=int), np.array(test_siamese_64, dtype=int),
                                            w=None))
 
-            print(BColors.OKGREEN + 'Siamese distance: ' + BColors.ENDC + str(distance_siam))
-
-            distance = prod_obj['color_distance'] + distance_siam
-
-            item_obj = {'id': prod_obj['id'], 'siam_distance': distance, 'color_distance': color_distance}
-
+            # distance = color_obj['color_distance'] + distance_siam
+            item_obj = {
+                'id': pca_obj['id'],
+                'siam_distance': distance_siam,
+                'color_distance': color_distance,
+                'distance_pca': pca_obj['distance_pca']
+            }
             siamese_dist_list.append(item_obj)
 
         # Make sure we return the original request image back on top
         if not any(d['id'] == request_prod_id for d in siamese_dist_list):
             siamese_dist_list.insert(0, {'id': request_prod_id, 'siam_distance': -1000, 'color_distance': -1000})
+            print('Product not in list, need to add')
         else:
+            print('Product already in list, need to make sure its on top')
             request_prod = next(item for item in siamese_dist_list if item['id'] == request_prod_id)
             request_prod['siam_distance'] = -1000
             request_prod['color_distance'] = -1000
 
         # Closest siamese at top
         sorted_siam_list = sorted(siamese_dist_list, key=itemgetter('siam_distance'))
-        top_siam_list = sorted_siam_list[0:100]
+        top_siam_list = sorted_siam_list[0:70]
 
+        # Resort again for color, just for looks :)
         sorted_list = sorted(top_siam_list, key=itemgetter('color_distance'))
 
         # Only top results are returned
         top_list = sorted_list[0:30]
-
-        # # Only top results are returned
-        # top_list = top_color_list[0:30]
 
         result_list = []
         for obj in top_list:
@@ -613,8 +647,9 @@ def text():
 
         result_list = []
         for prod_id in id_list:
-            prod_id_str = str(prod_id)
-            text_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
+            # prod_id_str = str(prod_id)
+            # text_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
+            text_prod_id = prod_id.id
             prod_search = db.session.query(Product).filter((Product.id == text_prod_id)).first()
             prod_serial = product_schema.dump(prod_search)
             result_list.append(prod_serial)
@@ -816,16 +851,18 @@ def colorcatsearch():
 
         color_dist_list = []
         for prod_id in id_list:
-            prod_id_str = str(prod_id)
-            image_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
+            # prod_id_str = str(prod_id)
+            # image_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
+            image_prod_id = prod_id.id
 
-            color1_rgb = re.search('(?<=color1=\[).{5,13}(?=\])', prod_id_str)[0]
-            color1_rgb = color1_rgb.replace(" ", "").strip('\'[]')
-            color1_rgb = color1_rgb.split(',')
-            color1_rgb = [int(i) for i in color1_rgb]
-
+            # color1_rgb = re.search('(?<=color1=\[).{5,13}(?=\])', prod_id_str)[0]
+            # color1_rgb = color1_rgb.replace(" ", "").strip('\'[]')
+            # color1_rgb = color1_rgb.split(',')
+            # color1_rgb = [int(i) for i in color1_rgb]
+            color1_rgb = prod_id.color_1
             try:
-                image_prod_name = re.search('(?<=name=@).{5,80}(?=@)', prod_id_str)[0]
+                # image_prod_name = re.search('(?<=name=@).{5,80}(?=@)', prod_id_str)[0]
+                image_prod_name = prod_id.name
             except:
                 image_prod_name = None
 
@@ -842,7 +879,7 @@ def colorcatsearch():
                 if cat_ai_txt in image_prod_name_arr:
                     print(BColors.OKBLUE + 'Color distance: ' + BColors.ENDC + str(distance_color))
 
-                    item_obj = {'id': image_prod_id, 'distance': distance_color, 'prod_string': prod_id_str}
+                    item_obj = {'id': image_prod_id, 'distance': distance_color, 'prod_string': prod_id}
 
                     color_dist_list.append(item_obj)
 
@@ -853,11 +890,12 @@ def colorcatsearch():
         # Find most similar as per close cropped siamese encoding euclidean distance
         siamese_dist_list = []
         for prod_obj in top_color_list:
-            test_siamese_64 = re.search('(?<=siam=\[).+(?=\])', prod_obj['prod_string'])[0]
-            test_siamese_64 = test_siamese_64.replace(" ", "").strip('\'[]')
-            # print('Siamese before splitting: ', str(test_siamese_64))
-            test_siamese_64 = test_siamese_64.split(',')
-            test_siamese_64 = [int(float(i)) for i in test_siamese_64]
+            # test_siamese_64 = re.search('(?<=siam=\[).+(?=\])', prod_obj['prod_string'])[0]
+            # test_siamese_64 = test_siamese_64.replace(" ", "").strip('\'[]')
+            # # print('Siamese before splitting: ', str(test_siamese_64))
+            # test_siamese_64 = test_siamese_64.split(',')
+            # test_siamese_64 = [int(float(i)) for i in test_siamese_64]
+            test_siamese_64 = prod_obj['prod_string'].siamese_64
 
             distance_siam = int(
                 spatial.distance.euclidean(np.array(siamese_64, dtype=int), np.array(test_siamese_64, dtype=int),
@@ -981,9 +1019,8 @@ def colorimage():
             return res
 
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', threaded=True, port=5000)
+# if __name__ == "__main__":
+#     app.run(host='0.0.0.0', threaded=True, port=5000)
 
-# if root_url == developer_url:
-#     if __name__ == "__main__":
-#         app.run(host='0.0.0.0', threaded=True, port=3000)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=80)

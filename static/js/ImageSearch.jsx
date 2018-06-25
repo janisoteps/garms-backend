@@ -46,6 +46,7 @@ class ImageSearch extends React.Component  {
         this.expandSexSelector = this.expandSexSelector.bind(this);
         this.showCatPicker = this.showCatPicker.bind(this);
         this.setMainCats = this.setMainCats.bind(this);
+        this.setMainCatsAndSearchSimilar = this.setMainCatsAndSearchSimilar.bind(this);
     }
 
     // Handles login input change
@@ -212,6 +213,45 @@ class ImageSearch extends React.Component  {
         });
     }
 
+    setMainCatsAndSearchSimilar(mainCat1, mainCat2, nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id){
+        // console.log('Similar image search launched, prod id: ', prod_id);
+        this.setState({
+            loading: true
+        });
+
+        let mainColor = color_1.toString().replace(/\s+/g, '');
+        // let mainColor = this.state.mainColor;
+        let siam_64 = siamese_64.toString().replace(/\s+/g, '');
+
+        let searchString = window.location.origin + '/api/search?nr1_cat_ai=' + nr1_cat_ai
+            + '&main_cat=' + mainCat1
+            + '&main_cat2=' + mainCat2
+            + '&nr1_cat_sc=' + nr1_cat_sc
+            + '&color_1=[' + mainColor
+            + ']&siamese_64=[' + siam_64
+            + ']&sex=' + this.state.sex
+            + '&id=' + prod_id;
+
+        console.log('search string: ', searchString);
+
+        fetch(searchString, {
+            method: 'get',
+        }).then(function(response) {
+            return response.json();
+        }).then(data => {
+            console.log(data);
+            this.setState({
+                results: data.res,
+                loading: false
+            });
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+            window.scrollTo(0, 0);
+        });
+    }
+
     // Sends similar product search request to server if user clicks on magnifying glass button
     // Updates results state with the response
     similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id){
@@ -371,7 +411,13 @@ class ImageSearch extends React.Component  {
         if(this.state.results){
             // console.log('ImageSearch email: ', this.state.email);
             var searchOrResults = this.state.results.length > 0 ? (
-                <ProductResults email={this.state.email} simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, id) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, id) }} results={this.state.results}/>
+                <ProductResults
+                    mainCat={this.state.mainCat}
+                    setMainCatsAndSearchSimilar={(mainCat1, mainCat2, nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id) => {this.setMainCatsAndSearchSimilar(mainCat1, mainCat2, nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id) }}
+                    email={this.state.email}
+                    simImgSearch={(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, id) => { this.similarImageSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, id) }}
+                    results={this.state.results}
+                />
             ) : (
                 searchForm
             );
@@ -442,15 +488,15 @@ class ImageSearch extends React.Component  {
                     }
                 };
 
-                let mainCats = this.state.cats.map(cat => {
+                let mainCats = this.state.cats.map((cat, index) => {
                     return(
-                        <div className={catClass(cat)} onClick={() => this.setColorCat({'cat': cat})} >{cat}</div>
+                        <div key={index} className={catClass(cat)} onClick={() => this.setColorCat({'cat': cat})} >{cat}</div>
                     )
                 });
 
-                let moreCats = this.state.altCats.map(altCat => {
+                let moreCats = this.state.altCats.map((altCat, index) => {
                     return(
-                        <div className={catClass(altCat)} onClick={() => this.setColorCat({'cat': altCat})} >{altCat}</div>
+                        <div key={index} className={catClass(altCat)} onClick={() => this.setColorCat({'cat': altCat})} >{altCat}</div>
                     )
                 });
 
@@ -465,9 +511,6 @@ class ImageSearch extends React.Component  {
                                 <div style={colorStyle3} onClick={() => this.setColorCat({'color': 3, 'cat':''})} />
                                 <p>choose which outfit type to search for:</p>
                                 <div>
-                                    {/*<div className={catClass(cat1)} onClick={() => this.setColorCat({'cat': cat1})} >{cat1}</div>*/}
-                                    {/*<div className={catClass(cat2)} onClick={() => this.setColorCat({'cat': cat2})} >{cat2}</div>*/}
-                                    {/*<div className={catClass(cat3)} onClick={() => this.setColorCat({'cat': cat3})} >{cat3}</div>*/}
                                     {mainCats}
                                 </div>
                                 <br></br>

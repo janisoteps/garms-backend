@@ -247,7 +247,7 @@
     background-size: 48px 48px;
     border-radius: 32px;
     position: absolute;
-    margin-top: -230px;
+    margin-top: -310px;
     right: -15px;
     cursor: pointer;
 }
@@ -260,6 +260,18 @@
     border-radius: 32px;
     position: absolute;
     margin-top: -150px;
+    right: -15px;
+    cursor: pointer;
+}
+
+.cat-picker-bubble{
+    width: 64px;
+    height: 64px;
+    background: #fca7e3 url('../images/baseline-style-24px.svg') no-repeat center;
+    background-size: 48px 48px;
+    border-radius: 32px;
+    position: absolute;
+    margin-top: -230px;
     right: -15px;
     cursor: pointer;
 }

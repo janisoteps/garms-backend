@@ -4,6 +4,260 @@ require('../css/garms.css');
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Paper from 'material-ui/Paper';
 
+const categories = {
+    'accessories': [
+        'backpack',
+        'bag',
+        'belt',
+        'clutch',
+        'notebook',
+        'pack',
+        'scarf',
+        'scrunchie',
+        'wallet',
+        'watch'
+    ],
+    'head wear': [
+        'bandana',
+        'beret',
+        'glasses',
+        'hat',
+        'scarf',
+        'sunglasses'
+    ],
+    'theme': [
+        'babydoll',
+        'glamorous',
+        'party',
+        'petite',
+        'skinny',
+        'tall',
+        'wedding',
+    ],
+    'bikini': [
+        'top',
+        'bottom',
+        'floral',
+        'lace',
+        'plunge',
+        'swim',
+        'swimsuit'
+    ],
+    'suit': [
+        'blazer',
+        'jacket',
+        'suit',
+        'tie',
+        'trousers',
+        'waistcoat'
+    ],
+    'classy': [
+        'blouse',
+        'jumpsuit',
+        'jersey'
+    ],
+    'dress': [
+        'bodycon',
+        'cami',
+        'corset',
+        'dress',
+        'embellished',
+        'embroider',
+        'embroidered',
+        'floral',
+        'highwaist',
+        'jersey',
+        'kimono',
+        'long',
+        'maternity',
+        'maxi',
+        'midi',
+        'mini',
+        'pencil',
+        'plunge',
+        'sequin',
+        'skirt',
+        'trapeze',
+        'tunic'
+    ],
+    'foot wear': [
+        'boots',
+        'espadrilles',
+        'flats',
+        'floral',
+        'heels',
+        'leather',
+        'loafers',
+        'mule',
+        'office',
+        'plimsolls',
+        'sandal',
+        'shoe',
+        'slippers',
+        'socks',
+        'trainer'
+    ],
+    'underwear': [
+        'body',
+        'bottom',
+        'bra',
+        'brief',
+        'embroider',
+        'embroidered',
+        'knicker',
+        'lingerie',
+        'maternity',
+        'nightwear',
+        'pack',
+        'pant',
+        'plunge',
+        'pyjama',
+        'thong',
+        'trunks'
+    ],
+    'jewellery': [
+        'bracelet',
+        'earrings',
+        'gold',
+        'necklace',
+        'pearl',
+        'ring'
+    ],
+    'top': [
+        'cami',
+        'crop',
+        'floral',
+        'frill',
+        'kimono',
+        'maternity',
+        'plunge',
+        'shirt',
+        'tee',
+        't-shirt',
+        'top',
+        'tunic'
+    ],
+    'knitted': [
+        'cardigan',
+        'knit',
+        'knitted'
+    ],
+    'trousers': [
+        'chino',
+        'dungaree',
+        'floral',
+        'highwaist',
+        'jean',
+        'jegging',
+        'jogger',
+        'legging',
+        'mom',
+        'shorts',
+        'tregging',
+        'trouser'
+    ],
+    'outer wear': [
+        'coat',
+        'parka'
+    ],
+    'cosmetics': [
+        'concealer',
+        'contour',
+        'eyeliner',
+        'highlight',
+        'kit',
+        'liner',
+        'lipstick',
+        'mask',
+        'mascara',
+        'primer'
+    ],
+    'pattern': [
+        'denim',
+        'floral',
+        'knit',
+        'knitted',
+        'mesh',
+        'polka',
+        'print',
+        'stripe'
+    ],
+    'material': [
+        'fur',
+        'gold',
+        'leather',
+        'metallic',
+        'pearl',
+        'satin',
+        'velvet'
+    ],
+    'embellishments': [
+        'embellished',
+        'embroidered',
+        'frill',
+        'floral',
+        'glitter',
+        'gold',
+        'lace',
+        'mesh',
+        'print',
+        'ruffle',
+        'sequin',
+        'quilted',
+        'tassel'
+    ],
+    'casual': [
+        'hoodie',
+        'jumper',
+        'pants',
+        'playsuit',
+        'pyjama',
+        'sweatshirt',
+        'tee',
+        't-shirt',
+        'tracksuit',
+        'tregging',
+        'vest'
+    ],
+    'summer': [
+        'mini',
+        'playsuit',
+        'sandal',
+        'shorts',
+        'tee',
+        'vest'
+    ],
+    'sports': [
+        'bra',
+        'sweat',
+        'tracksuit',
+        'trainer'
+    ]
+};
+
+const higherCats = [
+    'accessories',
+    'bikini',
+    'casual',
+    'classy',
+    'cosmetics',
+    'dress',
+    'embellishments',
+    'foot wear',
+    'head wear',
+    'jewellery',
+    'knitted',
+    'material',
+    'outer wear',
+    'pattern',
+    'suit',
+    'sports',
+    'summer',
+    'theme',
+    'top',
+    'trousers',
+    'underwear'
+];
 
 class ProductResults extends React.Component  {
     constructor(props) {
@@ -12,11 +266,21 @@ class ProductResults extends React.Component  {
             pickerExpanded: 0,
             faveDrawerExpanded: 0,
             email: this.props.email,
-            faveDrawerWidth: '64px'
+            faveDrawerWidth: '64px',
+            catPickerExpanded: 0
         };
         this.expandDrawer = this.expandDrawer.bind(this);
         this.simImSrc = this.simImSrc.bind(this);
         this.addToFavs = this.addToFavs.bind(this);
+        this.setMainCatsAndSearchSimilar = this.setMainCatsAndSearchSimilar.bind(this);
+    }
+
+    setMainCatsAndSearchSimilar(mainCat1, mainCat2, nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id){
+        console.log('Setting main cat to: ', mainCat1, ' and secondary cat to: ', mainCat2);
+        this.setState({
+            catPickerExpanded: 0
+        });
+        this.props.setMainCatsAndSearchSimilar(mainCat1, mainCat2, nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id);
     }
 
     simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id){
@@ -27,6 +291,7 @@ class ProductResults extends React.Component  {
         this.props.simImgSearch(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id);
     }
 
+    // Expands color picker drawer
     expandDrawer = (id, pickerId) => {
         console.log(id, ' vs ', pickerId);
         if (id === pickerId){
@@ -36,6 +301,19 @@ class ProductResults extends React.Component  {
         } else {
             this.setState({
                 pickerExpanded: id
+            });
+        }
+    };
+
+    expandCatDrawer = (id, pickerId) => {
+        console.log(id, ' vs ', pickerId);
+        if (id === pickerId){
+            this.setState({
+                catPickerExpanded: 0
+            });
+        } else {
+            this.setState({
+                catPickerExpanded: id
             });
         }
     };
@@ -87,6 +365,26 @@ class ProductResults extends React.Component  {
             let saleprice = productInfo.saleprice.toFixed(2);
             let shop = productInfo.shop;
             let siamese_64 = productInfo.siamese_64;
+
+            let catArray = [];
+            let catCheckArray = [];
+
+            higherCats.map(hCat => {
+                let lCats = categories[hCat];
+                let nameArray = name.toLowerCase().split(' ');
+                nameArray.map(word => {
+                    if (lCats.includes(word)){
+                        let pushObj = {
+                            'cat': word,
+                            'hCat': hCat
+                        };
+                        if (!catCheckArray.includes(word)){
+                            catCheckArray.push(word);
+                            catArray.push(pushObj);
+                        }
+                    }
+                });
+            });
 
             // nr1_cat_ai, nr1_cat_sc, color_1, siamese_64
 
@@ -183,7 +481,7 @@ class ProductResults extends React.Component  {
                 width: faveDrawerWidth,
                 borderRadius: '32px',
                 backgroundColor: '#FFFFFF',
-                marginTop: '-230px',
+                marginTop: '-310px',
                 right: '-15px',
                 position: 'absolute',
                 textAlign: 'left',
@@ -194,6 +492,45 @@ class ProductResults extends React.Component  {
                 paddingLeft: '10px',
                 paddingTop: '2px'
             };
+
+            let singleCatStyle = {
+                // width: '50px',
+                height: '50px',
+                borderRadius: '25px',
+                backgroundColor: '#f5e8ff',
+                margin: '7px',
+                marginRight: '0px',
+                display: 'inline-block',
+                cursor: 'pointer',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+                paddingTop: '13px',
+                paddingRight: '5px',
+                paddingLeft: '5px'
+            };
+
+            var catPickerDrawerWidth;
+
+            if (this.state.catPickerExpanded === prod_id){
+                catPickerDrawerWidth = '600px';
+            } else {
+                catPickerDrawerWidth = '64px';
+            }
+
+            let catPickerDrawerStyle = {
+                height: '64px',
+                transition: 'width 300ms ease-in-out',
+                maxWidth: catPickerDrawerWidth,
+                borderRadius: '32px',
+                backgroundColor: '#FFFFFF',
+                marginTop: '-230px',
+                right: '-15px',
+                position: 'absolute',
+                textAlign: 'left',
+                overflow: 'hidden',
+                paddingRight: '69px'
+            };
+
 
             let ColorPicker = () => {
                 return (
@@ -214,16 +551,42 @@ class ProductResults extends React.Component  {
                 )
             };
 
+            let CatPicker = () => {
+                let catItems = catArray.map((catObj, index) => {
+                    let mainCat1 = catObj['cat'];
+                    // let mainCat2 = catObj['hCat'];
+                    let mainCat2 = this.props.mainCat;
+                    return (
+                        <div
+                            key={index}
+                            style={singleCatStyle}
+                            onClick={() => {
+                                this.setMainCatsAndSearchSimilar(mainCat1, mainCat2, nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id); }}>
+                            {mainCat1}
+                        </div>
+                    )
+                });
+                return (
+                    <div>
+                        <div style={catPickerDrawerStyle}>
+                            {catItems}
+                        </div>
+                        <div className="cat-picker-bubble" onClick={() => { this.expandCatDrawer(prod_id, this.state.catPickerExpanded); }}></div>
+                    </div>
+                )
+            };
+
             return (
                 <Paper zDepth={1} className="product-tile" key={prod_id}>
                     <div className="product-name">{name}</div>
                     <div className="product-brand"><p>{brand} from {shop}</p></div>
                     <img className="product-image" src={img_url} />
                     <div className={sale ? 'product-price-sale' : 'product-price'}>{sale ? currency+saleprice+', was '+currency+price : currency+price}</div>
-                    <div style={faveDrawerStyle} >Added to faves</div>
-                    <div className="add-to-favorites" onClick={() => { this.addToFavs(img_hash, prod_id); }}></div>
                     <div className="search-similar" onClick={() => { this.simImSrc(nr1_cat_ai, nr1_cat_sc, img_cat_sc_txt, color_1, siamese_64, prod_id); }}></div>
                     <ColorPicker/>
+                    <CatPicker/>
+                    <div style={faveDrawerStyle} >Added to faves</div>
+                    <div className="add-to-favorites" onClick={() => { this.addToFavs(img_hash, prod_id); }}></div>
                 </Paper>
             );
         });

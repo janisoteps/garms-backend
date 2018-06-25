@@ -8,3 +8,7 @@
 # Node stuff
 static/node_modules
 static/node_modules/*
+
+# React stuff
+static/js/*
+static/images/*

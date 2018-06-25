@@ -41,11 +41,12 @@ const categories = {
         'swim',
         'swimsuit'
     ],
-    'smart': [
+    'suit': [
         'blazer',
         'jacket',
         'suit',
         'tie',
+        'trousers',
         'waistcoat'
     ],
     'classy': [
@@ -247,7 +248,7 @@ const higherCats = [
     'material',
     'outer wear',
     'pattern',
-    'smart',
+    'suit',
     'sports',
     'summer',
     'theme',
