@@ -4,7 +4,7 @@
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
-          <list size="42">
+          <list size="49">
             <item index="0" class="java.lang.String" itemvalue="pathspec" />
             <item index="1" class="java.lang.String" itemvalue="pbr" />
             <item index="2" class="java.lang.String" itemvalue="decorator" />
@@ -47,6 +47,13 @@
             <item index="39" class="java.lang.String" itemvalue="Tempita" />
             <item index="40" class="java.lang.String" itemvalue="Mako" />
             <item index="41" class="java.lang.String" itemvalue="Pillow" />
+            <item index="42" class="java.lang.String" itemvalue="scipy" />
+            <item index="43" class="java.lang.String" itemvalue="WTForms" />
+            <item index="44" class="java.lang.String" itemvalue="Babel" />
+            <item index="45" class="java.lang.String" itemvalue="Flask-WTF" />
+            <item index="46" class="java.lang.String" itemvalue="marshmallow" />
+            <item index="47" class="java.lang.String" itemvalue="pytz" />
+            <item index="48" class="java.lang.String" itemvalue="Flask-Babel" />
           </list>
         </value>
       </option>

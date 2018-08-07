@@ -1,14 +1,2 @@
 
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
-
-
-# Node stuff
-static/node_modules
-static/node_modules/*
-
-# React stuff
-static/js/*
-static/images/*
+server/.idea/*

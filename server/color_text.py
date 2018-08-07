@@ -247,14 +247,3 @@ def color_check(word_list):
 
     return result_dict
 
-
-# class ColorText:
-#     def color_check(self, word_list):
-#         result_dict = {'colors': [], 'words': []}
-#         for word in word_list:
-#             if word in colors:
-#                 result_dict['colors'].append(word)
-#             else:
-#                 result_dict['words'].append(word)
-#
-#         return result_dict
