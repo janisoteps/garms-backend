@@ -4,6 +4,41 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
 
+class InstaMentions(db.Model):
+    __tablename__ = 'instamentions'
+    id = db.Column(db.Integer, primary_key=True)
+    mention_username = db.Column(db.String, index=True)
+    comment_id = db.Column(db.String)
+    mention_timestamp = db.Column(db.String)
+    media_id = db.Column(db.String)
+    media_type = db.Column(db.String)
+    media_url = db.Column(db.String)
+    media_permalink = db.Column(db.String)
+
+    def __init__(
+            self,
+            mention_username,
+            comment_id,
+            mention_timestamp,
+            media_id,
+            media_type,
+            media_url,
+            media_permalink):
+        self.mention_username = mention_username
+        self.comment_id = comment_id
+        self.mention_timestamp = mention_timestamp
+        self.media_id = media_id
+        self.media_type = media_type
+        self.media_url = media_url
+        self.media_permalink = media_permalink
+
+    def __repr__(self):
+        return '<id={}>'.format(self.id)
+
+    def return_name(self):
+        return self.mention_username
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
