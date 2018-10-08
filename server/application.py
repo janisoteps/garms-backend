@@ -1,14 +1,12 @@
 from random import shuffle
 import json
-from flask import Flask, render_template
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flask_migrate import Migrate
-from flask import render_template, flash, redirect, url_for, request, g, \
-    jsonify, current_app
+from flask import render_template, request, jsonify
 import scipy.spatial as spatial
 import numpy as np
-# from marshmallow import Schema, fields
 from operator import itemgetter
 import string
 from sqlalchemy import func, any_, or_
@@ -16,7 +14,7 @@ from color_text import color_check
 # import asyncio
 import aiohttp
 from get_features import get_features
-from marshmallow_schema import ProductSchema, ProductsSchema
+from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload
 
@@ -221,28 +219,66 @@ def favorites():
 
         result_list = []
         for img_hash in favs:
-            print('Search img hash: ', str(img_hash))
             prod_search = db.session.query(Product).filter((Product.img_hash == img_hash)).first()
             try:
-                print(prod_search.img_hash)
                 prod_serial = ProductSchema().dump(prod_search)
 
             except:
-                print('New prod search')
                 new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-                print(new_prod_search)
                 if new_prod_search is None:
                     new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
                     prod_serial = ProductsSchema().dump(new_prod_search)
                 else:
                     prod_serial = ProductsSchema().dump(new_prod_search)
 
-            print(prod_serial)
             result_list.append(prod_serial)
 
         res = jsonify(res=result_list)
 
         return res
+
+
+@app.route("/api/insta_pics", methods=['GET'])
+def insta_pics():
+    if request.method == 'GET':
+        email = request.args.get('email')
+        user = User.query.filter_by(email=email).first()
+        insta_username = user.insta_username
+
+        if insta_username is None:
+            res = jsonify(res=None, insta_username=None)
+            return res
+        else:
+            insta_pics = db.session.query(InstaMentions).filter((InstaMentions.mention_username == insta_username)).all()
+
+            result_list = []
+            for insta_pic in insta_pics:
+                insta_serial = InstaMentionSchema().dump(insta_pic)
+                result_list.append(insta_serial)
+
+            res = jsonify(res=result_list, insta_username=insta_username)
+
+            return res
+
+
+@app.route("/api/save_insta_username", methods=['POST'])
+def save_insta_username():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        user_email = data['email']
+        insta_username = data['insta_username']
+
+        user = User.query.filter_by(email=user_email).first()
+
+        if user is None:
+            return jsonify(insta_username=False)
+
+        else:
+            user.insta_username = insta_username
+            db.session.commit()
+
+            return jsonify(insta_username=insta_username)
 
 
 @app.route('/api/logout')

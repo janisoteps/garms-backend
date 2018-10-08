@@ -184,6 +184,7 @@ def product_commit(db, Products, data):
 
 
 def insta_mention_commit(db, InstaMentions, data):
+    print(data)
     mention_username = data['mention_username']
     comment_id = data['comment_id']
     mention_timestamp = data['mention_timestamp']
@@ -191,6 +192,7 @@ def insta_mention_commit(db, InstaMentions, data):
     media_type = data['media_type']
     media_url = data['media_url']
     media_permalink = data['media_permalink']
+    owner_username = data['owner_username']
 
     insta_submission = InstaMentions(
         mention_username=mention_username,
@@ -199,9 +201,17 @@ def insta_mention_commit(db, InstaMentions, data):
         media_id=media_id,
         media_type=media_type,
         media_url=media_url,
-        media_permalink=media_permalink
+        media_permalink=media_permalink,
+        owner_username=owner_username
     )
 
-    db.session.add(insta_submission)
-    db.session.commit()
+    try:
+        existing_mention = InstaMentions.query.filter_by(comment_id=comment_id).first()
+    except:
+        existing_mention = None
+
+    if existing_mention is None:
+        db.session.add(insta_submission)
+        db.session.commit()
+
     return json.dumps(True)

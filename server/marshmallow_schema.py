@@ -94,3 +94,4 @@ class InstaMentionSchema(Schema):
     media_type = fields.String()
     media_url = fields.String()
     media_permalink = fields.String()
+    owner_username = fields.String()

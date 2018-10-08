@@ -14,6 +14,7 @@ class InstaMentions(db.Model):
     media_type = db.Column(db.String)
     media_url = db.Column(db.String)
     media_permalink = db.Column(db.String)
+    owner_username = db.Column(db.String)
 
     def __init__(
             self,
@@ -23,7 +24,8 @@ class InstaMentions(db.Model):
             media_id,
             media_type,
             media_url,
-            media_permalink):
+            media_permalink,
+            owner_username):
         self.mention_username = mention_username
         self.comment_id = comment_id
         self.mention_timestamp = mention_timestamp
@@ -31,6 +33,7 @@ class InstaMentions(db.Model):
         self.media_type = media_type
         self.media_url = media_url
         self.media_permalink = media_permalink
+        self.owner_username = owner_username
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -48,14 +51,16 @@ class User(UserMixin, db.Model):
     fb_id = db.Column(db.String, index=True, unique=True)
     favorites_ids = db.Column(ARRAY(db.String))
     sex = db.Column(db.String)
+    insta_username = db.Column(db.String)
 
-    def __init__(self, username, email, sex, password, fb_id, favorites_ids):
+    def __init__(self, username, email, sex, password, fb_id, favorites_ids, insta_username):
         self.password_hash = self.set_password(password)
         self.username = username
         self.email = email
         self.sex = sex
         self.fb_id = fb_id
         self.favorites_ids = favorites_ids
+        self.insta_username = insta_username
 
     def set_password(self, password):
         pwd_hash = generate_password_hash(password)
