@@ -240,11 +240,17 @@ class Products(db.Model):
 
 class Images(db.Model):
     __tablename__ = 'images'
+
+    __table_args__ = (
+        db.Index('name_idx', 'name', postgresql_ops={'name': "gin_trgm_ops"},
+                 postgresql_using='gin'),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     img_hash = db.Column(db.String(40), index=True, unique=True)
     prod_url = db.Column(db.String)
     img_url = db.Column(db.String)  # Scraped image source
-    name = db.Column(db.Text, index=True)
+    name = db.Column('name', db.Text, index=True)
     description = db.Column(db.Text)
     brand = db.Column(db.Text, index=True)
     shop = db.Column(db.Text)

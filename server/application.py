@@ -14,7 +14,7 @@ from color_text import color_check
 # import asyncio
 import aiohttp
 from get_features import get_features
-from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema
+from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema, ImageSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload
 
@@ -201,6 +201,15 @@ def removefav():
             for img_hash in user.favorites_ids:
                 prod_search = db.session.query(Product).filter((Product.img_hash == img_hash)).first()
                 prod_serial = product_schema.dump(prod_search)
+
+                if len(prod_serial[0]) == 0:
+                    new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
+                    if new_prod_search is None:
+                        new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
+                        prod_serial = ProductsSchema().dump(new_prod_search)
+                    else:
+                        prod_serial = ProductsSchema().dump(new_prod_search)
+                        
                 result_list.append(prod_serial)
 
             res = jsonify(res=result_list)
@@ -224,6 +233,14 @@ def favorites():
                 prod_serial = ProductSchema().dump(prod_search)
 
             except:
+                new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
+                if new_prod_search is None:
+                    new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
+                    prod_serial = ProductsSchema().dump(new_prod_search)
+                else:
+                    prod_serial = ProductsSchema().dump(new_prod_search)
+
+            if len(prod_serial[0]) == 0:
                 new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
                 if new_prod_search is None:
                     new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
@@ -350,6 +367,56 @@ def delete():
                 return json.dumps(True)
             except:
                 return json.dumps(False)
+
+
+# Trigram search for products with a search string
+@app.route("/api/text_search", methods=['get'])
+def text_search():
+    if request.method == 'GET':
+        search_string = request.args.get('search_string')
+        search_string.replace('+', ' ')
+        sex = request.args.get('sex')
+
+        string_list = search_string.strip().lower().split()
+        print('string list', str(string_list))
+        linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after']
+        string_list_clean = [e for e in string_list if e not in linking_words]
+        color_word_dict = color_check(string_list_clean)
+        color_list = color_word_dict['colors']
+
+        query_results = db.session.query(Images).filter(func.lower(Images.name).op('%%')(search_string)
+                                                        & func.lower(Images.color_name).op('%%')(color_list[0]))\
+            .filter(Images.sex == sex).limit(30).all()
+
+        img_list = []
+        for query_result in query_results:
+            img_query_result = {
+                'query_result': query_result,
+                'img_hash': query_result.img_hash
+            }
+            img_list.append(img_query_result)
+
+        result_list = []
+        prod_check = set()
+        for obj in img_list:
+            result_img_hash = obj['img_hash']
+            prod_search = db.session.query(Products).filter(Products.img_hashes.any(result_img_hash)).first()
+            prod_hash = prod_search.prod_hash
+            if prod_hash not in prod_check:
+                prod_serial = ProductsSchema().dump(prod_search)
+                prod_check.add(prod_hash)
+                img_serial = ImageSchema().dump(obj['query_result'])
+                result_dict = {
+                    'prod_serial': prod_serial,
+                    'image_data': img_serial
+                }
+                result_list.append(result_dict)
+
+        # Make it HTTP friendly
+        res = jsonify(res=result_list)
+        print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+
+        return res
 
 
 # Search for products with a search string
