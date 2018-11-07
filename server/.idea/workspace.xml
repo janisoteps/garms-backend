@@ -11,11 +11,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="application.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="application.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/application.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="379">
-              <caret line="396" column="45" selection-start-line="396" selection-start-column="45" selection-end-line="396" selection-end-column="45" />
+            <state relative-caret-position="86">
+              <caret line="406" lean-forward="true" selection-start-line="406" selection-end-line="406" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
               </folding>
@@ -23,11 +23,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="db_search.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="color_text.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/color_text.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="270">
+              <caret line="29" column="8" selection-start-line="29" selection-start-column="5" selection-end-line="29" selection-end-column="8" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="db_search.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/db_search.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="439">
-              <caret line="643" column="16" lean-forward="true" selection-start-line="643" selection-start-column="16" selection-end-line="647" selection-end-column="17" />
+            <state relative-caret-position="375">
+              <caret line="33" column="9" lean-forward="true" selection-start-line="33" selection-start-column="9" selection-end-line="33" selection-end-column="9" />
               <folding>
                 <element signature="e#0#39#0" expanded="true" />
               </folding>
@@ -110,6 +119,7 @@
       <find>explorer_search</find>
       <find>fav</find>
       <find>jsonify</find>
+      <find>sum</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -117,14 +127,14 @@
       <list>
         <option value="$PROJECT_DIR$/config.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.html" />
-        <option value="$PROJECT_DIR$/color_text.py" />
         <option value="$PROJECT_DIR$/get_features.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_1.json" />
-        <option value="$PROJECT_DIR$/db_search.py" />
         <option value="$PROJECT_DIR$/db_commit.py" />
         <option value="$PROJECT_DIR$/marshmallow_schema.py" />
         <option value="$PROJECT_DIR$/models.py" />
+        <option value="$PROJECT_DIR$/color_text.py" />
         <option value="$PROJECT_DIR$/application.py" />
+        <option value="$PROJECT_DIR$/db_search.py" />
       </list>
     </option>
   </component>
@@ -453,13 +463,6 @@
     <entry file="file://$PROJECT_DIR$/manage.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/color_text.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3735">
-          <caret line="249" lean-forward="true" selection-start-line="249" selection-end-line="249" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/db_create.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -504,16 +507,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/db_search.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="439">
-          <caret line="643" column="16" lean-forward="true" selection-start-line="643" selection-start-column="16" selection-end-line="647" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#39#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="448">
@@ -524,12 +517,29 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/color_text.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="29" column="8" selection-start-line="29" selection-start-column="5" selection-end-line="29" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/application.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="379">
-          <caret line="396" column="45" selection-start-line="396" selection-start-column="45" selection-end-line="396" selection-end-column="45" />
+        <state relative-caret-position="86">
+          <caret line="406" lean-forward="true" selection-start-line="406" selection-end-line="406" />
           <folding>
             <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/db_search.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="33" column="9" lean-forward="true" selection-start-line="33" selection-start-column="9" selection-end-line="33" selection-end-column="9" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
           </folding>
         </state>
       </provider>

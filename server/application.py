@@ -374,19 +374,36 @@ def delete():
 def text_search():
     if request.method == 'GET':
         search_string = request.args.get('search_string')
+        print('search string: ' + search_string)
         search_string.replace('+', ' ')
         sex = request.args.get('sex')
 
         string_list = search_string.strip().lower().split()
-        print('string list', str(string_list))
-        linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after']
+        linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after', 'by', 'and']
         string_list_clean = [e for e in string_list if e not in linking_words]
+        print('Cleaned string list', str(string_list_clean))
         color_word_dict = color_check(string_list_clean)
         color_list = color_word_dict['colors']
+        word_list = color_word_dict['words']
+        search_string_clean = ' '.join(word_list)
 
-        query_results = db.session.query(Images).filter(func.lower(Images.name).op('%%')(search_string)
-                                                        & func.lower(Images.color_name).op('%%')(color_list[0]))\
-            .filter(Images.sex == sex).limit(30).all()
+        query_results = []
+        if len(color_list) > 0 and len(word_list) > 0:
+            query_results += db.session.query(Images).filter(func.lower(Images.name).op('%%')(search_string_clean)
+                                                             & func.lower(Images.color_name).op('%%')(color_list[0])) \
+                .filter(Images.sex == sex).limit(30).all()
+        else:
+            query_results += db.session.query(Images).filter(func.lower(Images.name).op('%%')(search_string_clean)) \
+                .filter(Images.sex == sex).limit(30).all()
+
+        if len(query_results) < 5:
+            query_results += db.session.query(Images).filter(
+                func.lower(Images.name).op('%%')(' '.join(string_list_clean))) \
+                .filter(Images.sex == sex).limit(30).all()
+        if len(query_results) < 5:
+            query_results += db.session.query(Images).filter(
+                func.lower(Images.name).op('%%')(search_string_clean)) \
+                .filter(Images.sex == sex).limit(30).all()
 
         img_list = []
         for query_result in query_results:
@@ -413,7 +430,7 @@ def text_search():
                 result_list.append(result_dict)
 
         # Make it HTTP friendly
-        res = jsonify(res=result_list)
+        res = jsonify(res=result_list, tags=word_list)
         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
 
         return res
