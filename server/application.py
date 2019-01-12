@@ -98,6 +98,7 @@ def register():
         sex = data['sex']
         username = data['username']
         fb_id = str(np.random.random() * 1000)
+        first_login = data['first_login']
 
         user = User.query.filter_by(email=email).first()
 
@@ -109,7 +110,9 @@ def register():
                 sex=sex,
                 password=pwd,
                 fb_id=fb_id,
-                favorites_ids=''
+                favorites_ids='',
+                insta_username=None,
+                first_login=first_login
             )
             db.session.add(reg_submission)
             db.session.commit()
@@ -139,6 +142,8 @@ def login():
             favorites = user.favorites_ids
             sex = user.sex
             user_email = user.email
+            first_login = user.first_login
+
 
             # print(username)
             user_dict = {
@@ -146,7 +151,8 @@ def login():
                 'username': username,
                 'favorites': favorites,
                 'sex': sex,
-                'email': user_email
+                'email': user_email,
+                'first_login': first_login
             }
 
             res = jsonify(auth=True, res=user_dict)

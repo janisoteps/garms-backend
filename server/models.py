@@ -52,8 +52,19 @@ class User(UserMixin, db.Model):
     favorites_ids = db.Column(ARRAY(db.String))
     sex = db.Column(db.String)
     insta_username = db.Column(db.String)
+    first_login = db.Column(db.Integer)
 
-    def __init__(self, username, email, sex, password, fb_id, favorites_ids, insta_username):
+    def __init__(
+            self,
+            username,
+            email,
+            sex,
+            password,
+            fb_id,
+            favorites_ids,
+            insta_username,
+            first_login
+    ):
         self.password_hash = self.set_password(password)
         self.username = username
         self.email = email
@@ -61,6 +72,7 @@ class User(UserMixin, db.Model):
         self.fb_id = fb_id
         self.favorites_ids = favorites_ids
         self.insta_username = insta_username
+        self.first_login = first_login
 
     def set_password(self, password):
         pwd_hash = generate_password_hash(password)
