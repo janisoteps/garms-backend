@@ -160,6 +160,21 @@ def login():
             return res
 
 
+@app.route("/api/complete_first_login", methods=['POST'])
+def complete_first_login():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+        user_email = data['email']
+
+        user = User.query.filter_by(email=user_email).first()
+        user.first_login = 0
+
+        db.session.commit()
+        
+        return json.dumps(True)
+
+
 @app.route("/api/addfav", methods=['POST'])
 def addfav():
     if request.method == 'POST':
