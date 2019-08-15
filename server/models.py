@@ -1,7 +1,8 @@
 from application import db
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from sqlalchemy.ext.mutable import MutableDict
 
 
 class InstaMentions(db.Model):
@@ -53,6 +54,7 @@ class User(UserMixin, db.Model):
     sex = db.Column(db.String)
     insta_username = db.Column(db.String)
     first_login = db.Column(db.Integer)
+    wardrobe = db.Column(MutableDict.as_mutable(JSONB))
 
     def __init__(
             self,
@@ -63,7 +65,8 @@ class User(UserMixin, db.Model):
             fb_id,
             favorites_ids,
             insta_username,
-            first_login
+            first_login,
+            wardrobe
     ):
         self.password_hash = self.set_password(password)
         self.username = username
@@ -73,6 +76,7 @@ class User(UserMixin, db.Model):
         self.favorites_ids = favorites_ids
         self.insta_username = insta_username
         self.first_login = first_login
+        self.wardrobe = wardrobe
 
     def set_password(self, password):
         pwd_hash = generate_password_hash(password)

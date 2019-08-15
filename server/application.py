@@ -17,6 +17,7 @@ from get_features import get_features
 from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema, ImageSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload
+from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -97,7 +98,7 @@ def register():
         pwd = data['pwd']
         sex = data['sex']
         username = data['username']
-        fb_id = str(np.random.random() * 1000)
+        fb_id = data['fb_id']
         first_login = data['first_login']
 
         user = User.query.filter_by(email=email).first()
@@ -753,6 +754,56 @@ def explorer_search():
         # print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
 
         return res
+
+
+@app.route("/api/add_look", methods=['POST'])
+def add_look():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+        add_look_response = db_add_look(db, User, data)
+
+        return add_look_response
+
+
+@app.route("/api/remove_look", methods=['POST'])
+def remove_look():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+        remove_look_response = db_remove_look(db, User, data)
+
+        return remove_look_response
+
+
+@app.route("/api/get_looks", methods=['POST'])
+def get_looks():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+        get_looks_response = db_get_looks(db, User, data)
+
+        return get_looks_response
+
+
+@app.route("/api/add_outfit", methods=['POST'])
+def add_outfit():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+        add_outfit_response = db_add_outfit(db, User, data)
+
+        return add_outfit_response
+
+
+@app.route("/api/remove_outfit", methods=['POST'])
+def remove_outfit():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+        remove_outfit_response = db_remove_outfit(db, User, data)
+
+        return remove_outfit_response
 
 
 if __name__ == "__main__":
