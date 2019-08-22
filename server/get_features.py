@@ -36,6 +36,7 @@ def get_features(image):
     loop = asyncio.get_event_loop()
 
     # Gather responses from APIs using asyncio
+    # print(len(loop.run_until_complete(asyncio.gather(*tasks))))
     nocrop_enc_res, color_res, cat_res = loop.run_until_complete(asyncio.gather(*tasks))
 
     img_cats_ai_txt = json.loads(cat_res)['res']['img_cats_ai_txt']

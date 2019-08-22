@@ -1,22 +1,21 @@
-from random import shuffle
+# from random import shuffle
 import json
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flask_migrate import Migrate
 from flask import render_template, request, jsonify
-import scipy.spatial as spatial
-import numpy as np
-from operator import itemgetter
+# import scipy.spatial as spatial
+# import numpy as np
+# from operator import itemgetter
 import string
 from sqlalchemy import func, any_, or_
-from color_text import color_check
 # import asyncio
 import aiohttp
 from get_features import get_features
 from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema, ImageSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
-from db_search import search_similar_images, search_from_upload
+from db_search import search_similar_images, search_from_upload, db_text_search
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 
 
@@ -57,8 +56,6 @@ def hex_to_rgb(value):
     value = filter_out_junk(value)
     value = value[2:]
     lv = len(value)
-    # print('length: ', str(lv))
-    # print('Value: ', str(value))
     return tuple(int(value[i:i + int(lv / 3)], 16) for i in range(0, lv, int(lv / 3)))
 
 
@@ -395,162 +392,20 @@ def delete():
 @app.route("/api/text_search", methods=['get'])
 def text_search():
     if request.method == 'GET':
-        search_string = request.args.get('search_string')
-        print('search string: ' + search_string)
-        search_string.replace('+', ' ')
-        sex = request.args.get('sex')
-
-        string_list = search_string.strip().lower().split()
-        linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after', 'by', 'and']
-        string_list_clean = [e for e in string_list if e not in linking_words]
-        print('Cleaned string list', str(string_list_clean))
-        color_word_dict = color_check(string_list_clean)
-        color_list = color_word_dict['colors']
-        word_list = color_word_dict['words']
-        search_string_clean = ' '.join(word_list)
-
-        query_results = []
-        if len(color_list) > 0 and len(word_list) > 0:
-            query_results += db.session.query(Images).filter(func.lower(Images.name).op('%%')(search_string_clean)
-                                                             & func.lower(Images.color_name).op('%%')(color_list[0])) \
-                .filter(Images.sex == sex).limit(30).all()
-        else:
-            query_results += db.session.query(Images).filter(func.lower(Images.name).op('%%')(search_string_clean)) \
-                .filter(Images.sex == sex).limit(30).all()
-
-        if len(query_results) < 5:
-            query_results += db.session.query(Images).filter(
-                func.lower(Images.name).op('%%')(' '.join(string_list_clean))) \
-                .filter(Images.sex == sex).limit(30).all()
-        if len(query_results) < 5:
-            query_results += db.session.query(Images).filter(
-                func.lower(Images.name).op('%%')(search_string_clean)) \
-                .filter(Images.sex == sex).limit(30).all()
-
-        img_list = []
-        for query_result in query_results:
-            img_query_result = {
-                'query_result': query_result,
-                'img_hash': query_result.img_hash
-            }
-            img_list.append(img_query_result)
-
-        result_list = []
-        prod_check = set()
-        for obj in img_list:
-            result_img_hash = obj['img_hash']
-            prod_search = db.session.query(Products).filter(Products.img_hashes.any(result_img_hash)).first()
-            prod_hash = prod_search.prod_hash
-            if prod_hash not in prod_check:
-                prod_serial = ProductsSchema().dump(prod_search)
-                prod_check.add(prod_hash)
-                img_serial = ImageSchema().dump(obj['query_result'])
-                result_dict = {
-                    'prod_serial': prod_serial,
-                    'image_data': img_serial
-                }
-                result_list.append(result_dict)
-
-        # Make it HTTP friendly
-        res = jsonify(res=result_list, tags=word_list)
+        res = db_text_search(request, db, Products, Images)
         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
 
         return res
 
 
-# Search for products with a search string
-@app.route("/api/text", methods=['get'])
-def text():
-    if request.method == 'GET':
-        search_string = request.args.get('string')
-        sex = request.args.get('sex')
-
-        print('Text search with string: ', str(search_string))
-        # cleaned_string = search_string.translate(' ', "!@£$%^&*()<>?/|~`.,:;#+=_")
-
-        string_list = search_string.strip().lower().split()
-        print('string list', str(string_list))
-        linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after']
-
-        string_list_clean = [e for e in string_list if e not in linking_words]
-
-        color_word_dict = color_check(string_list_clean)
-
-        print(color_word_dict)
-        word_list = color_word_dict['words']
-        color_list = color_word_dict['colors']
-
-        id_list = []
-        if 2 > len(word_list) > 0 and len(color_list) > 0:
-            print('1 word and is color')
-            id_list += db.session.query(Product).filter(
-                (Product.sex == sex) & (func.lower(Product.name).contains(word_list[-1])) & (
-                    func.lower(Product.color_name).contains(color_list[0]))).order_by(func.random()).limit(60).all()
-
-        elif 3 > len(word_list) > 1 and len(color_list) > 0:
-            print('2 words and is color')
-            id_list += db.session.query(Product).filter(
-                (Product.sex == sex) & (func.lower(Product.name).contains(word_list[-1])) & (
-                    func.lower(Product.name).contains(word_list[1])) & (
-                    func.lower(Product.color_name).contains(
-                        color_list[0]))).order_by(func.random()).limit(60).all()
-
-        elif 3 > len(word_list) > 1:
-            print('2 words, no color')
-            id_list += db.session.query(Product).filter(
-                (Product.sex == sex) & (func.lower(Product.name).contains(word_list[0])) & (
-                    func.lower(Product.name).contains(word_list[1]))).order_by(func.random()).limit(60).all()
-
-        elif 4 > len(word_list) > 2:
-            print('3 words, no color')
-            id_list += db.session.query(Product).filter(
-                (Product.sex == sex) & (func.lower(Product.name).contains(word_list[0])) & (
-                    func.lower(Product.name).contains(word_list[1])) & (
-                    func.lower(Product.name).contains(word_list[2]))).order_by(
-                func.random()).limit(60).all()
-            # word_len = len(word_list)
-            # for i in range(0, word_len):
-            #     id_list += db.session.query(Product).filter(
-            #         (func.lower(Product.name).contains(word_list[i]))).order_by(
-            #         func.random()).limit(30).all()
-        elif 2 > len(word_list) > 0:
-            print('1 word, no color')
-            id_list += db.session.query(Product).filter(
-                (Product.sex == sex) & (func.lower(Product.name).contains(word_list[-1]))).order_by(
-                func.random()).limit(60).all()
-
-        elif len(color_list) > 0:
-            print('only color')
-            color_len = len(color_list)
-            for k in range(0, color_len):
-                id_list += db.session.query(Product).filter(
-                    (Product.sex == sex) & (func.lower(Product.color_name).contains(color_list[k]))).order_by(
-                    func.random()).limit(60).all()
-
-        else:
-            return json.dumps('BAD REQUEST')
-
-        # Declare Marshmallow schema so that SqlAlchemy object can be serialized
-        product_schema = ProductSchema()
-
-        result_list = []
-        for prod_id in id_list:
-            # prod_id_str = str(prod_id)
-            # text_prod_id = re.search('(?<=id=\[).{0,8}(?=\])', prod_id_str)[0]
-            text_prod_id = prod_id.id
-            prod_search = db.session.query(Product).filter((Product.id == text_prod_id)).first()
-            prod_serial = product_schema.dump(prod_search)
-            result_list.append(prod_serial)
-
-        main_cat = ''
-        if len(word_list) > 0:
-            main_cat = word_list[-1]
-
-        # Make it HTTP friendly
-        res = jsonify(res=result_list, mainCat=main_cat)
-        print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
-
-        return res
+# # Search for products with a search string
+# @app.route("/api/text", methods=['get'])
+# def text():
+#     if request.method == 'GET':
+#
+#         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+#
+#         return res
 
 
 # Return color, encoding and category predictions from uploaded image
@@ -617,150 +472,26 @@ def prods_tats():
 
             return res
 
-
-@app.route("/api/explorer_search", methods=['POST'])
-def explorer_search():
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-        data = json.loads(data)
-        main_cat_top = data['main_cat_top']
-        main_cat_sub = data['main_cat_sub']
-        sex = data['sex']
-        color_selected = data['color_selected']
-        req_color = []
-        if color_selected:
-            color_dict = data['color']
-            req_color.append(color_dict['r'])
-            req_color.append(color_dict['g'])
-            req_color.append(color_dict['b'])
-
-        shops = data['shops']
-        brands = data['brands']
-        max_price = float(data['max_price'])
-
-        if brands[0] == 'All':
-            id_list = db.session.query(Product).filter(
-                ((Product.img_cats_ai_txt.any(main_cat_sub))
-                 | (Product.spider_cat == main_cat_sub)
-                 | (Product.img_cats_sc_txt.any(main_cat_sub)))
-                & ((Product.img_cats_ai_txt.any(main_cat_top))
-                   | (Product.spider_cat == main_cat_top)
-                   | (Product.img_cats_sc_txt.any(main_cat_top)))
-                & (Product.sex == sex)
-                & (or_(*[Product.shop.ilike(shop) for shop in shops]))
-                & (Product.price <= max_price)
-            ).order_by(
-                func.random()).limit(5000).all()
-
-            if len(id_list) < 100:
-                id_list = db.session.query(Product).filter(
-                    ((Product.img_cats_ai_txt.any(main_cat_sub))
-                     | (Product.spider_cat == main_cat_sub)
-                     | (Product.img_cats_sc_txt.any(main_cat_sub)))
-                    & (Product.sex == sex)
-                    & (or_(*[Product.shop.ilike(shop) for shop in shops]))
-                    & (Product.price <= max_price)
-                ).order_by(
-                    func.random()).limit(5000).all()
-
-        else:
-            id_list = db.session.query(Product).filter(
-                ((Product.img_cats_ai_txt.any(main_cat_sub))
-                 | (Product.spider_cat == main_cat_sub)
-                 | (Product.img_cats_sc_txt.any(main_cat_sub)))
-                & ((Product.img_cats_ai_txt.any(main_cat_top))
-                   | (Product.spider_cat == main_cat_top)
-                   | (Product.img_cats_sc_txt.any(main_cat_top)))
-                & (Product.sex == sex)
-                & (or_(*[Product.shop.ilike(shop) for shop in shops]))
-                & (Product.price <= max_price)
-                & (or_(*[Product.brand.ilike(brand) for brand in brands]))
-            ).order_by(
-                func.random()).limit(5000).all()
-
-            if len(id_list) < 100:
-                id_list = db.session.query(Product).filter(
-                    ((Product.img_cats_ai_txt.any(main_cat_sub))
-                     | (Product.spider_cat == main_cat_sub)
-                     | (Product.img_cats_sc_txt.any(main_cat_sub)))
-                    & (Product.sex == sex)
-                    & (or_(*[Product.shop.ilike(shop) for shop in shops]))
-                    & (Product.price <= max_price)
-                    & (or_(*[Product.brand.ilike(brand) for brand in brands]))
-                ).order_by(
-                    func.random()).limit(5000).all()
-
-        if color_selected:
-            color_dist_list = []
-            for prod_obj in id_list:
-                color_prod_id = prod_obj.id
-                color1_rgb = prod_obj.color_1
-                color2_rgb = prod_obj.color_2
-                color3_rgb = prod_obj.color_3
-
-                distance_color_1 = int(
-                    spatial.distance.euclidean(np.array(req_color, dtype=int), np.array(color1_rgb, dtype=int),
-                                               w=None))
-                distance_color_2 = int(
-                    spatial.distance.euclidean(np.array(req_color, dtype=int), np.array(color2_rgb, dtype=int),
-                                               w=None))
-                distance_color_3 = int(
-                    spatial.distance.euclidean(np.array(req_color, dtype=int), np.array(color3_rgb, dtype=int),
-                                               w=None))
-
-                color_dist = int((distance_color_1 + distance_color_2 + distance_color_3) / 3)
-
-                item_obj = {
-                    'id': color_prod_id,
-                    'color_distance': color_dist
-                }
-
-                color_dist_list.append(item_obj)
-
-            # Closest colors at top
-            sorted_color_list = sorted(color_dist_list, key=itemgetter('color_distance'))
-            top_color_list = sorted_color_list[0:100]
-
-        else:
-            shuffle(id_list)
-
-            random_list = []
-            counter = 0
-            for prod_obj in id_list:
-                counter += 1
-
-                if counter < 100:
-                    prod_id = prod_obj.id
-                    item_obj = {
-                        'id': prod_id
-                    }
-
-                    random_list.append(item_obj)
-
-            top_color_list = random_list
-
-        # Declare Marshmallow schema so that SqlAlchemy object can be serialized
-        product_schema = ProductSchema()
-
-        result_list = []
-        for obj in top_color_list:
-            result_obj_id = obj['id']
-            prod_search = db.session.query(Product).filter((Product.id == result_obj_id)).first()
-            prod_serial = product_schema.dump(prod_search)
-            result_list.append(prod_serial)
-
-        # Make it HTTP friendly
-        res = jsonify(res=result_list)
-        # print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
-
-        return res
+#
+# @app.route("/api/explorer_search", methods=['POST'])
+# def explorer_search():
+#     if request.method == 'POST':
+#         data = request.get_json(force=True)
+#         data = json.loads(data)
+#
+#
+#         # Make it HTTP friendly
+#         res = jsonify(res=result_list)
+#         # print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+#
+#         return res
 
 
 @app.route("/api/add_look", methods=['POST'])
 def add_look():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # data = json.loads(data)
+        data = json.loads(data)
         add_look_response = db_add_look(db, User, data)
 
         return add_look_response
@@ -770,7 +501,7 @@ def add_look():
 def remove_look():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # data = json.loads(data)
+        data = json.loads(data)
         remove_look_response = db_remove_look(db, User, data)
 
         return remove_look_response
@@ -780,9 +511,10 @@ def remove_look():
 def get_looks():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # data = json.loads(data)
+        data = json.loads(data)
+        # print(data)
         get_looks_response = db_get_looks(db, User, data)
-
+        # print(get_looks_response)
         return get_looks_response
 
 
@@ -790,8 +522,8 @@ def get_looks():
 def add_outfit():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # data = json.loads(data)
-        add_outfit_response = db_add_outfit(db, User, data)
+        data = json.loads(data)
+        add_outfit_response = db_add_outfit(db, User, Products, data)
 
         return add_outfit_response
 
@@ -800,10 +532,45 @@ def add_outfit():
 def remove_outfit():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # data = json.loads(data)
+        data = json.loads(data)
         remove_outfit_response = db_remove_outfit(db, User, data)
 
         return remove_outfit_response
+
+
+@app.route("/api/get_products", methods=['POST'])
+def get_products():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        prod_hashes = data['prod_hashes']
+        conditions = []
+        for prod_hash in prod_hashes:
+            conditions.append(
+                (Products.prod_hash == prod_hash)
+            )
+        query = db.session.query(Products).filter(
+            or_(*conditions)
+        )
+        query_results = query.all()
+        prod_results = []
+        for query_result in query_results:
+            prod_serial = ProductsSchema().dump(query_result)
+            prod_results.append(prod_serial)
+
+        return json.dumps(prod_results)
+
+
+@app.route("/api/get_prod_hash", methods=['POST'])
+def get_prod_hash():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        img_hash = data['img_hash']
+        prodduct = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
+        prod_hash = prodduct.prod_hash
+
+        return json.dumps({'prod_hash': prod_hash})
 
 
 if __name__ == "__main__":

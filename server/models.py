@@ -2,7 +2,7 @@ from application import db
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.ext.mutable import MutableList
 
 
 class InstaMentions(db.Model):
@@ -54,7 +54,8 @@ class User(UserMixin, db.Model):
     sex = db.Column(db.String)
     insta_username = db.Column(db.String)
     first_login = db.Column(db.Integer)
-    wardrobe = db.Column(MutableDict.as_mutable(JSONB))
+    wardrobe = db.Column(MutableList.as_mutable(JSONB))
+    looks = db.Column(MutableList.as_mutable(JSONB))
 
     def __init__(
             self,
@@ -66,7 +67,8 @@ class User(UserMixin, db.Model):
             favorites_ids,
             insta_username,
             first_login,
-            wardrobe
+            wardrobe,
+            looks
     ):
         self.password_hash = self.set_password(password)
         self.username = username
@@ -77,6 +79,7 @@ class User(UserMixin, db.Model):
         self.insta_username = insta_username
         self.first_login = first_login
         self.wardrobe = wardrobe
+        self.looks = looks
 
     def set_password(self, password):
         pwd_hash = generate_password_hash(password)
@@ -209,6 +212,8 @@ class Products(db.Model):
     img_hashes = db.Column(ARRAY(db.String(40)), index=True)
     spider_cat = db.Column(db.Text, index=True)  # Category obtained during scraping
     img_cats_sc_txt = db.Column(ARRAY(db.Text), index=True)  # Image categories from scraped name in text format
+    is_fav = db.Column(db.Boolean)
+    searchable = db.Column(db.Boolean)
 
     def __init__(self,
                  prod_hash,
@@ -227,7 +232,9 @@ class Products(db.Model):
                  img_urls,
                  img_hashes,
                  spider_cat,
-                 img_cats_sc_txt):
+                 img_cats_sc_txt,
+                 is_fav,
+                 searchable):
 
         self.prod_hash = prod_hash
         self.prod_url = prod_url
@@ -246,6 +253,8 @@ class Products(db.Model):
         self.img_hashes = img_hashes
         self.spider_cat = spider_cat
         self.img_cats_sc_txt = img_cats_sc_txt
+        self.is_fav = is_fav
+        self.searchable = searchable
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
