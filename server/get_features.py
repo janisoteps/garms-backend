@@ -15,9 +15,9 @@ async def send_file(url, image_file):
 
 def get_features(image):
     # color_512_api = 'http://34.245.151.12/api/color512'
-    nocrop_encoding_api = 'http://52.30.6.173/api/encoding'
-    cat_api = 'http://52.18.195.227/api/cats'
-    color_api = 'http://34.242.36.122/api/color'
+    nocrop_encoding_api = 'http://34.248.180.130/api/encoding'
+    cat_api = 'http://34.245.0.175/api/cats'
+    color_api = 'https://hvoe2gb7cf.execute-api.eu-west-1.amazonaws.com/production/api/color'
     # crop_encoding_api = 'http://34.251.45.220/api/encoding'
     # sqcrop_encoding_api = 'http://34.244.2.76/api/encoding'
 
@@ -31,9 +31,12 @@ def get_features(image):
     ]
 
     tasks = [send_file(url, image) for url in api_urls]
+
+    asyncio.set_event_loop(asyncio.new_event_loop())
     loop = asyncio.get_event_loop()
 
     # Gather responses from APIs using asyncio
+    # print(len(loop.run_until_complete(asyncio.gather(*tasks))))
     nocrop_enc_res, color_res, cat_res = loop.run_until_complete(asyncio.gather(*tasks))
 
     img_cats_ai_txt = json.loads(cat_res)['res']['img_cats_ai_txt']
