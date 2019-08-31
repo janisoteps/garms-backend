@@ -110,7 +110,9 @@ def register():
                 fb_id=fb_id,
                 favorites_ids='',
                 insta_username=None,
-                first_login=first_login
+                first_login=first_login,
+                wardrobe=None,
+                looks=None
             )
             db.session.add(reg_submission)
             db.session.commit()
