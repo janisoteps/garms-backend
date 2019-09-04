@@ -79,3 +79,30 @@ def recommend_similar_tags(db, User, Products, data):
             })
 
     return json.dumps(suggestions)
+
+
+def recommend_from_random(db, Products, data):
+    req_sex = data['sex']
+    print(f'req_sex = {req_sex}')
+    if req_sex is not '':
+        if req_sex == 'both':
+            query = db.session.query(Products)
+        else:
+            query = db.session.query(Products).filter(Products.sex == req_sex)
+    else:
+        query = db.session.query(Products)
+
+    query_results = query.order_by(func.random()).limit(30).all()
+    prod_results = []
+    for query_result in query_results:
+        prod_serial = ProductsSchema().dump(query_result)
+        prod_results.append(prod_serial)
+
+    suggestions = [
+        {
+            'look_name': None,
+            'prod_suggestions': prod_results
+        }
+    ]
+
+    return json.dumps(suggestions)
