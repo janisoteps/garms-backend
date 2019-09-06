@@ -591,11 +591,23 @@ def recommend_tags():
 def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # data = json.loads(data)
 
         suggestions = recommend_from_random(db, Products, data)
 
         return suggestions
+
+
+@app.route("/api/get_image", methods=['POST'])
+def get_image():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        img_hash = data['img_hash']
+
+        query = db.session.query(Images).filter(Images.img_hash == img_hash)
+        query_result = query.first()
+        img_serial = ImageSchema().dump(query_result)
+
+        return json.dumps(img_serial)
 
 
 if __name__ == "__main__":
