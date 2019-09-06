@@ -18,65 +18,76 @@ def recommend_similar_tags(db, User, Products, data):
     user_wardrobe = user_data.wardrobe
     user_looks = user_data.looks
     suggestions = []
+    if user_looks is not None:
+        for look in user_looks:
+            outfits = [outfit['prod_id'] for outfit in user_wardrobe if outfit['look_name'] == look['look_name']]
+            # print('outfits')
+            # print(outfits)
+            if len(outfits) > 0:
+                query_prods = db.session.query(Products).filter(Products.prod_hash.in_(outfits)).all()
+                look_cats_kind = []
+                look_cats_all = []
+                for query_prod in query_prods:
+                    query_name = query_prod.name
+                    # print(f'query_name={query_name}')
+                    for query_word in query_name.split(' '):
+                        # print(f'query_word={query_word}')
+                        if query_word.lower() in Cats().kind_cats and query_word.lower() not in look_cats_kind:
+                            # print(f'added to look_cats_kind: {query_word.lower()}')
+                            look_cats_kind.append(query_word.lower())
+                        if query_word.lower() in Cats().all_cats and query_word.lower() not in look_cats_all:
+                            # print(f'added to look_cats_all: {query_word.lower()}')
+                            look_cats_all.append(query_word.lower())
 
-    for look in user_looks:
-        outfits = [outfit['prod_id'] for outfit in user_wardrobe if outfit['look_name'] == look['look_name']]
-        # print('outfits')
-        # print(outfits)
-        if len(outfits) > 0:
-            query_prods = db.session.query(Products).filter(Products.prod_hash.in_(outfits)).all()
-            look_cats_kind = []
-            look_cats_all = []
-            for query_prod in query_prods:
-                query_name = query_prod.name
-                # print(f'query_name={query_name}')
-                for query_word in query_name.split(' '):
-                    # print(f'query_word={query_word}')
-                    if query_word.lower() in Cats().kind_cats and query_word.lower() not in look_cats_kind:
-                        # print(f'added to look_cats_kind: {query_word.lower()}')
-                        look_cats_kind.append(query_word.lower())
-                    if query_word.lower() in Cats().all_cats and query_word.lower() not in look_cats_all:
-                        # print(f'added to look_cats_all: {query_word.lower()}')
-                        look_cats_all.append(query_word.lower())
+                # print('look cats kind')
+                # print(look_cats_kind)
+                # print('look cats all')
+                # print(look_cats_all)
 
-            # print('look cats kind')
-            # print(look_cats_kind)
-            # print('look cats all')
-            # print(look_cats_all)
+                kind_conditions = []
+                all_conditions = []
 
-            kind_conditions = []
-            all_conditions = []
+                for tag in look_cats_kind:
+                    kind_conditions.append(
+                        func.lower(Products.name).ilike('%{}%'.format(tag)) | Products.img_cats_sc_txt.any(tag)
+                    )
+                for all_tag in look_cats_all:
+                    all_conditions.append(
+                        func.lower(Products.name).ilike('%{}%'.format(all_tag)) | Products.img_cats_sc_txt.any(all_tag)
+                    )
 
-            for tag in look_cats_kind:
-                kind_conditions.append(
-                    func.lower(Products.name).ilike('%{}%'.format(tag)) | Products.img_cats_sc_txt.any(tag)
+                # print('KIND CONDS')
+                # print(kind_conditions)
+                # print('ALL CONDS')
+                # print(all_conditions)
+
+                query = db.session.query(Products).filter(
+                    and_(
+                        and_(or_(*kind_conditions), (Products.sex == req_sex)),
+                        or_(or_(*kind_conditions), or_(*all_conditions))
+                    )
                 )
-            for all_tag in look_cats_all:
-                all_conditions.append(
-                    func.lower(Products.name).ilike('%{}%'.format(all_tag)) | Products.img_cats_sc_txt.any(all_tag)
-                )
+                query_results = query.order_by(func.random()).limit(10).all()
+                prod_results = []
+                for query_result in query_results:
+                    prod_serial = ProductsSchema().dump(query_result)
+                    prod_results.append(prod_serial)
 
-            # print('KIND CONDS')
-            # print(kind_conditions)
-            # print('ALL CONDS')
-            # print(all_conditions)
-
-            query = db.session.query(Products).filter(
-                and_(
-                    and_(or_(*kind_conditions), (Products.sex == req_sex)),
-                    or_(or_(*kind_conditions), or_(*all_conditions))
-                )
-            )
-            query_results = query.order_by(func.random()).limit(10).all()
-            prod_results = []
-            for query_result in query_results:
-                prod_serial = ProductsSchema().dump(query_result)
-                prod_results.append(prod_serial)
-
-            suggestions.append({
-                'look_name': look['look_name'],
-                'prod_suggestions': prod_results
-            })
+                suggestions.append({
+                    'look_name': look['look_name'],
+                    'prod_suggestions': prod_results
+                })
+    else:
+        query = db.session.query(Products).filter(Products.sex == req_sex)
+        query_results = query.order_by(func.random()).limit(30).all()
+        prod_results = []
+        for query_result in query_results:
+            prod_serial = ProductsSchema().dump(query_result)
+            prod_results.append(prod_serial)
+        suggestions.append({
+            'look_name': 'All',
+            'prod_suggestions': prod_results
+        })
 
     return json.dumps(suggestions)
 
