@@ -17,6 +17,7 @@ from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload, db_text_search
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
+from db_recommend import recommend_similar_tags, recommend_from_random
 
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -573,6 +574,40 @@ def get_prod_hash():
         prod_hash = prodduct.prod_hash
 
         return json.dumps({'prod_hash': prod_hash})
+
+
+@app.route("/api/recommend_tags", methods=['POST'])
+def recommend_tags():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+
+        suggestions = recommend_similar_tags(db, User, Products, data)
+
+        return suggestions
+
+
+@app.route("/api/recommend_random", methods=['POST'])
+def recommend_random():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        suggestions = recommend_from_random(db, Products, data)
+
+        return suggestions
+
+
+@app.route("/api/get_image", methods=['POST'])
+def get_image():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        img_hash = data['img_hash']
+
+        query = db.session.query(Images).filter(Images.img_hash == img_hash)
+        query_result = query.first()
+        img_serial = ImageSchema().dump(query_result)
+
+        return json.dumps(img_serial)
 
 
 if __name__ == "__main__":
