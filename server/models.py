@@ -374,7 +374,7 @@ class ImagesV2(db.Model):
     __tablename__ = 'images_v2'
 
     __table_args__ = (
-        db.Index('name_idx', 'name', postgresql_ops={'name': "gin_trgm_ops"},
+        db.Index('name_idx_v2', 'img_name', postgresql_ops={'img_name': "gin_trgm_ops"},
                  postgresql_using='gin'),
     )
 
@@ -385,7 +385,7 @@ class ImagesV2(db.Model):
     prod_url = db.Column(db.String)
     color_string = db.Column(db.String, index=True)
     date = db.Column(db.Integer)
-    name = db.Column('name', db.Text, index=True)
+    name = db.Column('img_name', db.Text, index=True)
     price = db.Column(db.Float)
     sale = db.Column(db.Boolean)
     saleprice = db.Column(db.Float)

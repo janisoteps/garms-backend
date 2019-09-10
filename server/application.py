@@ -14,7 +14,7 @@ from sqlalchemy import func, any_, or_
 import aiohttp
 from get_features import get_features
 from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema, ImageSchema
-from db_commit import image_commit, product_commit, insta_mention_commit
+from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2
 from db_search import search_similar_images, search_from_upload, db_text_search
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
@@ -25,7 +25,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import User, Product, Products, Images, InstaMentions
+from models import User, ProductsV2, Products, Images, InstaMentions, ImagesV2
 
 
 # # # # # # # Functions # # # # # # #
@@ -337,6 +337,18 @@ def commit_image():
         return upload_response
 
 
+# Upload new product image to database
+@app.route("/api/commit_image_v2", methods=['post'])
+def commit_image_v2():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # print(str(data))
+
+        upload_response = image_commit_v2(db, ImagesV2, data)
+
+        return upload_response
+
+
 # Upload new product object to database
 @app.route("/api/commit_product", methods=['post'])
 def commit_product():
@@ -350,6 +362,17 @@ def commit_product():
 
 
 # Upload new product object to database
+@app.route("/api/commit_product_v2", methods=['post'])
+def commit_product_v2():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        # print(str(data))
+        upload_response = product_commit_v2(db, ProductsV2, data)
+
+        return upload_response
+
+
 @app.route("/api/submit_instagram", methods=['post'])
 def submit_instagram():
     if request.method == 'POST':
