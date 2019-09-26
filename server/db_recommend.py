@@ -1,12 +1,7 @@
 from sqlalchemy import func, any_, and_, or_
 from marshmallow_schema import ProductsSchema, ImageSchema
-# import scipy.spatial as spatial
-# import numpy as np
-# from operator import itemgetter
 import json
-# from color_text import color_check
-# from flask import jsonify
-from cats import Cats
+import data.cats as cats
 
 
 def recommend_similar_tags(db, User, Products, data):
@@ -32,10 +27,10 @@ def recommend_similar_tags(db, User, Products, data):
                     # print(f'query_name={query_name}')
                     for query_word in query_name.split(' '):
                         # print(f'query_word={query_word}')
-                        if query_word.lower() in Cats().kind_cats and query_word.lower() not in look_cats_kind:
+                        if query_word.lower() in cats.Cats().kind_cats and query_word.lower() not in look_cats_kind:
                             # print(f'added to look_cats_kind: {query_word.lower()}')
                             look_cats_kind.append(query_word.lower())
-                        if query_word.lower() in Cats().all_cats and query_word.lower() not in look_cats_all:
+                        if query_word.lower() in cats.Cats().all_cats and query_word.lower() not in look_cats_all:
                             # print(f'added to look_cats_all: {query_word.lower()}')
                             look_cats_all.append(query_word.lower())
 

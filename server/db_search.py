@@ -1,11 +1,13 @@
 from sqlalchemy import func, any_, and_
-from marshmallow_schema import ProductsSchema, ImageSchema
+from marshmallow_schema import ProductsSchema, ImageSchema, ProductSchema, ImageSchemaV2
 import scipy.spatial as spatial
 import numpy as np
 from operator import itemgetter
 import json
 from color_text import color_check
 from flask import jsonify
+# from data import cats
+import data.cats as cats
 
 
 def search_similar_images(request, db, Images, Products):
@@ -148,7 +150,8 @@ def search_similar_images(request, db, Images, Products):
         color_512_list = []
         for color_result in top_color_list:
             query_result = color_result['query_result']
-            color_512_dist = calc_chi_distance(np.array(req_color_512, dtype=float), np.array(query_result.color_512, dtype=float))
+            color_512_dist = calc_chi_distance(np.array(req_color_512, dtype=float),
+                                               np.array(query_result.color_512, dtype=float))
 
             color_512_result = {
                 'query_result': query_result,
@@ -277,6 +280,146 @@ def calc_cross_entropy(vector_1, vector_2):
     dist = np.sum(vector_1 * np.log(vector_2) + (1 - vector_1) * np.log(1 - vector_2))
 
     return dist
+
+
+def search_from_upload_v2(request, db, ImagesV2):
+    data = request.get_json(force=True)
+    data = json.loads(data)
+
+    req_tags = data['tags']
+    req_sex = data['sex']
+    req_shop_excl = data['no_shop']
+    req_color_1 = data['color_1']
+    req_color_2 = data['color_2']
+    req_encoding = data['encoding_rcnn']
+
+    conditions = []
+    req_color_arr_1 = np.asarray(req_color_1)
+    req_color_arr_2 = np.asarray(req_color_2)
+    req_encoding_arr = np.asarray(req_encoding)
+    tag_list = cats.Cats()
+    kind_cats = tag_list.kind_cats
+    all_cats = tag_list.all_cats
+    kind_search_cats = [req_tag for req_tag in req_tags if req_tag in kind_cats]
+    all_cat_search_arr = np.zeros(len(all_cats))
+    for req_tag in req_tags:
+        if req_tag in all_cats:
+            all_cat_search_arr[all_cats.index(req_tag)] = 1
+
+    for kind_search_cat in kind_search_cats:
+        conditions.append(
+            func.lower(ImagesV2.name).ilike('%{}%'.format(kind_search_cat)) | ImagesV2.kind_cats.any(kind_search_cat)
+        )
+    conditions.append(
+        (ImagesV2.sex == req_sex)
+    )
+    if len(req_shop_excl) > 0:
+        conditions.append(
+            (ImagesV2.shop != any_(req_shop_excl))
+        )
+
+    query = db.session.query(
+        ImagesV2.name,
+        ImagesV2.img_hash,
+        ImagesV2.color_1,
+        ImagesV2.color_1_hex,
+        ImagesV2.color_2,
+        ImagesV2.color_2_hex,
+        ImagesV2.color_3,
+        ImagesV2.color_3_hex,
+        ImagesV2.encoding_crop,
+        ImagesV2.all_arr
+    ).filter(
+        and_(*conditions)
+    )
+
+    query_results = query.order_by(func.random()).limit(4000).all()
+    if len(query_results) == 0:
+        return 'no results'
+    else:
+        print('all cat similarities')
+
+        # img_hashes = []
+        all_cat_arrays = []
+        for query_result in query_results:
+            # img_hashes.append(query_result.img_hash)
+            # print(query_result.all_arr)
+            all_cat_arrays.append(query_result.all_arr)
+            print(len(query_result.all_arr))
+        all_cat_matrix = np.asarray(all_cat_arrays)
+        print(all_cat_matrix.shape)
+        print(all_cat_search_arr.shape)
+        similarity_matrix = np.sum(all_cat_matrix * all_cat_search_arr, axis=1)
+        closest_n_indices = similarity_matrix.argsort()[-500:][::-1]
+        closest_n_results = [query_results[x] for x in closest_n_indices]
+
+        color_1_arrays = []
+        color_2_arrays = []
+        color_3_arrays = []
+        for closest_n_result in closest_n_results:
+            color_1_arrays.append(closest_n_result.color_1)
+            color_2_arrays.append(closest_n_result.color_2)
+            color_3_arrays.append(closest_n_result.color_3)
+        color_1_matrix = np.asarray(color_1_arrays)
+        color_2_matrix = np.asarray(color_2_arrays)
+        color_3_matrix = np.asarray(color_3_arrays)
+
+        dist_color_1_1_arr = np.linalg.norm(color_1_matrix - req_color_arr_1, axis=1)
+        dist_color_1_2_arr = np.linalg.norm(color_1_matrix - req_color_arr_2, axis=1)
+        dist_color_2_1_arr = np.linalg.norm(color_2_matrix - req_color_arr_1, axis=1)
+        dist_color_2_2_arr = np.linalg.norm(color_2_matrix - req_color_arr_2, axis=1)
+        dist_color_3_1_arr = np.linalg.norm(color_3_matrix - req_color_arr_1, axis=1)
+        dist_color_3_2_arr = np.linalg.norm(color_3_matrix - req_color_arr_2, axis=1)
+
+        combined_color_dist_arr = dist_color_1_1_arr + 0.5 * dist_color_1_2_arr + 0.5 * dist_color_2_1_arr + \
+                                  0.4 * dist_color_2_2_arr + 0.3 * dist_color_3_1_arr + 0.2 * dist_color_3_2_arr
+
+        closest_n_color_ind = combined_color_dist_arr.argsort()[:150]
+        closest_n_color_results = [closest_n_results[x] for x in closest_n_color_ind]
+
+        encoding_arrays = []
+        for closest_n_color_result in closest_n_color_results:
+            encoding_arrays.append(closest_n_color_result.encoding_crop)
+        encoding_matrix = np.asarray(encoding_arrays)
+
+        dist_encoding_arr = np.linalg.norm(encoding_matrix - req_encoding_arr, axis=1)
+        closest_n_enc_ind = dist_encoding_arr.argsort()[:30]
+        closest_n_enc_results = [closest_n_color_results[x] for x in closest_n_enc_ind]
+
+        result_list = []
+        prod_check = set()
+        for closest_n_enc_result in closest_n_enc_results:
+            result_img_hash = closest_n_enc_result['img_hash']
+            img_search = db.session.query(
+                ImagesV2.name,
+                ImagesV2.img_hash,
+                ImagesV2.prod_id,
+                ImagesV2.color_1,
+                ImagesV2.color_1_hex,
+                ImagesV2.color_2,
+                ImagesV2.color_2_hex,
+                ImagesV2.color_3,
+                ImagesV2.color_3_hex,
+                ImagesV2.encoding_crop,
+                ImagesV2.all_arr,
+                ImagesV2.all_cats,
+                ImagesV2.size_stock,
+                ImagesV2.img_url,
+                ImagesV2.price,
+                ImagesV2.sale,
+                ImagesV2.saleprice,
+                ImagesV2.in_stock,
+                ImagesV2.shop,
+                ImagesV2.prod_url
+            ).filter(ImagesV2.img_hash == result_img_hash).first()
+
+            prod_hash = img_search.prod_id
+            if prod_hash not in prod_check:
+                prod_check.add(prod_hash)
+                img_serial = ImageSchemaV2().dump(img_search)
+                result_list.append(img_serial)
+
+        return result_list
 
 
 # POST request handling function to search similar images from an image uploaded by user

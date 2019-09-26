@@ -423,4 +423,16 @@ class Cats:
         'waisted',
         'zip'
     ]
-    all_cats = kind_cats + color_pattern_cats + style_cats + material_cats + attribute_cats
+    filter_cats = [
+        'curve',
+        'curved',
+        'curves',
+        'tall',
+        'plus',
+        'petite',
+        'mom',
+        'mamalicious',
+        'maternity',
+        'bridal',
+    ]
+    all_cats = kind_cats + color_pattern_cats + style_cats + material_cats + attribute_cats + filter_cats

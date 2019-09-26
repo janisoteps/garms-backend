@@ -1,23 +1,20 @@
-# from random import shuffle
 import json
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flask_migrate import Migrate
 from flask import render_template, request, jsonify
-# import scipy.spatial as spatial
-# import numpy as np
-# from operator import itemgetter
 import string
 from sqlalchemy import func, any_, or_
-# import asyncio
 import aiohttp
-from get_features import get_features
+from get_features import get_features, get_features_v2
 from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema, ImageSchema
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2
-from db_search import search_similar_images, search_from_upload, db_text_search
+from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
+import transformation.cat_transform as cat_transformation
+import data.cats as cats
 
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
@@ -196,85 +193,85 @@ def addfav():
             return json.dumps(True)
 
 
-@app.route("/api/removefav", methods=['POST'])
-def removefav():
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-        data = json.loads(data)
-        img_hash = data['img_hash']
-        print('len img_hash: ', str(len(img_hash)))
-        if len(img_hash) == 40:
-            user_email = data['email']
-
-            print('user email: ', str(user_email))
-            user = User.query.filter_by(email=user_email).first()
-
-            user.favorites_ids = list(user.favorites_ids)
-
-            if img_hash in user.favorites_ids:
-                user.favorites_ids.remove(img_hash)
-
-                db.session.commit()
-
-            # Declare Marshmallow schema so that SqlAlchemy object can be serialized
-            product_schema = ProductSchema()
-
-            result_list = []
-            for img_hash in user.favorites_ids:
-                prod_search = db.session.query(Product).filter((Product.img_hash == img_hash)).first()
-                prod_serial = product_schema.dump(prod_search)
-
-                if len(prod_serial[0]) == 0:
-                    new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-                    if new_prod_search is None:
-                        new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-                        prod_serial = ProductsSchema().dump(new_prod_search)
-                    else:
-                        prod_serial = ProductsSchema().dump(new_prod_search)
-                        
-                result_list.append(prod_serial)
-
-            res = jsonify(res=result_list)
-
-            print('res: ', str(res))
-
-            return res
-
-
-@app.route("/api/favorites", methods=['GET'])
-def favorites():
-    if request.method == 'GET':
-        email = request.args.get('email')
-        user = User.query.filter_by(email=email).first()
-        favs = user.favorites_ids
-
-        result_list = []
-        for img_hash in favs:
-            prod_search = db.session.query(Product).filter((Product.img_hash == img_hash)).first()
-            try:
-                prod_serial = ProductSchema().dump(prod_search)
-
-            except:
-                new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-                if new_prod_search is None:
-                    new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-                    prod_serial = ProductsSchema().dump(new_prod_search)
-                else:
-                    prod_serial = ProductsSchema().dump(new_prod_search)
-
-            if len(prod_serial[0]) == 0:
-                new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-                if new_prod_search is None:
-                    new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-                    prod_serial = ProductsSchema().dump(new_prod_search)
-                else:
-                    prod_serial = ProductsSchema().dump(new_prod_search)
-
-            result_list.append(prod_serial)
-
-        res = jsonify(res=result_list)
-
-        return res
+# @app.route("/api/removefav", methods=['POST'])
+# def removefav():
+#     if request.method == 'POST':
+#         data = request.get_json(force=True)
+#         data = json.loads(data)
+#         img_hash = data['img_hash']
+#         print('len img_hash: ', str(len(img_hash)))
+#         if len(img_hash) == 40:
+#             user_email = data['email']
+#
+#             print('user email: ', str(user_email))
+#             user = User.query.filter_by(email=user_email).first()
+#
+#             user.favorites_ids = list(user.favorites_ids)
+#
+#             if img_hash in user.favorites_ids:
+#                 user.favorites_ids.remove(img_hash)
+#
+#                 db.session.commit()
+#
+#             # Declare Marshmallow schema so that SqlAlchemy object can be serialized
+#             product_schema = ProductSchema()
+#
+#             result_list = []
+#             for img_hash in user.favorites_ids:
+#                 prod_search = db.session.query(Products).filter((Products.img_hash == img_hash)).first()
+#                 prod_serial = product_schema.dump(prod_search)
+#
+#                 if len(prod_serial[0]) == 0:
+#                     new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
+#                     if new_prod_search is None:
+#                         new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
+#                         prod_serial = ProductsSchema().dump(new_prod_search)
+#                     else:
+#                         prod_serial = ProductsSchema().dump(new_prod_search)
+#
+#                 result_list.append(prod_serial)
+#
+#             res = jsonify(res=result_list)
+#
+#             print('res: ', str(res))
+#
+#             return res
+#
+#
+# @app.route("/api/favorites", methods=['GET'])
+# def favorites():
+#     if request.method == 'GET':
+#         email = request.args.get('email')
+#         user = User.query.filter_by(email=email).first()
+#         favs = user.favorites_ids
+#
+#         result_list = []
+#         for img_hash in favs:
+#             prod_search = db.session.query(Products).filter((Products.img_hash == img_hash)).first()
+#             try:
+#                 prod_serial = ProductSchema().dump(prod_search)
+#
+#             except:
+#                 new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
+#                 if new_prod_search is None:
+#                     new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
+#                     prod_serial = ProductsSchema().dump(new_prod_search)
+#                 else:
+#                     prod_serial = ProductsSchema().dump(new_prod_search)
+#
+#             if len(prod_serial[0]) == 0:
+#                 new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
+#                 if new_prod_search is None:
+#                     new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
+#                     prod_serial = ProductsSchema().dump(new_prod_search)
+#                 else:
+#                     prod_serial = ProductsSchema().dump(new_prod_search)
+#
+#             result_list.append(prod_serial)
+#
+#         res = jsonify(res=result_list)
+#
+#         return res
 
 
 @app.route("/api/insta_pics", methods=['GET'])
@@ -384,34 +381,34 @@ def submit_instagram():
         return insta_submit_response
 
 
-# Delete product
-@app.route("/api/delete", methods=['get'])
-def delete():
-    if request.method == 'GET':
-        img_hash = request.args.get('img_hash')
-        shop = request.args.get('shop')
-
-        if len(img_hash) > 0:
-            try:
-                existing_product = Product.query.filter_by(img_hash=img_hash).first()
-            except:
-                existing_product = None
-            if existing_product is not None:
-                db.session.delete(existing_product)
-                db.session.commit()
-                return json.dumps(True)
-            else:
-                return json.dumps(False)
-
-        if len(shop) > 0:
-            try:
-                shop_products = db.session.query(Product).filter(Product.shop == 'Zalando').order_by(
-                    func.random()).all()
-                db.session.delete(shop_products)
-                db.session.commit()
-                return json.dumps(True)
-            except:
-                return json.dumps(False)
+# # Delete product
+# @app.route("/api/delete", methods=['get'])
+# def delete():
+#     if request.method == 'GET':
+#         img_hash = request.args.get('img_hash')
+#         shop = request.args.get('shop')
+#
+#         if len(img_hash) > 0:
+#             try:
+#                 existing_product = Product.query.filter_by(img_hash=img_hash).first()
+#             except:
+#                 existing_product = None
+#             if existing_product is not None:
+#                 db.session.delete(existing_product)
+#                 db.session.commit()
+#                 return json.dumps(True)
+#             else:
+#                 return json.dumps(False)
+#
+#         if len(shop) > 0:
+#             try:
+#                 shop_products = db.session.query(Product).filter(Product.shop == 'Zalando').order_by(
+#                     func.random()).all()
+#                 db.session.delete(shop_products)
+#                 db.session.commit()
+#                 return json.dumps(True)
+#             except:
+#                 return json.dumps(False)
 
 
 # Trigram search for products with a search string
@@ -450,11 +447,39 @@ def img_features():
 
 
 # Return color, encoding and category predictions from uploaded image
+@app.route("/api/img_features_v2", methods=['POST'])
+def img_features_v2():
+    if request.method == 'POST':
+        if request.files.get("image"):
+            post_image = request.files["image"].read()
+            # Obtain features from all AI servers
+            features = get_features_v2(post_image)
+
+            # Make it HTTP friendly
+            res = jsonify(res=features)
+
+            return res
+
+
+# Return color, encoding and category predictions from uploaded image
 @app.route("/api/search_from_image", methods=['POST'])
 def search_from_image():
     if request.method == 'POST':
 
         results = search_from_upload(request, db, Images, Products)
+        # print('Search from image results: ', str(results))
+        # Make it HTTP friendly
+        res = jsonify(res=results)
+
+        return res
+
+
+# Return color, encoding and category predictions from uploaded image
+@app.route("/api/search_from_image_v2", methods=['POST'])
+def search_from_image_v2():
+    if request.method == 'POST':
+
+        results = search_from_upload_v2(request, db, ImagesV2)
         # print('Search from image results: ', str(results))
         # Make it HTTP friendly
         res = jsonify(res=results)
@@ -476,27 +501,27 @@ def search_similar():
         return res
 
 
-@app.route("/api/prod_stats", methods=['GET'])
-def prods_tats():
-    if request.method == 'GET':
-
-        request_type = request.args.get('req_type')
-
-        if request_type == "brand_count":
-            products_list = db.session.query(Product).filter().all()
-
-            product_brands = {}
-            prod_brand_set = set()
-            for product in products_list:
-                if product.brand in prod_brand_set:
-                    product_brands[product.brand] += 1
-                else:
-                    prod_brand_set.add(product.brand)
-                    product_brands[product.brand] = 1
-
-            res = jsonify(product_brands)
-
-            return res
+# @app.route("/api/prod_stats", methods=['GET'])
+# def prods_tats():
+#     if request.method == 'GET':
+#
+#         request_type = request.args.get('req_type')
+#
+#         if request_type == "brand_count":
+#             products_list = db.session.query(Product).filter().all()
+#
+#             product_brands = {}
+#             prod_brand_set = set()
+#             for product in products_list:
+#                 if product.brand in prod_brand_set:
+#                     product_brands[product.brand] += 1
+#                 else:
+#                     prod_brand_set.add(product.brand)
+#                     product_brands[product.brand] = 1
+#
+#             res = jsonify(product_brands)
+#
+#             return res
 
 #
 # @app.route("/api/explorer_search", methods=['POST'])
@@ -631,6 +656,16 @@ def get_image():
         img_serial = ImageSchema().dump(query_result)
 
         return json.dumps(img_serial)
+
+
+@app.route("/api/cat_transform", methods=['POST'])
+def cat_transform():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = cat_transformation.CatTransform().cat_transform(cats, db, ImagesV2, data)
+
+        return json.dumps(req_response)
 
 
 if __name__ == "__main__":

@@ -13,6 +13,47 @@ async def send_file(url, image_file):
             return data
 
 
+def get_features_v2(image):
+    rcnn_encoding_api = 'http://52.212.155.215/api/encoding'
+    cat_api = 'http://34.245.0.175/api/cats'
+    color_api = 'https://hvoe2gb7cf.execute-api.eu-west-1.amazonaws.com/production/api/color'
+
+    api_urls = [
+        rcnn_encoding_api,
+        cat_api,
+        color_api
+    ]
+
+    tasks = [send_file(url, image) for url in api_urls]
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    loop = asyncio.get_event_loop()
+    rcnn_enc_res, cat_res, color_res = loop.run_until_complete(asyncio.gather(*tasks))
+
+    img_cats_ai_txt = json.loads(cat_res)['res']['img_cats_ai_txt']
+    rcnn_enc = json.loads(rcnn_enc_res)['encoding']
+
+    color_1 = json.loads(color_res)['res']['color_1']
+    color_1_hex = json.loads(color_res)['res']['color_1_hex']
+    color_2 = json.loads(color_res)['res']['color_2']
+    color_2_hex = json.loads(color_res)['res']['color_2_hex']
+    color_3 = json.loads(color_res)['res']['color_3']
+    color_3_hex = json.loads(color_res)['res']['color_3_hex']
+
+    results = {
+        'img_cats_ai_txt': img_cats_ai_txt,
+        'colors': {
+            'color_1': color_1,
+            'color_1_hex': color_1_hex,
+            'color_2': color_2,
+            'color_2_hex': color_2_hex,
+            'color_3': color_3,
+            'color_3_hex': color_3_hex
+        },
+        'rcnn_encoding': rcnn_enc
+    }
+    return results
+
+
 def get_features(image):
     # color_512_api = 'http://34.245.151.12/api/color512'
     nocrop_encoding_api = 'http://34.248.180.130/api/encoding'
