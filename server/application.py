@@ -8,7 +8,7 @@ import string
 from sqlalchemy import func, any_, or_
 import aiohttp
 from get_features import get_features, get_features_v2
-from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema, ImageSchema
+from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductSchema, ImageSchemaV2
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2
 from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
@@ -479,7 +479,7 @@ def search_from_image():
 def search_from_image_v2():
     if request.method == 'POST':
 
-        results = search_from_upload_v2(request, db, ImagesV2)
+        results = search_from_upload_v2(request, db, ImagesV2, ProductsV2)
         # print('Search from image results: ', str(results))
         # Make it HTTP friendly
         res = jsonify(res=results)

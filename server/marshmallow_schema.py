@@ -33,27 +33,6 @@ class ProductSchema(Schema):
     pattern_256 = fields.List(fields.Integer())
 
 
-class ProductsSchema(Schema):
-    id = fields.Integer()
-    prod_hash = fields.String()
-    prod_url = fields.String()
-    name = fields.String()
-    description = fields.String()
-    brand = fields.String()
-    shop = fields.String()
-    date = fields.Number()
-    sex = fields.String()
-    currency = fields.String()
-    price = fields.Number()
-    sale = fields.Boolean()
-    saleprice = fields.Number()
-    img_url = fields.String()  # Scraped image source
-    img_urls = fields.List(fields.String())  # Rest of product scraped images
-    img_hashes = fields.List(fields.String())
-    spider_cat = fields.String()
-    img_cats_sc_txt = fields.List(fields.String())  # Image categories from scraped name in text format
-
-
 class ImageSchema(Schema):
     id = fields.Integer()
     img_hash = fields.String()
@@ -88,6 +67,41 @@ class ImageSchema(Schema):
 class SizeStockSchema(Schema):
     stock = fields.String()
     size = fields.String()
+
+
+class ProductSchemaV2(Schema):
+    id = fields.Integer()
+    prod_id = fields.String()
+    name = fields.String()
+    prod_url = fields.String()
+    brand = fields.String()
+    category = fields.String()
+    color_string = fields.String()
+    currency = fields.String()
+    date = fields.String()
+    description = fields.String()
+    image_hash = fields.List(fields.String())
+    image_urls = fields.List(fields.String())
+    price = fields.Number()
+    sale = fields.Boolean()
+    saleprice = fields.Number()
+    sex = fields.String()
+    shop = fields.String()
+    size_stock = fields.List(fields.Nested(SizeStockSchema))
+    kind_cats = fields.List(fields.String())
+    color_pattern_cats = fields.List(fields.String())
+    style_cats = fields.List(fields.String())
+    material_cats = fields.List(fields.String())
+    attribute_cats = fields.List(fields.String())
+    filter_cats = fields.List(fields.String())
+    all_cats = fields.List(fields.String())
+    kind_arr = fields.List(fields.Integer())
+    col_pat_arr = fields.List(fields.Integer())
+    style_arr = fields.List(fields.Integer())
+    material_arr = fields.List(fields.Integer())
+    attr_arr = fields.List(fields.Integer())
+    filter_arr = fields.List(fields.Integer())
+    all_arr = fields.List(fields.Integer())
 
 
 class ImageSchemaV2(Schema):

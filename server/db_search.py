@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_
-from marshmallow_schema import ProductsSchema, ImageSchema, ProductSchema, ImageSchemaV2
+from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductSchema, ImageSchemaV2
 import scipy.spatial as spatial
 import numpy as np
 from operator import itemgetter
@@ -282,10 +282,10 @@ def calc_cross_entropy(vector_1, vector_2):
     return dist
 
 
-def search_from_upload_v2(request, db, ImagesV2):
+def search_from_upload_v2(request, db, ImagesV2, ProductsV2):
     data = request.get_json(force=True)
     data = json.loads(data)
-
+    print('Request received')
     req_tags = data['tags']
     req_sex = data['sex']
     req_shop_excl = data['no_shop']
@@ -318,6 +318,7 @@ def search_from_upload_v2(request, db, ImagesV2):
             (ImagesV2.shop != any_(req_shop_excl))
         )
 
+    print('Querying database...')
     query = db.session.query(
         ImagesV2.name,
         ImagesV2.img_hash,
@@ -333,11 +334,11 @@ def search_from_upload_v2(request, db, ImagesV2):
         and_(*conditions)
     )
 
-    query_results = query.order_by(func.random()).limit(4000).all()
+    query_results = query.order_by(func.random()).limit(2000).all()
     if len(query_results) == 0:
         return 'no results'
     else:
-        print('all cat similarities')
+        print('Query results obtained')
 
         # img_hashes = []
         all_cat_arrays = []
@@ -345,14 +346,14 @@ def search_from_upload_v2(request, db, ImagesV2):
             # img_hashes.append(query_result.img_hash)
             # print(query_result.all_arr)
             all_cat_arrays.append(query_result.all_arr)
-            print(len(query_result.all_arr))
+            # print(len(query_result.all_arr))
         all_cat_matrix = np.asarray(all_cat_arrays)
-        print(all_cat_matrix.shape)
-        print(all_cat_search_arr.shape)
+        print(f'all_cat_matrix.shape : {all_cat_matrix.shape}')
+        print(f'all_cat_search_arr.shape : {all_cat_search_arr.shape}')
         similarity_matrix = np.sum(all_cat_matrix * all_cat_search_arr, axis=1)
         closest_n_indices = similarity_matrix.argsort()[-500:][::-1]
         closest_n_results = [query_results[x] for x in closest_n_indices]
-
+        print('Closest all cats calculated')
         color_1_arrays = []
         color_2_arrays = []
         color_3_arrays = []
@@ -376,7 +377,7 @@ def search_from_upload_v2(request, db, ImagesV2):
 
         closest_n_color_ind = combined_color_dist_arr.argsort()[:150]
         closest_n_color_results = [closest_n_results[x] for x in closest_n_color_ind]
-
+        print('Closest colors calculated')
         encoding_arrays = []
         for closest_n_color_result in closest_n_color_results:
             encoding_arrays.append(closest_n_color_result.encoding_crop)
@@ -385,11 +386,13 @@ def search_from_upload_v2(request, db, ImagesV2):
         dist_encoding_arr = np.linalg.norm(encoding_matrix - req_encoding_arr, axis=1)
         closest_n_enc_ind = dist_encoding_arr.argsort()[:30]
         closest_n_enc_results = [closest_n_color_results[x] for x in closest_n_enc_ind]
-
+        print('Closest encodings calculated')
         result_list = []
         prod_check = set()
+
         for closest_n_enc_result in closest_n_enc_results:
-            result_img_hash = closest_n_enc_result['img_hash']
+            result_img_hash = closest_n_enc_result[1]
+
             img_search = db.session.query(
                 ImagesV2.name,
                 ImagesV2.img_hash,
@@ -412,12 +415,37 @@ def search_from_upload_v2(request, db, ImagesV2):
                 ImagesV2.shop,
                 ImagesV2.prod_url
             ).filter(ImagesV2.img_hash == result_img_hash).first()
-
             prod_hash = img_search.prod_id
             if prod_hash not in prod_check:
                 prod_check.add(prod_hash)
                 img_serial = ImageSchemaV2().dump(img_search)
-                result_list.append(img_serial)
+                prod_search = db.session.query(
+                    ProductsV2.prod_id,
+                    ProductsV2.name,
+                    ProductsV2.prod_url,
+                    ProductsV2.brand,
+                    ProductsV2.category,
+                    ProductsV2.color_string,
+                    ProductsV2.currency,
+                    ProductsV2.date,
+                    ProductsV2.description,
+                    ProductsV2.image_hash,
+                    ProductsV2.image_urls,
+                    ProductsV2.price,
+                    ProductsV2.sale,
+                    ProductsV2.saleprice,
+                    ProductsV2.sex,
+                    ProductsV2.shop,
+                    ProductsV2.size_stock,
+                ).filter(ProductsV2.prod_id == prod_hash).first()
+                prod_serial = ProductSchemaV2().dump(prod_search)
+
+                result_dict = {
+                    'prod_serial': prod_serial,
+                    'image_data': img_serial
+                }
+                result_list.append(result_dict)
+        print('Results obtained from DB')
 
         return result_list
 
