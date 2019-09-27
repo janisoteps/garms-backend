@@ -1,9 +1,9 @@
 from marshmallow import Schema, fields
 
 
-class ProductSchema(Schema):
+class ProductsSchema(Schema):
     id = fields.Integer()
-    img_hash = fields.String()
+    prod_hash = fields.String()
     prod_url = fields.String()
     name = fields.String()
     description = fields.String()
@@ -17,20 +17,9 @@ class ProductSchema(Schema):
     saleprice = fields.Number()
     img_url = fields.String()  # Scraped image source
     img_urls = fields.List(fields.String())  # Rest of product scraped images
+    img_hashes = fields.List(fields.String())
     spider_cat = fields.String()
-    img_cats_ai_txt = fields.List(fields.String())  # Image categories assigned by AI analysis text format
-    img_cats_sc_txt = fields.List(fields.String())  # Image categories from scraped name in text format
-    color_name = fields.String()  # Text color value from scraped resources
-    color_512 = fields.List(fields.Integer())  # Array of 512 integers representing 3D color vector
-    color_1 = fields.List(fields.Integer())  # Array of 3 integers from 0 to 255 representing 1 RGB value
-    color_1_hex = fields.String()
-    color_2 = fields.List(fields.Integer())
-    color_2_hex = fields.String()
-    color_3 = fields.List(fields.Integer())
-    color_3_hex = fields.String()
-    pca_256 = fields.List(fields.Integer())
-    siamese_64 = fields.List(fields.Integer())
-    pattern_256 = fields.List(fields.Integer())
+    img_cats_sc_txt = fields.List(fields.String())
 
 
 class ImageSchema(Schema):

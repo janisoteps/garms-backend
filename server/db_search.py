@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_
-from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductSchema, ImageSchemaV2
+from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2
 import scipy.spatial as spatial
 import numpy as np
 from operator import itemgetter
@@ -386,10 +386,10 @@ def search_from_upload_v2(request, db, ImagesV2, ProductsV2):
         dist_encoding_arr = np.linalg.norm(encoding_matrix - req_encoding_arr, axis=1)
         closest_n_enc_ind = dist_encoding_arr.argsort()[:30]
         closest_n_enc_results = [closest_n_color_results[x] for x in closest_n_enc_ind]
+
         print('Closest encodings calculated')
         result_list = []
         prod_check = set()
-
         for closest_n_enc_result in closest_n_enc_results:
             result_img_hash = closest_n_enc_result[1]
 
@@ -441,8 +441,8 @@ def search_from_upload_v2(request, db, ImagesV2, ProductsV2):
                 prod_serial = ProductSchemaV2().dump(prod_search)
 
                 result_dict = {
-                    'prod_serial': prod_serial,
-                    'image_data': img_serial
+                    'prod_serial': prod_serial[0],
+                    'image_data': img_serial[0]
                 }
                 result_list.append(result_dict)
         print('Results obtained from DB')
