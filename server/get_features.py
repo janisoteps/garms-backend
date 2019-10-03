@@ -14,7 +14,7 @@ async def send_file(url, image_file):
 
 
 def get_features_v2(image):
-    rcnn_encoding_api = 'http://34.240.241.206/api/encoding'
+    rcnn_encoding_api = 'http://54.229.221.40/api/encoding'
     cat_api = 'http://34.245.0.175/api/cats'
     color_api = 'https://hvoe2gb7cf.execute-api.eu-west-1.amazonaws.com/production/api/color'
 
