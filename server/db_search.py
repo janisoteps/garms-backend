@@ -1,4 +1,4 @@
-from sqlalchemy import func, any_, and_
+from sqlalchemy import func, any_, and_, or_
 from marshmallow_schema import ProductsSchema, ImageSchema
 import scipy.spatial as spatial
 import numpy as np
@@ -17,6 +17,7 @@ def search_similar_images(request, db, Images, Products):
     req_sex = request.args.get('sex')
     req_image_data = Images.query.filter_by(img_hash=req_img_hash).first()
     req_shop_excl = request.args.get('no_shop')
+    max_price = request.args.get('max_price')
     print('RGB 1: ', str(req_color_1))
     print('RGB 2: ', str(req_color_2))
     # Assemble DB query conditions in array from tags
@@ -38,6 +39,9 @@ def search_similar_images(request, db, Images, Products):
         conditions.append(
             (Images.shop != any_(req_shop_excl))
         )
+    conditions.append(
+        or_((Images.price < max_price), and_((Images.sale == True), (Images.saleprice < max_price)))
+    )
     # Use those conditions as argument for a filter function
     print('Querying database')
     query = db.session.query(Images).filter(
