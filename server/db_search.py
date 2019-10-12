@@ -1,9 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-<<<<<<< HEAD
 from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2
-=======
-from marshmallow_schema import ProductsSchema, ImageSchema
->>>>>>> master
 import scipy.spatial as spatial
 import numpy as np
 from operator import itemgetter
