@@ -1,9 +1,13 @@
+aiohttp==3.2.1
 alembic==0.9.9
+async-timeout==3.0.0
+attrs==18.1.0
 awsebcli==3.12.4
 Babel==2.5.3
 blessed==1.14.2
 botocore==1.10.6
 cement==2.8.2
+chardet==3.0.4
 click==6.7
 colorama==0.3.7
 decorator==4.3.0
@@ -17,13 +21,17 @@ Flask-Migrate==2.1.1
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.3.2
 Flask-WTF==0.14.2
+idna==2.6
+idna-ssl==1.0.1
 itsdangerous==0.24
 Jinja2==2.10
 jmespath==0.9.3
 Mako==1.0.7
 MarkupSafe==1.0
 marshmallow==2.15.1
+multidict==4.3.1
 numpy==1.14.2
+opencv-python==3.4.2.17
 pathspec==0.5.5
 pbr==4.0.2
 Pillow==5.1.0
@@ -47,3 +55,4 @@ wcwidth==0.1.7
 websocket-client==0.47.0
 Werkzeug==0.14.1
 WTForms==2.1
+yarl==1.2.4
