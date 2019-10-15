@@ -14,6 +14,7 @@ from db_search import search_similar_images, search_from_upload, db_text_search,
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
 import transformation.cat_transform as cat_transformation
+import transformation.enc_transform as enc_transformation
 import data.cats as cats
 
 
@@ -664,6 +665,16 @@ def cat_transform():
         data = request.get_json(force=True)
 
         req_response = cat_transformation.CatTransform().cat_transform(cats, db, ImagesV2, data)
+
+        return json.dumps(req_response)
+
+
+@app.route("/api/enc_transform", methods=['POST'])
+def enc_transform():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = enc_transformation.EncTransform().enc_dim_transform(db, ImagesV2, data)
 
         return json.dumps(req_response)
 
