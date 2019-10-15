@@ -6,6 +6,7 @@ from sqlalchemy import func
 class CatTransform:
     def cat_transform(self, cats, db, ImagesV2, data):
         key_string = os.environ['TRANSFORM_KEY']
+        shop = data['shop']
         if data['transform_key'] == key_string:
 
             cat_list = cats.Cats()
@@ -15,6 +16,8 @@ class CatTransform:
 
             img_hashes = db.session.query(
                 ImagesV2.img_hash
+            ).filter(
+                ImagesV2.shop == shop
             ).order_by(func.random()).all()
 
             counter = 0
