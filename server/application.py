@@ -682,6 +682,29 @@ def enc_transform():
         return json.dumps(req_response)
 
 
+@app.route("/api/add_vgg16", methods=['POST'])
+def add_vgg16():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        img_hash = data['img_hash']
+        encoding_vgg16 = data['encoding_vgg16']
+        try:
+            existing_img = ImagesV2.query.filter_by(img_hash=img_hash).first()
+        except:
+            existing_img = None
+
+        if existing_img is None:
+            return json.dumps({
+                'response': 'not found'
+            })
+        else:
+            existing_img.encoding_vgg16 = encoding_vgg16
+            db.session.commit()
+            return json.dumps({
+                'response': 'SUCCESS'
+            })
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', threaded=True, port=5000)
 
