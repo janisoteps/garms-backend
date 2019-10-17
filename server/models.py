@@ -383,7 +383,7 @@ class ImagesV2(db.Model):
     img_url = db.Column(db.String)
     prod_id = db.Column(db.String)
     prod_url = db.Column(db.String)
-    color_string = db.Column(db.String, index=True)
+    color_string = db.Column(db.String)
     date = db.Column(db.Integer)
     name = db.Column('img_name', db.Text, index=True)
     price = db.Column(db.Float)
@@ -397,7 +397,7 @@ class ImagesV2(db.Model):
     material_cats = db.Column(ARRAY(db.String))
     attribute_cats = db.Column(ARRAY(db.String))
     filter_cats = db.Column(ARRAY(db.String))
-    all_cats = db.Column(ARRAY(db.String))
+    all_cats = db.Column(ARRAY(db.String), index=True)
     kind_arr = db.Column(ARRAY(db.Integer))
     col_pat_arr = db.Column(ARRAY(db.Integer))
     style_arr = db.Column(ARRAY(db.Integer))
@@ -414,6 +414,7 @@ class ImagesV2(db.Model):
     encoding_crop = db.Column(ARRAY(db.Integer))
     size_stock = db.Column(MutableList.as_mutable(JSONB))
     in_stock = db.Column(db.Boolean)
+    encoding_vgg16 = db.Column(ARRAY(db.Integer))
 
     def __init__(self,
                  img_hash,
@@ -450,7 +451,8 @@ class ImagesV2(db.Model):
                  color_3_hex,
                  encoding_crop,
                  size_stock,
-                 in_stock):
+                 in_stock,
+                 encoding_vgg16):
 
         self.img_hash = img_hash
         self.img_url = img_url
@@ -487,6 +489,7 @@ class ImagesV2(db.Model):
         self.encoding_crop = encoding_crop
         self.size_stock = size_stock
         self.in_stock = in_stock
+        self.encoding_vgg16 = encoding_vgg16
 
     def __repr__(self):
         return '<id={}>'.format(self.id)

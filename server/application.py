@@ -10,7 +10,7 @@ import aiohttp
 from get_features import get_features, get_features_v2
 from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2
-from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2
+from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2, search_from_upload_v3, search_similar_images_v2
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
 import transformation.cat_transform as cat_transformation
@@ -480,7 +480,8 @@ def search_from_image():
 def search_from_image_v2():
     if request.method == 'POST':
 
-        results = search_from_upload_v2(request, db, ImagesV2, ProductsV2)
+        # results = search_from_upload_v2(request, db, ImagesV2, ProductsV2)
+        results = search_from_upload_v3(request, db, ImagesV2, ProductsV2)
         # print('Search from image results: ', str(results))
         # Make it HTTP friendly
         res = jsonify(res=results)
@@ -494,7 +495,8 @@ def search_similar():
     print('Search similar requested, request method', str(request.method))
     if request.method == 'GET':
         print('Calling search_similar_images')
-        search_results = search_similar_images(request, db, Images, Products)
+        # search_results = search_similar_images(request, db, Images, Products)
+        search_results = search_similar_images_v2(request, db, ImagesV2, ProductsV2)
 
         # Make it HTTP friendly
         res = jsonify(res=search_results)
@@ -596,18 +598,19 @@ def get_products():
         data = request.get_json(force=True)
         data = json.loads(data)
         prod_hashes = data['prod_hashes']
+        # print(prod_hashes)
         conditions = []
         for prod_hash in prod_hashes:
             conditions.append(
-                (Products.prod_hash == prod_hash)
+                (ProductsV2.prod_id == prod_hash)
             )
-        query = db.session.query(Products).filter(
+        query = db.session.query(ProductsV2).filter(
             or_(*conditions)
         )
         query_results = query.all()
         prod_results = []
         for query_result in query_results:
-            prod_serial = ProductsSchema().dump(query_result)
+            prod_serial = ProductSchemaV2().dump(query_result)
             prod_results.append(prod_serial)
 
         return json.dumps(prod_results)
@@ -617,7 +620,7 @@ def get_products():
 def get_prod_hash():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        data = json.loads(data)
+        # data = json.loads(data)
         img_hash = data['img_hash']
         prodduct = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
         prod_hash = prodduct.prod_hash
