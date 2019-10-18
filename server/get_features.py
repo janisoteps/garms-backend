@@ -9,7 +9,7 @@ async def send_file(url, image_file):
             'image': image_file
         }) as response:
             data = await response.text()
-            print(data)
+            # print(data)
             return data
 
 

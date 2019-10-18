@@ -577,7 +577,7 @@ def add_outfit():
     if request.method == 'POST':
         data = request.get_json(force=True)
         data = json.loads(data)
-        add_outfit_response = db_add_outfit(db, User, Products, data)
+        add_outfit_response = db_add_outfit(db, User, ProductsV2, data)
 
         return add_outfit_response
 
@@ -620,12 +620,13 @@ def get_products():
 def get_prod_hash():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # data = json.loads(data)
+        data = json.loads(data)
+        # print(data)
         img_hash = data['img_hash']
-        prodduct = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-        prod_hash = prodduct.prod_hash
+        prodduct = db.session.query(ProductsV2).filter(ProductsV2.image_hash.any(img_hash)).first()
+        prod_id = prodduct.prod_id
 
-        return json.dumps({'prod_hash': prod_hash})
+        return json.dumps({'prod_id': prod_id})
 
 
 @app.route("/api/recommend_tags", methods=['POST'])
@@ -634,7 +635,7 @@ def recommend_tags():
         data = request.get_json(force=True)
         # data = json.loads(data)
 
-        suggestions = recommend_similar_tags(db, User, Products, data)
+        suggestions = recommend_similar_tags(db, User, ProductsV2, data)
 
         return suggestions
 

@@ -298,6 +298,7 @@ class ProductsV2(db.Model):
     attr_arr = db.Column(ARRAY(db.Integer))
     filter_arr = db.Column(ARRAY(db.Integer))
     all_arr = db.Column(ARRAY(db.Integer))
+    is_fav = db.Column(db.Boolean)
 
     def __init__(self,
                  prod_id,
@@ -330,7 +331,8 @@ class ProductsV2(db.Model):
                  material_arr,
                  attr_arr,
                  filter_arr,
-                 all_arr):
+                 all_arr,
+                 is_fav):
         self.prod_id = prod_id
         self.name = name
         self.prod_url = prod_url
@@ -362,6 +364,7 @@ class ProductsV2(db.Model):
         self.attr_arr = attr_arr
         self.filter_arr = filter_arr
         self.all_arr = all_arr
+        self.is_fav = is_fav
 
     def __repr__(self):
         return '<id={}>'.format(self.id)

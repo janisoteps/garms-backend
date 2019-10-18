@@ -4,7 +4,7 @@ import json
 import data.cats as cats
 
 
-def recommend_similar_tags(db, User, Products, data):
+def recommend_similar_tags(db, User, ProductsV2, data):
     req_email = data['email']
     req_sex = data['sex']
     user_data = User.query.filter_by(email=req_email).first()
@@ -13,13 +13,13 @@ def recommend_similar_tags(db, User, Products, data):
     user_wardrobe = user_data.wardrobe
     user_looks = user_data.looks
     suggestions = []
-    if user_looks is not None:
+    if user_looks is not None and user_wardrobe is not None:
         for look in user_looks:
             outfits = [outfit['prod_id'] for outfit in user_wardrobe if outfit['look_name'] == look['look_name']]
             # print('outfits')
             # print(outfits)
             if len(outfits) > 0:
-                query_prods = db.session.query(Products).filter(Products.prod_hash.in_(outfits)).all()
+                query_prods = db.session.query(ProductsV2).filter(ProductsV2.prod_id.in_(outfits)).all()
                 look_cats_kind = []
                 look_cats_all = []
                 for query_prod in query_prods:
@@ -44,11 +44,11 @@ def recommend_similar_tags(db, User, Products, data):
 
                 for tag in look_cats_kind:
                     kind_conditions.append(
-                        func.lower(Products.name).ilike('%{}%'.format(tag)) | Products.img_cats_sc_txt.any(tag)
+                        func.lower(ProductsV2.name).ilike('%{}%'.format(tag)) | ProductsV2.all_cats.any(tag)
                     )
                 for all_tag in look_cats_all:
                     all_conditions.append(
-                        func.lower(Products.name).ilike('%{}%'.format(all_tag)) | Products.img_cats_sc_txt.any(all_tag)
+                        func.lower(ProductsV2.name).ilike('%{}%'.format(all_tag)) | ProductsV2.all_cats.any(all_tag)
                     )
 
                 # print('KIND CONDS')
@@ -56,16 +56,16 @@ def recommend_similar_tags(db, User, Products, data):
                 # print('ALL CONDS')
                 # print(all_conditions)
 
-                query = db.session.query(Products).filter(
+                query = db.session.query(ProductsV2).filter(
                     and_(
-                        and_(or_(*kind_conditions), (Products.sex == req_sex)),
+                        and_(or_(*kind_conditions), (ProductsV2.sex == req_sex), ProductsV2.prod_id.isnot(None)),
                         or_(or_(*kind_conditions), or_(*all_conditions))
                     )
                 )
                 query_results = query.order_by(func.random()).limit(10).all()
                 prod_results = []
                 for query_result in query_results:
-                    prod_serial = ProductsSchema().dump(query_result)
+                    prod_serial = ProductSchemaV2().dump(query_result)
                     prod_results.append(prod_serial)
 
                 suggestions.append({
@@ -73,11 +73,11 @@ def recommend_similar_tags(db, User, Products, data):
                     'prod_suggestions': prod_results
                 })
     else:
-        query = db.session.query(Products).filter(Products.sex == req_sex)
+        query = db.session.query(ProductsV2).filter(ProductsV2.sex == req_sex).filter(ProductsV2.prod_id.isnot(None))
         query_results = query.order_by(func.random()).limit(30).all()
         prod_results = []
         for query_result in query_results:
-            prod_serial = ProductsSchema().dump(query_result)
+            prod_serial = ProductSchemaV2().dump(query_result)
             prod_results.append(prod_serial)
         suggestions.append({
             'look_name': 'All',

@@ -91,6 +91,7 @@ class ProductSchemaV2(Schema):
     attr_arr = fields.List(fields.Integer())
     filter_arr = fields.List(fields.Integer())
     all_arr = fields.List(fields.Integer())
+    is_fav = fields.Boolean()
 
 
 class ImageSchemaV2(Schema):
@@ -130,6 +131,7 @@ class ImageSchemaV2(Schema):
     encoding_crop = fields.List(fields.Integer())
     size_stock = fields.List(fields.Nested(SizeStockSchema))
     in_stock = fields.Boolean()
+    encoding_vgg16 = fields.List(fields.Integer())
 
 
 class InstaMentionSchema(Schema):
