@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ProductsSchema, ImageSchema
+from marshmallow_schema import ProductsSchema, ImageSchema, ProductSchemaV2
 import json
 import data.cats as cats
 
@@ -87,21 +87,21 @@ def recommend_similar_tags(db, User, Products, data):
     return json.dumps(suggestions)
 
 
-def recommend_from_random(db, Products, data):
+def recommend_from_random(db, ProductsV2, data):
     req_sex = data['sex']
     print(f'req_sex = {req_sex}')
     if req_sex is not '':
         if req_sex == 'both':
-            query = db.session.query(Products)
+            query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None))
         else:
-            query = db.session.query(Products).filter(Products.sex == req_sex)
+            query = db.session.query(ProductsV2).filter(ProductsV2.sex == req_sex).filter(ProductsV2.prod_id.isnot(None))
     else:
-        query = db.session.query(Products)
+        query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None))
 
     query_results = query.order_by(func.random()).limit(30).all()
     prod_results = []
     for query_result in query_results:
-        prod_serial = ProductsSchema().dump(query_result)
+        prod_serial = ProductSchemaV2().dump(query_result)
         prod_results.append(prod_serial)
 
     suggestions = [

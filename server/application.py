@@ -644,7 +644,7 @@ def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        suggestions = recommend_from_random(db, Products, data)
+        suggestions = recommend_from_random(db, ProductsV2, data)
 
         return suggestions
 
