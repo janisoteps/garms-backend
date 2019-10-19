@@ -194,87 +194,6 @@ def addfav():
             return json.dumps(True)
 
 
-# @app.route("/api/removefav", methods=['POST'])
-# def removefav():
-#     if request.method == 'POST':
-#         data = request.get_json(force=True)
-#         data = json.loads(data)
-#         img_hash = data['img_hash']
-#         print('len img_hash: ', str(len(img_hash)))
-#         if len(img_hash) == 40:
-#             user_email = data['email']
-#
-#             print('user email: ', str(user_email))
-#             user = User.query.filter_by(email=user_email).first()
-#
-#             user.favorites_ids = list(user.favorites_ids)
-#
-#             if img_hash in user.favorites_ids:
-#                 user.favorites_ids.remove(img_hash)
-#
-#                 db.session.commit()
-#
-#             # Declare Marshmallow schema so that SqlAlchemy object can be serialized
-#             product_schema = ProductSchema()
-#
-#             result_list = []
-#             for img_hash in user.favorites_ids:
-#                 prod_search = db.session.query(Products).filter((Products.img_hash == img_hash)).first()
-#                 prod_serial = product_schema.dump(prod_search)
-#
-#                 if len(prod_serial[0]) == 0:
-#                     new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-#                     if new_prod_search is None:
-#                         new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-#                         prod_serial = ProductsSchema().dump(new_prod_search)
-#                     else:
-#                         prod_serial = ProductsSchema().dump(new_prod_search)
-#
-#                 result_list.append(prod_serial)
-#
-#             res = jsonify(res=result_list)
-#
-#             print('res: ', str(res))
-#
-#             return res
-#
-#
-# @app.route("/api/favorites", methods=['GET'])
-# def favorites():
-#     if request.method == 'GET':
-#         email = request.args.get('email')
-#         user = User.query.filter_by(email=email).first()
-#         favs = user.favorites_ids
-#
-#         result_list = []
-#         for img_hash in favs:
-#             prod_search = db.session.query(Products).filter((Products.img_hash == img_hash)).first()
-#             try:
-#                 prod_serial = ProductSchema().dump(prod_search)
-#
-#             except:
-#                 new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-#                 if new_prod_search is None:
-#                     new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-#                     prod_serial = ProductsSchema().dump(new_prod_search)
-#                 else:
-#                     prod_serial = ProductsSchema().dump(new_prod_search)
-#
-#             if len(prod_serial[0]) == 0:
-#                 new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-#                 if new_prod_search is None:
-#                     new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-#                     prod_serial = ProductsSchema().dump(new_prod_search)
-#                 else:
-#                     prod_serial = ProductsSchema().dump(new_prod_search)
-#
-#             result_list.append(prod_serial)
-#
-#         res = jsonify(res=result_list)
-#
-#         return res
-
-
 @app.route("/api/insta_pics", methods=['GET'])
 def insta_pics():
     if request.method == 'GET':
@@ -416,20 +335,10 @@ def submit_instagram():
 @app.route("/api/text_search", methods=['get'])
 def text_search():
     if request.method == 'GET':
-        res = db_text_search(request, db, Products, Images)
+        res = db_text_search(request, db, ProductsV2, ImagesV2)
         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
 
         return res
-
-
-# # Search for products with a search string
-# @app.route("/api/text", methods=['get'])
-# def text():
-#     if request.method == 'GET':
-#
-#         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
-#
-#         return res
 
 
 # Return color, encoding and category predictions from uploaded image
@@ -502,43 +411,6 @@ def search_similar():
         res = jsonify(res=search_results)
 
         return res
-
-
-# @app.route("/api/prod_stats", methods=['GET'])
-# def prods_tats():
-#     if request.method == 'GET':
-#
-#         request_type = request.args.get('req_type')
-#
-#         if request_type == "brand_count":
-#             products_list = db.session.query(Product).filter().all()
-#
-#             product_brands = {}
-#             prod_brand_set = set()
-#             for product in products_list:
-#                 if product.brand in prod_brand_set:
-#                     product_brands[product.brand] += 1
-#                 else:
-#                     prod_brand_set.add(product.brand)
-#                     product_brands[product.brand] = 1
-#
-#             res = jsonify(product_brands)
-#
-#             return res
-
-#
-# @app.route("/api/explorer_search", methods=['POST'])
-# def explorer_search():
-#     if request.method == 'POST':
-#         data = request.get_json(force=True)
-#         data = json.loads(data)
-#
-#
-#         # Make it HTTP friendly
-#         res = jsonify(res=result_list)
-#         # print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
-#
-#         return res
 
 
 @app.route("/api/add_look", methods=['POST'])
@@ -656,9 +528,9 @@ def get_image():
         data = request.get_json(force=True)
         img_hash = data['img_hash']
 
-        query = db.session.query(Images).filter(Images.img_hash == img_hash)
+        query = db.session.query(ImagesV2).filter(ImagesV2.img_hash == img_hash)
         query_result = query.first()
-        img_serial = ImageSchema().dump(query_result)
+        img_serial = ImageSchemaV2().dump(query_result)
 
         return json.dumps(img_serial)
 
