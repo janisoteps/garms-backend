@@ -16,7 +16,7 @@ from db_recommend import recommend_similar_tags, recommend_from_random
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import data.cats as cats
-
+from sqlalchemy.orm import load_only
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config.from_object(Config)
@@ -576,6 +576,17 @@ def add_vgg16():
             return json.dumps({
                 'response': 'SUCCESS'
             })
+
+
+@app.route("/api/count_in_stock", methods=['GET'])
+def count_in_stock():
+    if request.method == 'GET':
+        # stock_aggr = db.session.query(ImagesV2.in_stock, func.count(ImagesV2.in_stock)).options(load_only(ImagesV2.in_stock)).group_by(ImagesV2.in_stock).all()
+        stock_aggr = db.session.query(ImagesV2.in_stock, func.count(ImagesV2.in_stock)).group_by(ImagesV2.in_stock).all()
+
+        return json.dumps({
+            'response': stock_aggr
+        })
 
 
 if __name__ == "__main__":
