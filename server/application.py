@@ -1,31 +1,29 @@
-# from random import shuffle
 import json
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flask_migrate import Migrate
 from flask import render_template, request, jsonify
-# import scipy.spatial as spatial
-# import numpy as np
-# from operator import itemgetter
 import string
 from sqlalchemy import func, any_, or_
-# import asyncio
 import aiohttp
-from get_features import get_features
-from marshmallow_schema import ProductSchema, ProductsSchema, InstaMentionSchema, ImageSchema
-from db_commit import image_commit, product_commit, insta_mention_commit
-from db_search import search_similar_images, search_from_upload, db_text_search
+from get_features import get_features, get_features_v2
+from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2
+from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2
+from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2, search_from_upload_v3, search_similar_images_v2
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
-
+import transformation.cat_transform as cat_transformation
+import transformation.enc_transform as enc_transformation
+import data.cats as cats
+from sqlalchemy.orm import load_only
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import User, Product, Products, Images, InstaMentions
+from models import User, ProductsV2, Products, Images, InstaMentions, ImagesV2
 
 
 # # # # # # # Functions # # # # # # #
@@ -196,87 +194,6 @@ def addfav():
             return json.dumps(True)
 
 
-@app.route("/api/removefav", methods=['POST'])
-def removefav():
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-        data = json.loads(data)
-        img_hash = data['img_hash']
-        print('len img_hash: ', str(len(img_hash)))
-        if len(img_hash) == 40:
-            user_email = data['email']
-
-            print('user email: ', str(user_email))
-            user = User.query.filter_by(email=user_email).first()
-
-            user.favorites_ids = list(user.favorites_ids)
-
-            if img_hash in user.favorites_ids:
-                user.favorites_ids.remove(img_hash)
-
-                db.session.commit()
-
-            # Declare Marshmallow schema so that SqlAlchemy object can be serialized
-            product_schema = ProductSchema()
-
-            result_list = []
-            for img_hash in user.favorites_ids:
-                prod_search = db.session.query(Product).filter((Product.img_hash == img_hash)).first()
-                prod_serial = product_schema.dump(prod_search)
-
-                if len(prod_serial[0]) == 0:
-                    new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-                    if new_prod_search is None:
-                        new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-                        prod_serial = ProductsSchema().dump(new_prod_search)
-                    else:
-                        prod_serial = ProductsSchema().dump(new_prod_search)
-                        
-                result_list.append(prod_serial)
-
-            res = jsonify(res=result_list)
-
-            print('res: ', str(res))
-
-            return res
-
-
-@app.route("/api/favorites", methods=['GET'])
-def favorites():
-    if request.method == 'GET':
-        email = request.args.get('email')
-        user = User.query.filter_by(email=email).first()
-        favs = user.favorites_ids
-
-        result_list = []
-        for img_hash in favs:
-            prod_search = db.session.query(Product).filter((Product.img_hash == img_hash)).first()
-            try:
-                prod_serial = ProductSchema().dump(prod_search)
-
-            except:
-                new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-                if new_prod_search is None:
-                    new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-                    prod_serial = ProductsSchema().dump(new_prod_search)
-                else:
-                    prod_serial = ProductsSchema().dump(new_prod_search)
-
-            if len(prod_serial[0]) == 0:
-                new_prod_search = db.session.query(Products).filter((Products.prod_hash == img_hash)).first()
-                if new_prod_search is None:
-                    new_prod_search = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-                    prod_serial = ProductsSchema().dump(new_prod_search)
-                else:
-                    prod_serial = ProductsSchema().dump(new_prod_search)
-
-            result_list.append(prod_serial)
-
-        res = jsonify(res=result_list)
-
-        return res
-
-
 @app.route("/api/insta_pics", methods=['GET'])
 def insta_pics():
     if request.method == 'GET':
@@ -337,6 +254,18 @@ def commit_image():
         return upload_response
 
 
+# Upload new product image to database
+@app.route("/api/commit_image_v2", methods=['post'])
+def commit_image_v2():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # print(str(data))
+
+        upload_response = image_commit_v2(db, ImagesV2, data)
+
+        return upload_response
+
+
 # Upload new product object to database
 @app.route("/api/commit_product", methods=['post'])
 def commit_product():
@@ -350,6 +279,17 @@ def commit_product():
 
 
 # Upload new product object to database
+@app.route("/api/commit_product_v2", methods=['post'])
+def commit_product_v2():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        # print(str(data))
+        upload_response = product_commit_v2(db, ProductsV2, data)
+
+        return upload_response
+
+
 @app.route("/api/submit_instagram", methods=['post'])
 def submit_instagram():
     if request.method == 'POST':
@@ -361,54 +301,44 @@ def submit_instagram():
         return insta_submit_response
 
 
-# Delete product
-@app.route("/api/delete", methods=['get'])
-def delete():
-    if request.method == 'GET':
-        img_hash = request.args.get('img_hash')
-        shop = request.args.get('shop')
-
-        if len(img_hash) > 0:
-            try:
-                existing_product = Product.query.filter_by(img_hash=img_hash).first()
-            except:
-                existing_product = None
-            if existing_product is not None:
-                db.session.delete(existing_product)
-                db.session.commit()
-                return json.dumps(True)
-            else:
-                return json.dumps(False)
-
-        if len(shop) > 0:
-            try:
-                shop_products = db.session.query(Product).filter(Product.shop == 'Zalando').order_by(
-                    func.random()).all()
-                db.session.delete(shop_products)
-                db.session.commit()
-                return json.dumps(True)
-            except:
-                return json.dumps(False)
+# # Delete product
+# @app.route("/api/delete", methods=['get'])
+# def delete():
+#     if request.method == 'GET':
+#         img_hash = request.args.get('img_hash')
+#         shop = request.args.get('shop')
+#
+#         if len(img_hash) > 0:
+#             try:
+#                 existing_product = Product.query.filter_by(img_hash=img_hash).first()
+#             except:
+#                 existing_product = None
+#             if existing_product is not None:
+#                 db.session.delete(existing_product)
+#                 db.session.commit()
+#                 return json.dumps(True)
+#             else:
+#                 return json.dumps(False)
+#
+#         if len(shop) > 0:
+#             try:
+#                 shop_products = db.session.query(Product).filter(Product.shop == 'Zalando').order_by(
+#                     func.random()).all()
+#                 db.session.delete(shop_products)
+#                 db.session.commit()
+#                 return json.dumps(True)
+#             except:
+#                 return json.dumps(False)
 
 
 # Trigram search for products with a search string
 @app.route("/api/text_search", methods=['get'])
 def text_search():
     if request.method == 'GET':
-        res = db_text_search(request, db, Products, Images)
+        res = db_text_search(request, db, ProductsV2, ImagesV2)
         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
 
         return res
-
-
-# # Search for products with a search string
-# @app.route("/api/text", methods=['get'])
-# def text():
-#     if request.method == 'GET':
-#
-#         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
-#
-#         return res
 
 
 # Return color, encoding and category predictions from uploaded image
@@ -419,6 +349,21 @@ def img_features():
             post_image = request.files["image"].read()
             # Obtain features from all AI servers
             features = get_features(post_image)
+
+            # Make it HTTP friendly
+            res = jsonify(res=features)
+
+            return res
+
+
+# Return color, encoding and category predictions from uploaded image
+@app.route("/api/img_features_v2", methods=['POST'])
+def img_features_v2():
+    if request.method == 'POST':
+        if request.files.get("image"):
+            post_image = request.files["image"].read()
+            # Obtain features from all AI servers
+            features = get_features_v2(post_image)
 
             # Make it HTTP friendly
             res = jsonify(res=features)
@@ -439,55 +384,33 @@ def search_from_image():
         return res
 
 
+# Return color, encoding and category predictions from uploaded image
+@app.route("/api/search_from_image_v2", methods=['POST'])
+def search_from_image_v2():
+    if request.method == 'POST':
+
+        # results = search_from_upload_v2(request, db, ImagesV2, ProductsV2)
+        results = search_from_upload_v3(request, db, ImagesV2, ProductsV2)
+        # print('Search from image results: ', str(results))
+        # Make it HTTP friendly
+        res = jsonify(res=results)
+
+        return res
+
+
 # Search for similar products based on selected product
 @app.route("/api/search_similar", methods=['GET'])
 def search_similar():
     print('Search similar requested, request method', str(request.method))
     if request.method == 'GET':
         print('Calling search_similar_images')
-        search_results = search_similar_images(request, db, Images, Products)
+        # search_results = search_similar_images(request, db, Images, Products)
+        search_results = search_similar_images_v2(request, db, ImagesV2, ProductsV2)
 
         # Make it HTTP friendly
         res = jsonify(res=search_results)
 
         return res
-
-
-@app.route("/api/prod_stats", methods=['GET'])
-def prods_tats():
-    if request.method == 'GET':
-
-        request_type = request.args.get('req_type')
-
-        if request_type == "brand_count":
-            products_list = db.session.query(Product).filter().all()
-
-            product_brands = {}
-            prod_brand_set = set()
-            for product in products_list:
-                if product.brand in prod_brand_set:
-                    product_brands[product.brand] += 1
-                else:
-                    prod_brand_set.add(product.brand)
-                    product_brands[product.brand] = 1
-
-            res = jsonify(product_brands)
-
-            return res
-
-#
-# @app.route("/api/explorer_search", methods=['POST'])
-# def explorer_search():
-#     if request.method == 'POST':
-#         data = request.get_json(force=True)
-#         data = json.loads(data)
-#
-#
-#         # Make it HTTP friendly
-#         res = jsonify(res=result_list)
-#         # print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
-#
-#         return res
 
 
 @app.route("/api/add_look", methods=['POST'])
@@ -526,7 +449,7 @@ def add_outfit():
     if request.method == 'POST':
         data = request.get_json(force=True)
         data = json.loads(data)
-        add_outfit_response = db_add_outfit(db, User, Products, data)
+        add_outfit_response = db_add_outfit(db, User, ProductsV2, data)
 
         return add_outfit_response
 
@@ -547,18 +470,19 @@ def get_products():
         data = request.get_json(force=True)
         data = json.loads(data)
         prod_hashes = data['prod_hashes']
+        # print(prod_hashes)
         conditions = []
         for prod_hash in prod_hashes:
             conditions.append(
-                (Products.prod_hash == prod_hash)
+                (ProductsV2.prod_id == prod_hash)
             )
-        query = db.session.query(Products).filter(
+        query = db.session.query(ProductsV2).filter(
             or_(*conditions)
         )
         query_results = query.all()
         prod_results = []
         for query_result in query_results:
-            prod_serial = ProductsSchema().dump(query_result)
+            prod_serial = ProductSchemaV2().dump(query_result)
             prod_results.append(prod_serial)
 
         return json.dumps(prod_results)
@@ -569,11 +493,12 @@ def get_prod_hash():
     if request.method == 'POST':
         data = request.get_json(force=True)
         data = json.loads(data)
+        # print(data)
         img_hash = data['img_hash']
-        prodduct = db.session.query(Products).filter(Products.img_hashes.any(img_hash)).first()
-        prod_hash = prodduct.prod_hash
+        prodduct = db.session.query(ProductsV2).filter(ProductsV2.image_hash.any(img_hash)).first()
+        prod_id = prodduct.prod_id
 
-        return json.dumps({'prod_hash': prod_hash})
+        return json.dumps({'prod_id': prod_id})
 
 
 @app.route("/api/recommend_tags", methods=['POST'])
@@ -582,7 +507,7 @@ def recommend_tags():
         data = request.get_json(force=True)
         # data = json.loads(data)
 
-        suggestions = recommend_similar_tags(db, User, Products, data)
+        suggestions = recommend_similar_tags(db, User, ProductsV2, data)
 
         return suggestions
 
@@ -592,7 +517,7 @@ def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        suggestions = recommend_from_random(db, Products, data)
+        suggestions = recommend_from_random(db, ProductsV2, data)
 
         return suggestions
 
@@ -603,11 +528,74 @@ def get_image():
         data = request.get_json(force=True)
         img_hash = data['img_hash']
 
-        query = db.session.query(Images).filter(Images.img_hash == img_hash)
+        query = db.session.query(ImagesV2).filter(ImagesV2.img_hash == img_hash)
         query_result = query.first()
-        img_serial = ImageSchema().dump(query_result)
+        img_serial = ImageSchemaV2().dump(query_result)
 
         return json.dumps(img_serial)
+
+
+@app.route("/api/cat_transform", methods=['POST'])
+def cat_transform():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = cat_transformation.CatTransform().cat_transform(cats, db, ImagesV2, data)
+
+        return json.dumps(req_response)
+
+
+@app.route("/api/enc_transform", methods=['POST'])
+def enc_transform():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = enc_transformation.EncTransform().enc_dim_transform(db, ImagesV2, data)
+
+        return json.dumps(req_response)
+
+
+@app.route("/api/add_vgg16", methods=['POST'])
+def add_vgg16():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        img_hash = data['img_hash']
+        encoding_vgg16 = data['encoding_vgg16']
+        try:
+            existing_img = ImagesV2.query.filter_by(img_hash=img_hash).first()
+        except:
+            existing_img = None
+
+        if existing_img is None:
+            return json.dumps({
+                'response': 'not found'
+            })
+        else:
+            existing_img.encoding_vgg16 = encoding_vgg16
+            db.session.commit()
+            return json.dumps({
+                'response': 'SUCCESS'
+            })
+
+
+@app.route("/api/count_in_stock", methods=['GET'])
+def count_in_stock():
+    if request.method == 'GET':
+        stock_aggr = db.session.query(ImagesV2.in_stock, func.count(ImagesV2.in_stock)).group_by(ImagesV2.in_stock).all()
+
+        return json.dumps({
+            'response': stock_aggr
+        })
+
+
+@app.route("/api/count_vgg16", methods=['GET'])
+def count_vgg16():
+    if request.method == 'GET':
+        vgg16_none_count = db.session.query(ImagesV2).filter(ImagesV2.encoding_vgg16 == None).count()
+
+        return json.dumps({
+            'null_count': vgg16_none_count
+        })
 
 
 if __name__ == "__main__":

@@ -68,15 +68,17 @@ def db_get_looks(db, User, data):
     if user_data is None:
         return 'Invalid user email'
 
+    res_wardrobe = [outfit for outfit in user_data.wardrobe if outfit['prod_id'] is not None]
     return json.dumps({
             'looks': user_data.looks,
-            'wardrobe': user_data.wardrobe
+            'wardrobe': res_wardrobe
         })
 
 
-def db_add_outfit(db, User, Products, data):
+def db_add_outfit(db, User, ProductsV2, data):
     email = data['email']
     look_name = data['look_name']
+    # print(data)
     prod_id = data['prod_id']
 
     user_data = User.query.filter_by(email=email).first()
@@ -102,7 +104,7 @@ def db_add_outfit(db, User, Products, data):
             user_data.wardrobe = user_outfits
             db.session.commit()
 
-        added_prod = Products.query.filter_by(prod_hash=prod_id).first()
+        added_prod = ProductsV2.query.filter_by(prod_id=prod_id).first()
         added_prod.is_fav = True
         db.session.commit()
 
