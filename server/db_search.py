@@ -102,24 +102,24 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
                     np.array(query_result.color_1, dtype=int))
                 query_color_2_norm = np.array(query_result.color_2, dtype=int) / np.sum(
                     np.array(query_result.color_2, dtype=int))
-                query_color_3_norm = np.array(query_result.color_3, dtype=int) / np.sum(
-                    np.array(query_result.color_3, dtype=int))
+                # query_color_3_norm = np.array(query_result.color_3, dtype=int) / np.sum(
+                #     np.array(query_result.color_3, dtype=int))
 
                 # compute the chi-squared distances
                 distance_color_1 = calc_chi_distance(req_color_norm_1, query_color_1_norm)
                 distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
-                distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
+                # distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
                 distance_color_1_2 = calc_chi_distance(req_color_norm_2, query_color_1_norm)
                 distance_color_2_2 = calc_chi_distance(req_color_norm_2, query_color_2_norm)
-                distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
+                # distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
                 distance_color = 2 * min([
                     distance_color_1,
                     distance_color_2,
-                    distance_color_3
+                    # distance_color_3
                 ]) + min([
                     distance_color_1_2,
                     distance_color_2_2,
-                    distance_color_3_2
+                    # distance_color_3_2
                 ])
                 # print('Chi distance: ', str(distance_color))
 
@@ -131,10 +131,10 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
                     spatial.distance.euclidean(np.array(req_color_1, dtype=int),
                                                np.array(query_result.color_2, dtype=int),
                                                w=None))
-                distance_color_euc_3 = int(
-                    spatial.distance.euclidean(np.array(req_color_1, dtype=int),
-                                               np.array(query_result.color_3, dtype=int),
-                                               w=None))
+                # distance_color_euc_3 = int(
+                #     spatial.distance.euclidean(np.array(req_color_1, dtype=int),
+                #                                np.array(query_result.color_3, dtype=int),
+                #                                w=None))
 
                 distance_color_euc_1_2 = int(
                     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
@@ -144,19 +144,19 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
                     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
                                                np.array(query_result.color_2, dtype=int),
                                                w=None))
-                distance_color_euc_3_2 = int(
-                    spatial.distance.euclidean(np.array(req_color_2, dtype=int),
-                                               np.array(query_result.color_3, dtype=int),
-                                               w=None))
+                # distance_color_euc_3_2 = int(
+                #     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
+                #                                np.array(query_result.color_3, dtype=int),
+                #                                w=None))
 
                 distance_color_euc = (1 / 500) * (2 * min([
                     distance_color_euc_1,
                     distance_color_euc_2,
-                    distance_color_euc_3
+                    # distance_color_euc_3
                 ]) + min([
                     distance_color_euc_1_2,
                     distance_color_euc_2_2,
-                    distance_color_euc_3_2
+                    # distance_color_euc_3_2
                 ]))
                 # distance_color_euc = distance_color_euc_1 + distance_color_euc_2 + distance_color_euc_3
                 # print('Euclidean distance: ', str(distance_color_euc))
@@ -890,24 +890,24 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
                 np.array(closest_n_result.color_1, dtype=int))
             query_color_2_norm = np.array(closest_n_result.color_2, dtype=int) / np.sum(
                 np.array(closest_n_result.color_2, dtype=int))
-            query_color_3_norm = np.array(closest_n_result.color_3, dtype=int) / np.sum(
-                np.array(closest_n_result.color_3, dtype=int))
+            # query_color_3_norm = np.array(closest_n_result.color_3, dtype=int) / np.sum(
+            #     np.array(closest_n_result.color_3, dtype=int))
 
             # compute the chi-squared distances
             distance_color_1 = calc_chi_distance(req_color_norm_1, query_color_1_norm)
             distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
-            distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
+            # distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
             distance_color_1_2 = calc_chi_distance(req_color_norm_2, query_color_1_norm)
             distance_color_2_2 = calc_chi_distance(req_color_norm_2, query_color_2_norm)
-            distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
+            # distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
             distance_color = 2 * min([
                 distance_color_1,
                 distance_color_2,
-                distance_color_3
+                # distance_color_3
             ]) + min([
                 distance_color_1_2,
                 distance_color_2_2,
-                distance_color_3_2
+                # distance_color_3_2
             ])
             # print('Chi distance: ', str(distance_color))
 
@@ -919,10 +919,10 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
                 spatial.distance.euclidean(np.array(req_color_1, dtype=int),
                                            np.array(closest_n_result.color_2, dtype=int),
                                            w=None))
-            distance_color_euc_3 = int(
-                spatial.distance.euclidean(np.array(req_color_1, dtype=int),
-                                           np.array(closest_n_result.color_3, dtype=int),
-                                           w=None))
+            # distance_color_euc_3 = int(
+            #     spatial.distance.euclidean(np.array(req_color_1, dtype=int),
+            #                                np.array(closest_n_result.color_3, dtype=int),
+            #                                w=None))
 
             distance_color_euc_1_2 = int(
                 spatial.distance.euclidean(np.array(req_color_2, dtype=int),
@@ -932,19 +932,19 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
                 spatial.distance.euclidean(np.array(req_color_2, dtype=int),
                                            np.array(closest_n_result.color_2, dtype=int),
                                            w=None))
-            distance_color_euc_3_2 = int(
-                spatial.distance.euclidean(np.array(req_color_2, dtype=int),
-                                           np.array(closest_n_result.color_3, dtype=int),
-                                           w=None))
+            # distance_color_euc_3_2 = int(
+            #     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
+            #                                np.array(closest_n_result.color_3, dtype=int),
+            #                                w=None))
 
             distance_color_euc = (1 / 500) * (2 * min([
                 distance_color_euc_1,
                 distance_color_euc_2,
-                distance_color_euc_3
+                # distance_color_euc_3
             ]) + min([
                 distance_color_euc_1_2,
                 distance_color_euc_2_2,
-                distance_color_euc_3_2
+                # distance_color_euc_3_2
             ]))
             # print('Euclidean distance: ', str(distance_color_euc))
             color_query_result = {
