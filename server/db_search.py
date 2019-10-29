@@ -60,21 +60,25 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
     conditions.append(
         or_((ImagesV2.price < max_price), and_((ImagesV2.sale == True), (ImagesV2.saleprice < max_price)))
     )
+    conditions.append(
+        (ImagesV2.in_stock == True)
+    )
+    conditions.append(
+        (ImagesV2.encoding_vgg16 != None)
+    )
     # Use those conditions as argument for a filter function
     print('Querying database')
     query = db.session.query(ImagesV2).filter(
         and_(and_(*conditions), or_(*all_cat_conds))
     )
-    query_results = query.order_by(func.random()).limit(2000).all()
+    query_results = query.order_by(func.random()).limit(6000).all()
 
     print(f'result length: {len(query_results)}')
     if len(query_results) < 20:
         print('not enough results')
 
-    # req_color_512 = req_image_data.color_512
-    # req_encoding_nocrop = req_image_data.encoding_nocrop
     req_encoding_crop = req_image_data.encoding_crop
-    # req_encoding_sqcrop = req_image_data.encoding_squarecrop
+    req_encoding_vgg16 = req_image_data.encoding_vgg16
 
     # Start with main RBG color distances to reduce the amount of the rest of the distances to calc
     print('Calculating color distances')
@@ -165,53 +169,23 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
                 color_list.append(color_query_result)
 
     sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
-    top_color_list = sorted_color_list[0:500]
+    top_color_list = sorted_color_list[0:4000]
 
-    # # Calculate color_512 vector distances
-    # print('Calculating color_512 distances')
-    # color_512_list = []
-    # for color_result in top_color_list:
-    #     query_result = color_result['query_result']
-    #     color_512_dist = calc_chi_distance(np.array(req_color_512, dtype=float),
-    #                                        np.array(query_result.color_512, dtype=float))
-    #
-    #     color_512_result = {
-    #         'query_result': query_result,
-    #         'img_hash': query_result.img_hash,
-    #         'color_dist': color_result['color_dist'],
-    #         'color_512_dist': color_512_dist
-    #     }
-    #     color_512_list.append(color_512_result)
-    #
-    # sorted_color_512_list = sorted(color_512_list, key=itemgetter('color_512_dist'))
-    # top_color_512_list = sorted_color_512_list[0:400]
+    # CALCULATE ENCODING DISTANCES
+    encoding_arrays = []
+    for query_result in top_color_list:
+        encoding_arrays.append(query_result['query_result'].encoding_vgg16)
+    encoding_matrix = np.asarray(encoding_arrays)
 
-    # # Calculate encoding vector distances
-    # print('Calculating no crop encoding distances')
-    # encoding_list = []
-    # for color_512_result in top_color_512_list:
-    #     query_result = color_512_result['query_result']
-    #     encoding_nocrop_dist = int(
-    #         spatial.distance.euclidean(np.array(req_encoding_nocrop, dtype=int),
-    #                                    np.array(query_result.encoding_nocrop, dtype=int),
-    #                                    w=None))
-    #     print('encoding_nocrop_dist', str(encoding_nocrop_dist))
-    #     encoding_result = {
-    #         'query_result': query_result,
-    #         'img_hash': query_result.img_hash,
-    #         'color_dist': color_512_result['color_dist'],
-    #         'color_512_dist': color_512_result['color_512_dist'],
-    #         'encoding_nocrop_dist': encoding_nocrop_dist
-    #     }
-    #     encoding_list.append(encoding_result)
-    #
-    # sorted_encoding_list = sorted(encoding_list, key=itemgetter('color_512_dist'))
-    # top_encoding_list = sorted_encoding_list[0:350]
+    dist_encoding_arr = np.linalg.norm(encoding_matrix - req_encoding_vgg16, axis=1)
+    closest_n_enc_ind = dist_encoding_arr.argsort()[:2000]
+    closest_n_enc_results = [top_color_list[x] for x in closest_n_enc_ind]
+    print('Closest encodings calculated')
 
     # Calculate cropped encoding vector distances
     print('Calculating crop encoding distances')
     encoding_crop_list = []
-    for encoding_result in top_color_list:
+    for encoding_result in closest_n_enc_results:
         query_result = encoding_result['query_result']
         encoding_crop_dist = int(
             spatial.distance.euclidean(np.array(req_encoding_crop, dtype=int),
@@ -222,34 +196,9 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
             'img_hash': query_result.img_hash,
             'prod_id': query_result.prod_id,
             'color_dist': encoding_result['color_dist'],
-            # 'color_512_dist': encoding_result['color_512_dist'],
-            # 'encoding_nocrop_dist': encoding_result['encoding_nocrop_dist'],
             'encoding_crop_dist': encoding_crop_dist
         }
         encoding_crop_list.append(encoding_result)
-
-    # sorted_encoding_crop_list = sorted(encoding_crop_list, key=itemgetter('encoding_crop_dist'))
-    # top_encoding_crop_list = sorted_encoding_crop_list[0:300]
-    #
-    # # Calculate square cropped encoding vector distances
-    # print('Calculating square crop encoding distances')
-    # encoding_sqcrop_list = []
-    # for encoding_crop_result in top_encoding_crop_list:
-    #     query_result = encoding_crop_result['query_result']
-    #     encoding_sqcrop_dist = int(
-    #         spatial.distance.euclidean(np.array(req_encoding_sqcrop, dtype=int),
-    #                                    np.array(query_result.encoding_squarecrop, dtype=int),
-    #                                    w=None))
-    #     encoding_result = {
-    #         'query_result': query_result,
-    #         'img_hash': query_result.img_hash,
-    #         'color_dist': encoding_crop_result['color_dist'],
-    #         'color_512_dist': encoding_crop_result['color_512_dist'],
-    #         'encoding_nocrop_dist': encoding_crop_result['encoding_nocrop_dist'],
-    #         'encoding_crop_dist': encoding_crop_result['encoding_crop_dist'],
-    #         'encoding_sqcrop_dist': encoding_sqcrop_dist
-    #     }
-    #     encoding_sqcrop_list.append(encoding_result)
 
     # Make sure we return the original request image back on top
     if not any(d['img_hash'] == req_img_hash for d in encoding_crop_list):
@@ -268,7 +217,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
         request_prod['encoding_crop_dist'] = -1000
 
     sorted_encoding_crop_list = sorted(encoding_crop_list, key=itemgetter('encoding_crop_dist'))
-    top_encoding_crop_list = sorted_encoding_crop_list[0:200]
+    top_encoding_crop_list = sorted_encoding_crop_list[0:500]
 
     top_encoding_sqcrop_list = sorted(top_encoding_crop_list, key=itemgetter('color_dist'))
     top_encoding_sqcrop_list = top_encoding_sqcrop_list[0:40]
@@ -838,11 +787,13 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
     req_color_1 = data['color_1']
     req_color_2 = data['color_2']
     req_encoding = data['encoding_rcnn']
+    req_vgg16_encoding = data['vgg16_encoding']
 
     conditions = []
     # req_color_arr_1 = np.asarray(req_color_1)
     # req_color_arr_2 = np.asarray(req_color_2)
     req_encoding_arr = np.asarray(req_encoding)
+    req_vgg16_encoding_arr = np.asarray(req_vgg16_encoding)
     tag_list = cats.Cats()
     kind_cats = tag_list.kind_cats
     all_cats = tag_list.all_cats
@@ -862,6 +813,12 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
     conditions.append(
         (ImagesV2.sex == req_sex)
     )
+    conditions.append(
+        (ImagesV2.in_stock == True)
+    )
+    conditions.append(
+        (ImagesV2.encoding_vgg16 != None)
+    )
     if len(req_shop_excl) > 0:
         conditions.append(
             (ImagesV2.shop != any_(req_shop_excl))
@@ -878,11 +835,12 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
         ImagesV2.color_3,
         ImagesV2.color_3_hex,
         ImagesV2.all_arr,
-        ImagesV2.encoding_crop
+        ImagesV2.encoding_crop,
+        ImagesV2.encoding_vgg16
     ).filter(
         and_(*conditions)
     )
-    query_results = query.order_by(func.random()).limit(1000).all()
+    query_results = query.order_by(func.random()).limit(8000).all()
 
     if len(query_results) < 100:
         conditions = []
@@ -891,9 +849,11 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
             cat_conditions.append(
                 func.lower(ImagesV2.name).ilike('%{}%'.format(kind_search_cat))
             )
-
         conditions.append(
             (ImagesV2.sex == req_sex)
+        )
+        conditions.append(
+            (ImagesV2.encoding_vgg16 != None)
         )
         if len(req_shop_excl) > 0:
             conditions.append(
@@ -909,11 +869,12 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
             ImagesV2.color_3,
             ImagesV2.color_3_hex,
             ImagesV2.all_arr,
-            ImagesV2.encoding_crop
+            ImagesV2.encoding_crop,
+            ImagesV2.encoding_vgg16
         ).filter(
             and_(and_(*conditions), or_(*cat_conditions))
         )
-        query_results = query.order_by(func.random()).limit(2000).all()
+        query_results = query.order_by(func.random()).limit(8000).all()
 
     if len(query_results) == 0:
         return 'No results'
@@ -927,26 +888,26 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
             req_color_norm_2 = np.array(req_color_2, dtype=int) / np.sum(np.array(req_color_2, dtype=int))
             query_color_1_norm = np.array(closest_n_result.color_1, dtype=int) / np.sum(
                 np.array(closest_n_result.color_1, dtype=int))
-            # query_color_2_norm = np.array(closest_n_result.color_2, dtype=int) / np.sum(
-            #     np.array(closest_n_result.color_2, dtype=int))
-            # query_color_3_norm = np.array(closest_n_result.color_3, dtype=int) / np.sum(
-            #     np.array(closest_n_result.color_3, dtype=int))
+            query_color_2_norm = np.array(closest_n_result.color_2, dtype=int) / np.sum(
+                np.array(closest_n_result.color_2, dtype=int))
+            query_color_3_norm = np.array(closest_n_result.color_3, dtype=int) / np.sum(
+                np.array(closest_n_result.color_3, dtype=int))
 
             # compute the chi-squared distances
             distance_color_1 = calc_chi_distance(req_color_norm_1, query_color_1_norm)
-            # distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
-            # distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
+            distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
+            distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
             distance_color_1_2 = calc_chi_distance(req_color_norm_2, query_color_1_norm)
-            # distance_color_2_2 = calc_chi_distance(req_color_norm_2, query_color_2_norm)
-            # distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
+            distance_color_2_2 = calc_chi_distance(req_color_norm_2, query_color_2_norm)
+            distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
             distance_color = 2 * min([
                 distance_color_1,
-                # distance_color_2,
-                # distance_color_3
+                distance_color_2,
+                distance_color_3
             ]) + min([
                 distance_color_1_2,
-                # distance_color_2_2,
-                # distance_color_3_2
+                distance_color_2_2,
+                distance_color_3_2
             ])
             # print('Chi distance: ', str(distance_color))
 
@@ -954,48 +915,49 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
                 spatial.distance.euclidean(np.array(req_color_1, dtype=int),
                                            np.array(closest_n_result.color_1, dtype=int),
                                            w=None))
-            # distance_color_euc_2 = int(
-            #     spatial.distance.euclidean(np.array(req_color_1, dtype=int),
-            #                                np.array(closest_n_result.color_2, dtype=int),
-            #                                w=None))
-            # distance_color_euc_3 = int(
-            #     spatial.distance.euclidean(np.array(req_color_1, dtype=int),
-            #                                np.array(closest_n_result.color_3, dtype=int),
-            #                                w=None))
+            distance_color_euc_2 = int(
+                spatial.distance.euclidean(np.array(req_color_1, dtype=int),
+                                           np.array(closest_n_result.color_2, dtype=int),
+                                           w=None))
+            distance_color_euc_3 = int(
+                spatial.distance.euclidean(np.array(req_color_1, dtype=int),
+                                           np.array(closest_n_result.color_3, dtype=int),
+                                           w=None))
 
             distance_color_euc_1_2 = int(
                 spatial.distance.euclidean(np.array(req_color_2, dtype=int),
                                            np.array(closest_n_result.color_1, dtype=int),
                                            w=None))
-            # distance_color_euc_2_2 = int(
-            #     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
-            #                                np.array(closest_n_result.color_2, dtype=int),
-            #                                w=None))
-            # distance_color_euc_3_2 = int(
-            #     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
-            #                                np.array(closest_n_result.color_3, dtype=int),
-            #                                w=None))
+            distance_color_euc_2_2 = int(
+                spatial.distance.euclidean(np.array(req_color_2, dtype=int),
+                                           np.array(closest_n_result.color_2, dtype=int),
+                                           w=None))
+            distance_color_euc_3_2 = int(
+                spatial.distance.euclidean(np.array(req_color_2, dtype=int),
+                                           np.array(closest_n_result.color_3, dtype=int),
+                                           w=None))
 
             distance_color_euc = (1 / 500) * (2 * min([
                 distance_color_euc_1,
-                # distance_color_euc_2,
-                # distance_color_euc_3
+                distance_color_euc_2,
+                distance_color_euc_3
             ]) + min([
                 distance_color_euc_1_2,
-                # distance_color_euc_2_2,
-                # distance_color_euc_3_2
+                distance_color_euc_2_2,
+                distance_color_euc_3_2
             ]))
             # print('Euclidean distance: ', str(distance_color_euc))
             color_query_result = {
                 'all_arr': closest_n_result.all_arr,
                 'encoding_crop': closest_n_result.encoding_crop,
+                'encoding_vgg16': closest_n_result.encoding_vgg16,
                 'img_hash': closest_n_result.img_hash,
                 'color_dist': distance_color + distance_color_euc
             }
             color_list.append(color_query_result)
 
         sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
-        top_color_list = sorted_color_list[0:700]
+        top_color_list = sorted_color_list[0:5000]
         print('Closest colors calculated')
 
         # CALCULATE TAG SIMILARITY
@@ -1006,23 +968,34 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
         print(f'all_cat_matrix.shape : {all_cat_matrix.shape}')
         print(f'all_cat_search_arr.shape : {all_cat_search_arr.shape}')
         similarity_matrix = np.sum(all_cat_matrix * all_cat_search_arr, axis=1)
-        closest_n_indices = similarity_matrix.argsort()[-500:][::-1]
+        closest_n_indices = similarity_matrix.argsort()[-4000:][::-1]
         closest_n_results = [top_color_list[x] for x in closest_n_indices]
         print('Closest all cats calculated')
 
+        # Calculate VGG16 encoding distances
+        vgg16_arrays = []
+        for query_result in closest_n_results:
+            vgg16_arrays.append(query_result['encoding_vgg16'])
+        vgg16_matrix = np.asarray(vgg16_arrays)
+        print(f'vgg16_matrix.shape : {vgg16_matrix.shape}')
+        print(f'req_vgg16_encoding_arr.shape : {req_vgg16_encoding_arr.shape}')
+        dist_vgg16_arr = np.linalg.norm(vgg16_matrix - req_vgg16_encoding_arr, axis=1)
+        closest_n_vgg16_ind = dist_vgg16_arr.argsort()[:1000]
+        closest_n_vgg16_results = [closest_n_results[x] for x in closest_n_vgg16_ind]
+
         # CALCULATE ENCODING DISTANCES
         encoding_arrays = []
-        for query_result in closest_n_results:
+        for query_result in closest_n_vgg16_results:
             encoding_arrays.append(query_result['encoding_crop'])
         encoding_matrix = np.asarray(encoding_arrays)
 
         dist_encoding_arr = np.linalg.norm(encoding_matrix - req_encoding_arr, axis=1)
-        closest_n_enc_ind = dist_encoding_arr.argsort()[:300]
-        closest_n_enc_results = [closest_n_results[x] for x in closest_n_enc_ind]
+        closest_n_enc_ind = dist_encoding_arr.argsort()[:500]
+        closest_n_enc_results = [closest_n_vgg16_results[x] for x in closest_n_enc_ind]
         print('Closest encodings calculated')
 
         final_sorted_color_list = sorted(closest_n_enc_results, key=itemgetter('color_dist'))
-        final_top_color_list = final_sorted_color_list[0:30]
+        final_top_color_list = final_sorted_color_list[0:40]
 
         result_list = []
         prod_check = set()
@@ -1040,6 +1013,7 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
                 ImagesV2.color_3,
                 ImagesV2.color_3_hex,
                 ImagesV2.encoding_crop,
+                ImagesV2.encoding_vgg16,
                 ImagesV2.all_arr,
                 ImagesV2.all_cats,
                 ImagesV2.size_stock,

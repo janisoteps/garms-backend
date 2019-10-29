@@ -14,25 +14,24 @@ async def send_file(url, image_file):
 
 
 def get_features_v2(image):
-    # rcnn_encoding_api = 'http://54.229.221.40/api/encoding'
     cat_api = 'http://34.245.0.175/api/cats'
-    # color_api = 'https://hvoe2gb7cf.execute-api.eu-west-1.amazonaws.com/production/api/color'
     color_env_api = 'http://54.246.147.52/api/encoding'
+    vgg16_enc_api = 'http://34.241.91.98/api/encoding'
 
     api_urls = [
-        # rcnn_encoding_api,
         color_env_api,
         cat_api,
-        # color_api
+        vgg16_enc_api
     ]
 
     tasks = [send_file(url, image) for url in api_urls]
     asyncio.set_event_loop(asyncio.new_event_loop())
     loop = asyncio.get_event_loop()
-    color_encoding_res, cat_res = loop.run_until_complete(asyncio.gather(*tasks))
+    color_encoding_res, cat_res, vgg16_enc_res = loop.run_until_complete(asyncio.gather(*tasks))
 
     img_cats_ai_txt = json.loads(cat_res)['res']['img_cats_ai_txt']
     crop_enc = json.loads(color_encoding_res)['encoding']
+    vgg16_enc = json.loads(vgg16_enc_res)
 
     color_res = json.loads(color_encoding_res)['color']
     color_1 = color_res['color_1']
@@ -52,7 +51,8 @@ def get_features_v2(image):
             'color_3': color_3,
             'color_3_hex': color_3_hex
         },
-        'rcnn_encoding': crop_enc
+        'rcnn_encoding': crop_enc,
+        'vgg16_encoding': vgg16_enc
     }
     return results
 

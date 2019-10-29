@@ -581,11 +581,20 @@ def add_vgg16():
 @app.route("/api/count_in_stock", methods=['GET'])
 def count_in_stock():
     if request.method == 'GET':
-        # stock_aggr = db.session.query(ImagesV2.in_stock, func.count(ImagesV2.in_stock)).options(load_only(ImagesV2.in_stock)).group_by(ImagesV2.in_stock).all()
         stock_aggr = db.session.query(ImagesV2.in_stock, func.count(ImagesV2.in_stock)).group_by(ImagesV2.in_stock).all()
 
         return json.dumps({
             'response': stock_aggr
+        })
+
+
+@app.route("/api/count_vgg16", methods=['GET'])
+def count_vgg16():
+    if request.method == 'GET':
+        vgg16_none_count = db.session.query(ImagesV2).filter(ImagesV2.encoding_vgg16 == None).count()
+
+        return json.dumps({
+            'null_count': vgg16_none_count
         })
 
 

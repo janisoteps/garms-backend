@@ -48,6 +48,7 @@ def recommend_similar_tags(db, User, ProductsV2, data):
         query = db.session.query(ProductsV2).filter(
             and_(or_(*kind_conditions), (ProductsV2.sex == req_sex), ProductsV2.prod_id.isnot(None))
         )
+
         query_results = query.order_by(func.random()).limit(30).all()
         print('loaded recommended prods')
         prod_results = []
