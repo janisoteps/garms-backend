@@ -100,6 +100,7 @@ class ImageSchemaV2(Schema):
     img_url = fields.String()
     prod_id = fields.String()
     prod_url = fields.String()
+    brand = fields.String()
     color_string = fields.String()
     date = fields.Integer()
     name = fields.String()
