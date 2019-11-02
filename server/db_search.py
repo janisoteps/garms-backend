@@ -71,7 +71,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
     query = db.session.query(ImagesV2).filter(
         and_(and_(*conditions), or_(*all_cat_conds))
     )
-    query_results = query.order_by(func.random()).limit(6000).all()
+    query_results = query.order_by(func.random()).limit(3000).all()
 
     print(f'result length: {len(query_results)}')
     if len(query_results) < 20:
@@ -169,7 +169,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
                 color_list.append(color_query_result)
 
     sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
-    top_color_list = sorted_color_list[0:4000]
+    top_color_list = sorted_color_list[0:2000]
 
     # CALCULATE ENCODING DISTANCES
     encoding_arrays = []
@@ -178,7 +178,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
     encoding_matrix = np.asarray(encoding_arrays)
 
     dist_encoding_arr = np.linalg.norm(encoding_matrix - req_encoding_vgg16, axis=1)
-    closest_n_enc_ind = dist_encoding_arr.argsort()[:2000]
+    closest_n_enc_ind = dist_encoding_arr.argsort()[:1000]
     closest_n_enc_results = [top_color_list[x] for x in closest_n_enc_ind]
     print('Closest encodings calculated')
 
@@ -217,7 +217,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
         request_prod['encoding_crop_dist'] = -1000
 
     sorted_encoding_crop_list = sorted(encoding_crop_list, key=itemgetter('encoding_crop_dist'))
-    top_encoding_crop_list = sorted_encoding_crop_list[0:500]
+    top_encoding_crop_list = sorted_encoding_crop_list[0:300]
 
     top_encoding_sqcrop_list = sorted(top_encoding_crop_list, key=itemgetter('color_dist'))
     top_encoding_sqcrop_list = top_encoding_sqcrop_list[0:40]
@@ -840,7 +840,7 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
     ).filter(
         and_(*conditions)
     )
-    query_results = query.order_by(func.random()).limit(8000).all()
+    query_results = query.order_by(func.random()).limit(3000).all()
 
     if len(query_results) < 100:
         conditions = []
@@ -874,7 +874,7 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
         ).filter(
             and_(and_(*conditions), or_(*cat_conditions))
         )
-        query_results = query.order_by(func.random()).limit(8000).all()
+        query_results = query.order_by(func.random()).limit(3000).all()
 
     if len(query_results) == 0:
         return 'No results'
@@ -957,7 +957,7 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
             color_list.append(color_query_result)
 
         sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
-        top_color_list = sorted_color_list[0:5000]
+        top_color_list = sorted_color_list[0:2000]
         print('Closest colors calculated')
 
         # CALCULATE TAG SIMILARITY
@@ -968,7 +968,7 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
         print(f'all_cat_matrix.shape : {all_cat_matrix.shape}')
         print(f'all_cat_search_arr.shape : {all_cat_search_arr.shape}')
         similarity_matrix = np.sum(all_cat_matrix * all_cat_search_arr, axis=1)
-        closest_n_indices = similarity_matrix.argsort()[-4000:][::-1]
+        closest_n_indices = similarity_matrix.argsort()[-1500:][::-1]
         closest_n_results = [top_color_list[x] for x in closest_n_indices]
         print('Closest all cats calculated')
 
@@ -980,7 +980,7 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
         print(f'vgg16_matrix.shape : {vgg16_matrix.shape}')
         print(f'req_vgg16_encoding_arr.shape : {req_vgg16_encoding_arr.shape}')
         dist_vgg16_arr = np.linalg.norm(vgg16_matrix - req_vgg16_encoding_arr, axis=1)
-        closest_n_vgg16_ind = dist_vgg16_arr.argsort()[:1000]
+        closest_n_vgg16_ind = dist_vgg16_arr.argsort()[:700]
         closest_n_vgg16_results = [closest_n_results[x] for x in closest_n_vgg16_ind]
 
         # CALCULATE ENCODING DISTANCES
@@ -990,7 +990,7 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
         encoding_matrix = np.asarray(encoding_arrays)
 
         dist_encoding_arr = np.linalg.norm(encoding_matrix - req_encoding_arr, axis=1)
-        closest_n_enc_ind = dist_encoding_arr.argsort()[:500]
+        closest_n_enc_ind = dist_encoding_arr.argsort()[:400]
         closest_n_enc_results = [closest_n_vgg16_results[x] for x in closest_n_enc_ind]
         print('Closest encodings calculated')
 
