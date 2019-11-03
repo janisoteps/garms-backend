@@ -386,6 +386,7 @@ class ImagesV2(db.Model):
     img_url = db.Column(db.String)
     prod_id = db.Column(db.String)
     prod_url = db.Column(db.String)
+    brand = db.Column(db.Text)
     color_string = db.Column(db.String)
     date = db.Column(db.Integer)
     name = db.Column('img_name', db.Text, index=True)
@@ -424,6 +425,7 @@ class ImagesV2(db.Model):
                  img_url,
                  prod_id,
                  prod_url,
+                 brand,
                  color_string,
                  date,
                  name,
@@ -461,6 +463,7 @@ class ImagesV2(db.Model):
         self.img_url = img_url
         self.prod_id = prod_id
         self.prod_url = prod_url
+        self.brand = brand
         self.color_string = color_string
         self.date = date
         self.name = name
