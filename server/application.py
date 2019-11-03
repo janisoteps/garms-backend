@@ -15,8 +15,9 @@ from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
+import transformation.brand_transform as brand_transformation
 import data.cats as cats
-from sqlalchemy.orm import load_only
+# from sqlalchemy.orm import load_only
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config.from_object(Config)
@@ -495,8 +496,8 @@ def get_prod_hash():
         data = json.loads(data)
         # print(data)
         img_hash = data['img_hash']
-        prodduct = db.session.query(ProductsV2).filter(ProductsV2.image_hash.any(img_hash)).first()
-        prod_id = prodduct.prod_id
+        product = db.session.query(ProductsV2).filter(ProductsV2.image_hash.any(img_hash)).first()
+        prod_id = product.prod_id
 
         return json.dumps({'prod_id': prod_id})
 
@@ -555,6 +556,16 @@ def enc_transform():
         return json.dumps(req_response)
 
 
+@app.route("/api/brand_transform", methods=['POST'])
+def brand_transform():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = brand_transformation.BrandTransform().add_brand_to_images(db, ImagesV2, ProductsV2, data)
+
+        return json.dumps(req_response)
+
+
 @app.route("/api/add_vgg16", methods=['POST'])
 def add_vgg16():
     if request.method == 'POST':
@@ -595,6 +606,16 @@ def count_vgg16():
 
         return json.dumps({
             'null_count': vgg16_none_count
+        })
+
+
+@app.route("/api/count_prod_brands", methods=['GET'])
+def count_prod_brands():
+    if request.method == 'GET':
+        prod_brand_aggr = db.session.query(ProductsV2.brand, func.count(ProductsV2.brand)).group_by(ProductsV2.brand).all()
+
+        return json.dumps({
+            'response': prod_brand_aggr
         })
 
 
