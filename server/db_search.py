@@ -11,19 +11,33 @@ import data.cats as cats
 
 
 def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
-    req_img_hash = request.args.get('img_hash')
-    req_tags_positive = request.args.get('tags_positive').strip('\'[]').split(',')
-    req_tags_negative = request.args.get('tags_negative').strip('\'[]').split(',')
-    req_color_1 = request.args.get('color_1').strip('\'[]').split(',')  # RGB color array
-    req_color_2 = request.args.get('color_2').strip('\'[]').split(',')  # RGB color array
-    req_sex = request.args.get('sex')
+    data = request.get_json(force=True)
+    data = json.loads(data)
+    req_img_hash = data['img_hash']
+    req_tags_positive = data['tags_positive']
+    req_tags_negative = data['tags_negative']
+    req_color_1 = data['color_1']
+    req_color_2 = data['color_2']
+    req_sex = data['sex']
+    max_price = data['max_price']
+    req_brands = data['brands']
+
+    # req_img_hash = request.args.get('img_hash')
+    # req_tags_positive = request.args.get('tags_positive').strip('\'[]').split(',')
+    # req_tags_negative = request.args.get('tags_negative').strip('\'[]').split(',')
+    # req_tags_negative = [tag for tag in req_tags_negative if tag is not '']
+    # req_color_1 = request.args.get('color_1').strip('\'[]').split(',')  # RGB color array
+    # req_color_2 = request.args.get('color_2').strip('\'[]').split(',')  # RGB color array
+    # req_sex = request.args.get('sex')
     req_image_data = ImagesV2.query.filter_by(img_hash=req_img_hash).first()
-    req_shop_excl = request.args.get('no_shop')
-    max_price = request.args.get('max_price')
+    # req_shop_excl = request.args.get('no_shop')
+    # max_price = int(request.args.get('max_price'))
+    # req_brands = request.args.get('brands').strip('\'[]').split(',')
+    # req_brands = [brand.lower() for brand in req_brands if brand is not '']
     print('RGB 1: ', str(req_color_1))
     print('RGB 2: ', str(req_color_2))
-    # Assemble DB query conditions in array from tags
 
+    # Assemble DB query conditions in array from tags
     tag_list = cats.Cats()
     kind_cats = tag_list.kind_cats
     filter_cats = tag_list.filter_cats
@@ -33,6 +47,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
     print('Assembling db query conditions')
     conditions = []
     all_cat_conds = []
+    brand_conds = []
     for kind_search_cat in kind_search_cats:
         conditions.append(
             ImagesV2.kind_cats.any(kind_search_cat)
@@ -46,6 +61,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
             ImagesV2.all_cats.any(tag)
         )
     for tag in req_tags_negative:
+        print(f'negative tag: {tag}')
         conditions.append(
             (any_(ImagesV2.all_cats) != tag)
         )
@@ -53,13 +69,21 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
         conditions.append(
             (ImagesV2.sex == req_sex)
         )
-    if len(req_shop_excl) > 0:
+    if len(req_brands) > 0:
+        for req_brand in req_brands:
+            brand_conds.append(
+                ImagesV2.brand == req_brand
+            )
+            brand_conds.append(
+                ImagesV2.brand.ilike('%{0}%'.format(req_brand))
+            )
+        print('filtering for brands')
+        print(req_brands)
+
+    if max_price < 1000000:
         conditions.append(
-            (ImagesV2.shop != any_(req_shop_excl))
+            or_((ImagesV2.price < max_price), and_((ImagesV2.sale == True), (ImagesV2.saleprice < max_price)))
         )
-    conditions.append(
-        or_((ImagesV2.price < max_price), and_((ImagesV2.sale == True), (ImagesV2.saleprice < max_price)))
-    )
     conditions.append(
         (ImagesV2.in_stock == True)
     )
@@ -69,7 +93,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
     # Use those conditions as argument for a filter function
     print('Querying database')
     query = db.session.query(ImagesV2).filter(
-        and_(and_(*conditions), or_(*all_cat_conds))
+        and_(and_(*conditions), or_(*all_cat_conds), or_(*brand_conds))
     )
     query_results = query.order_by(func.random()).limit(3000).all()
 

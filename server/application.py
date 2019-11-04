@@ -400,10 +400,10 @@ def search_from_image_v2():
 
 
 # Search for similar products based on selected product
-@app.route("/api/search_similar", methods=['GET'])
+@app.route("/api/search_similar", methods=['POST'])
 def search_similar():
     print('Search similar requested, request method', str(request.method))
-    if request.method == 'GET':
+    if request.method == 'POST':
         print('Calling search_similar_images')
         # search_results = search_similar_images(request, db, Images, Products)
         search_results = search_similar_images_v2(request, db, ImagesV2, ProductsV2)
