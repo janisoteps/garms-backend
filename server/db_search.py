@@ -19,7 +19,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
     req_color_1 = data['color_1']
     req_color_2 = data['color_2']
     req_sex = data['sex']
-    max_price = data['max_price']
+    max_price = int(data['max_price'])
     req_brands = data['brands']
 
     # req_img_hash = request.args.get('img_hash')
