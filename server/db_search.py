@@ -36,6 +36,7 @@ def search_similar_images_v2(request, db, ImagesV2, ProductsV2):
     # req_brands = [brand.lower() for brand in req_brands if brand is not '']
     print('RGB 1: ', str(req_color_1))
     print('RGB 2: ', str(req_color_2))
+    print(f'Positive tags: {req_tags_positive}')
 
     # Assemble DB query conditions in array from tags
     tag_list = cats.Cats()
