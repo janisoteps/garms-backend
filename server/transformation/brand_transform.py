@@ -10,7 +10,7 @@ class BrandTransform:
 
             img_hashes = db.session.query(
                 ImagesV2.img_hash
-            ).all()
+            ).filter(ImagesV2.brand == None).all()
 
             counter = 0
             for img_hash in img_hashes:
