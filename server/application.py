@@ -10,7 +10,7 @@ import aiohttp
 from get_features import get_features, get_features_v2
 from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2
-from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2, search_from_upload_v3, search_similar_images_v2
+from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2, search_from_upload_v3
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
 import transformation.cat_transform as cat_transformation
@@ -405,8 +405,7 @@ def search_similar():
     print('Search similar requested, request method', str(request.method))
     if request.method == 'POST':
         print('Calling search_similar_images')
-        # search_results = search_similar_images(request, db, Images, Products)
-        search_results = search_similar_images_v2(request, db, ImagesV2, ProductsV2)
+        search_results = search_similar_images(request, db, ImagesV2, ProductsV2)
 
         # Make it HTTP friendly
         res = jsonify(res=search_results)
