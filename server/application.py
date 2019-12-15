@@ -493,11 +493,11 @@ def get_prod_hash():
     if request.method == 'POST':
         data = request.get_json(force=True)
         data = json.loads(data)
-        # print(data)
+        print(data)
         img_hash = data['img_hash']
         product = db.session.query(ProductsV2).filter(ProductsV2.image_hash.any(img_hash)).first()
         prod_id = product.prod_id
-
+        print({'prod_id': prod_id})
         return json.dumps({'prod_id': prod_id})
 
 
