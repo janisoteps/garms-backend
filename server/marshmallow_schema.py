@@ -145,3 +145,11 @@ class InstaMentionSchema(Schema):
     media_url = fields.String()
     media_permalink = fields.String()
     owner_username = fields.String()
+
+
+class LoadingContentSchema(Schema):
+    id = fields.Integer()
+    content_date = fields.Integer()
+    content_type = fields.String()
+    content_text = fields.String()
+    content_image = fields.String()

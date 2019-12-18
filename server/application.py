@@ -1,4 +1,5 @@
 import json
+import datetime
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
@@ -8,7 +9,7 @@ import string
 from sqlalchemy import func, any_, or_
 import aiohttp
 from get_features import get_features, get_features_v2
-from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2
+from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2, LoadingContentSchema
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2
 from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2, search_from_upload_v3
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
@@ -24,7 +25,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import User, ProductsV2, Products, Images, InstaMentions, ImagesV2
+from models import User, ProductsV2, Products, Images, InstaMentions, ImagesV2, LoadingContent
 
 
 # # # # # # # Functions # # # # # # #
@@ -616,6 +617,36 @@ def count_prod_brands():
         return json.dumps({
             'response': prod_brand_aggr
         })
+
+
+@app.route("/api/add_loading_content", methods=['POST'])
+def add_loading_content():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        content_type = data['content_type']
+        content_text = data['content_text']
+        content_image = data['content_image']
+        timestamp = int(datetime.datetime.now().timestamp())
+
+        content_submission = LoadingContent(
+            content_type=content_type,
+            content_date=timestamp,
+            content_text=content_text,
+            content_image=content_image
+        )
+        db.session.add(content_submission)
+        db.session.commit()
+        
+        return json.dumps(True)
+
+
+@app.route("/api/get_random_loading_content", methods=['GET'])
+def get_random_loading_content():
+    if request.method == 'GET':
+        loading_content = db.session.query(LoadingContent).order_by(func.random()).limit(1).one()
+        loading_content_serial = LoadingContentSchema().dumps(loading_content, many=False)
+
+        return loading_content_serial
 
 
 if __name__ == "__main__":

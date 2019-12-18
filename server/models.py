@@ -502,3 +502,29 @@ class ImagesV2(db.Model):
 
     def return_name(self):
         return self.name
+
+
+class LoadingContent(db.Model):
+    __tablename__ = 'loading_content'
+    id = db.Column(db.Integer, primary_key=True)
+    content_date = db.Column(db.Integer)
+    content_type = db.Column(db.String)
+    content_text = db.Column(db.String)
+    content_image = db.Column(db.String)
+
+    def __init__(
+            self,
+            content_date,
+            content_type,
+            content_text,
+            content_image):
+        self.content_date = content_date
+        self.content_type = content_type
+        self.content_text = content_text
+        self.content_image = content_image
+
+    def __repr__(self):
+        return '<id={}>'.format(self.id)
+
+    def return_date(self):
+        return self.content_date
