@@ -37,6 +37,7 @@ def search_similar_images(request, db, ImagesV2, ProductsV2):
     print('RGB 1: ', str(req_color_1))
     # print('RGB 2: ', str(req_color_2))
     print(f'Positive tags: {req_tags_positive}')
+    print(f'Negative tags: {req_tags_negative}')
 
     # Assemble DB query conditions in array from tags
     tag_list = cats.Cats()
@@ -97,14 +98,15 @@ def search_similar_images(request, db, ImagesV2, ProductsV2):
     )
     if maternity == False:
         conditions.append(
-            (any_(ImagesV2.all_cats) != 'mom')
+            (~ImagesV2.all_cats.any('maternity'))
         )
         conditions.append(
-            (any_(ImagesV2.all_cats) != 'mamalicious')
+            (~ImagesV2.all_cats.any('mamalicious'))
         )
         conditions.append(
-            (any_(ImagesV2.all_cats) != 'maternity')
+            (~ImagesV2.all_cats.any('mom'))
         )
+
 
     # Use those conditions as argument for a filter function
     print('Querying database')
@@ -635,13 +637,13 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
         )
     if maternity == False:
         conditions.append(
-            (any_(ImagesV2.all_cats) != 'mom')
+            (~ImagesV2.all_cats.any('maternity'))
         )
         conditions.append(
-            (any_(ImagesV2.all_cats) != 'mamalicious')
+            (~ImagesV2.all_cats.any('mamalicious'))
         )
         conditions.append(
-            (any_(ImagesV2.all_cats) != 'maternity')
+            (~ImagesV2.all_cats.any('mom'))
         )
 
     print('Querying database...')
@@ -1114,13 +1116,13 @@ def db_text_search(request, db, ProductsV2, ImagesV2):
         )
     if maternity == False:
         query_conditions.append(
-            (any_(ImagesV2.all_cats) != 'mom')
+            (~ImagesV2.all_cats.any('maternity'))
         )
         query_conditions.append(
-            (any_(ImagesV2.all_cats) != 'mamalicious')
+            (~ImagesV2.all_cats.any('mamalicious'))
         )
         query_conditions.append(
-            (any_(ImagesV2.all_cats) != 'maternity')
+            (~ImagesV2.all_cats.any('mom'))
         )
 
     query_conditions_all.append(
