@@ -598,6 +598,8 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
     req_encoding = data['encoding_rcnn']
     req_vgg16_encoding = data['vgg16_encoding']
 
+    print(f'Req tags: {req_tags}')
+
     conditions = []
     maternity = False
     # req_color_arr_1 = np.asarray(req_color_1)

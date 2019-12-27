@@ -68,7 +68,11 @@ def db_get_looks(db, User, data):
     if user_data is None:
         return 'Invalid user email'
 
-    res_wardrobe = [outfit for outfit in user_data.wardrobe if outfit['prod_id'] is not None]
+    if user_data.wardrobe is not None:
+        res_wardrobe = [outfit for outfit in user_data.wardrobe if outfit['prod_id'] is not None]
+    else:
+        res_wardrobe = None
+
     return json.dumps({
             'looks': user_data.looks,
             'wardrobe': res_wardrobe
