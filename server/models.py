@@ -268,7 +268,7 @@ class ProductsV2(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
     prod_id = db.Column(db.String(40), index=True, unique=True)
-    name = db.Column(db.Text)
+    name = db.Column(db.Text, index=True)
     prod_url = db.Column(db.String)
     brand = db.Column(db.Text)
     category = db.Column(db.Text)

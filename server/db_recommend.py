@@ -3,11 +3,14 @@ from marshmallow_schema import ProductsSchema, ImageSchema, ProductSchemaV2
 import json
 import data.cats as cats
 from random import shuffle
+from operator import add
+import random
 
 
 def recommend_similar_tags(db, User, ProductsV2, data):
     req_email = data['email']
     req_sex = data['sex']
+    req_look_name = data['req_looks']
     user_data = User.query.filter_by(email=req_email).first()
     if user_data is None:
         return 'Invalid user email'
@@ -16,46 +19,84 @@ def recommend_similar_tags(db, User, ProductsV2, data):
     suggestions = []
 
     if user_looks is not None and user_wardrobe is not None:
-        kind_conditions = []
+        outfits = []
+        if req_look_name is None:
+            for look in user_looks:
+                print(look)
+                outfits += [outfit['prod_id'] for outfit in user_wardrobe if outfit['look_name'] == look['look_name']]
 
-        for look in user_looks:
-            print(look)
-            outfits = [outfit['prod_id'] for outfit in user_wardrobe if outfit['look_name'] == look['look_name']]
-            if len(outfits) > 0:
-                query_prods = db.session.query(ProductsV2).filter(ProductsV2.prod_id.in_(outfits)).all()
-                look_cats_kind = []
-                for query_prod in query_prods:
-                    print(query_prod.name)
-                    query_kind_cats = query_prod.kind_cats
-                    for query_kind_cat in query_kind_cats:
-                        if query_kind_cat not in look_cats_kind:
-                            look_cats_kind.append(query_kind_cat)
+        else:
+            for look in user_looks:
+                print(look)
+                outfits += [outfit['prod_id'] for outfit in user_wardrobe if outfit['look_name'] == req_look_name]
 
-                print(look_cats_kind)
-                for cat in look_cats_kind:
-                    kind_conditions.append(
-                        (ProductsV2.kind_cats.any(cat))
-                    )
+        if len(outfits) > 0:
+            kind_conditions = []
+            query_prods = db.session.query(ProductsV2).filter(ProductsV2.prod_id.in_(outfits)).all()
+
+            print(f'len query_prods: {len(query_prods)}')
+            look_cats_kind = []
+            kind_cat_counts = []
+            for query_prod in query_prods:
+                # print(query_prod.name)
+                query_kind_cats = query_prod.kind_cats
+                for query_kind_cat in query_kind_cats:
+                    if query_kind_cat not in look_cats_kind:
+                        look_cats_kind.append(query_kind_cat)
+                        kind_cat_counts.append((query_kind_cat, 1))
+                    else:
+                        kind_cat_index = look_cats_kind.index(query_kind_cat)
+                        kind_cat_counts[kind_cat_index] = (kind_cat_counts[kind_cat_index][0], kind_cat_counts[kind_cat_index][1] + 1)
+
+            sorted_kind_cats = sorted(kind_cat_counts, key=lambda tup: tup[1], reverse=True)
+            top_cats = sorted_kind_cats[:10]
+            if len(top_cats) > 10:
+                top_cats_rand = random.sample(top_cats, 5)
+            else:
+                top_cats_rand = random.sample(top_cats, int(len(top_cats) / 2))
+            print(f'top cats: {top_cats_rand}')
+
+            for top_cat in top_cats_rand:
+                # kind_conditions.append(
+                #     func.lower(ProductsV2.name).ilike('%{}%'.format(top_cat[0]))
+                # )
+                kind_conditions.append(
+                    (ProductsV2.kind_cats.any(top_cat[0]))
+                )
 
             print('querying for recommended prods')
             query = db.session.query(ProductsV2).filter(
-                and_(or_(*kind_conditions), (ProductsV2.sex == req_sex), ProductsV2.prod_id.isnot(None))
+                and_(
+                    or_(*kind_conditions),
+                    (ProductsV2.sex == req_sex),
+                    ProductsV2.prod_id.isnot(None),
+                    (ProductsV2.shop != "Farfetch")
+                )
             )
 
-            query_results = query.order_by(func.random()).limit(10).all()
-            print('loaded recommended prods')
+            query_results = query.order_by(func.random()).limit(30).all()
+            print(f'loaded recommended prods, LENGTH: {len(query_results)}')
             # prod_results = []
             for query_result in query_results:
+                # print(query_result.kind_cats)
                 prod_serial = ProductSchemaV2().dump(query_result)
                 # prod_results.append(prod_serial)
 
                 suggestions.append({
-                    'look_name': look['look_name'],
+                    'look_name': 'all' if req_look_name is None else req_look_name,
                     'prod_suggestions': [prod_serial]
                 })
+            print('---------------------------')
+
+
+
+
 
     else:
-        query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None)).filter(ProductsV2.sex == req_sex)
+        query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None)).filter(and_(
+            ProductsV2.sex == req_sex,
+            (ProductsV2.shop != "Farfetch")
+        ))
         query_results = query.order_by(func.random()).limit(30).all()
         prod_results = []
         for query_result in query_results:
@@ -81,7 +122,7 @@ def recommend_from_random(db, ProductsV2, data):
     else:
         query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None))
 
-    query_results = query.order_by(func.random()).limit(30).all()
+    query_results = query.filter(ProductsV2.shop != "Farfetch").order_by(func.random()).limit(30).all()
     prod_results = []
     for query_result in query_results:
         prod_serial = ProductSchemaV2().dump(query_result)
