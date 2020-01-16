@@ -62,6 +62,7 @@ def db_remove_look(db, User, data):
 
 
 def db_get_looks(db, User, data):
+    print('get looks called')
     email = data['email']
 
     user_data = User.query.filter_by(email=email).first()
@@ -137,9 +138,15 @@ def db_remove_outfit(db, User, data):
             user_outfits.remove(del_outfit[0])
             user_data.wardrobe = user_outfits
             db.session.commit()
+
+            user_response_data = User.query.filter_by(email=email).first()
+            if user_response_data.wardrobe is not None:
+                res_wardrobe = [outfit for outfit in user_response_data.wardrobe if outfit['prod_id'] is not None]
+            else:
+                res_wardrobe = None
             return json.dumps({
-                'looks': user_data.looks,
-                'wardrobe': user_data.wardrobe
+                'looks': user_response_data.looks,
+                'wardrobe': res_wardrobe
             })
         else:
             return 'Outfit not found'
