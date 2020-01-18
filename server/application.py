@@ -14,11 +14,13 @@ from db_commit import image_commit, product_commit, insta_mention_commit, image_
 from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2, search_from_upload_v3
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
+from send_email import password_reset_email
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
 import data.cats as cats
-# from sqlalchemy.orm import load_only
+from hashlib import sha256
+import random
 
 application = app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 app.config.from_object(Config)
@@ -113,7 +115,8 @@ def register():
                 insta_username=None,
                 first_login=first_login,
                 wardrobe=None,
-                looks=None
+                looks=None,
+                pw_reset_token=None
             )
             db.session.add(reg_submission)
             db.session.commit()
@@ -159,6 +162,73 @@ def login():
             res = jsonify(auth=True, res=user_dict)
 
             return res
+
+
+@app.route('/api/pw_reset_token', methods=['POST'])
+def pw_reset_token():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        pw = data['pw']
+        email = data['email']
+        print(email)
+        print(pw)
+
+        user = User.query.filter_by(email=email).first()
+
+        if user is None or not user.check_password(pw):
+            return json.dumps(False)
+        else:
+            rand_string = ''.join(random.choice(string.ascii_letters) for m in range(10))
+            token = sha256(rand_string.encode('utf-8')).hexdigest()
+            user.pw_reset_token = token
+            db.session.commit()
+            print(token)
+            return json.dumps({
+                'token': token
+            })
+
+
+@app.route('/api/pw_reset', methods=['POST'])
+def pw_reset():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        token = data['token']
+        email = data['email']
+        new_pw = data['new_pw']
+
+        user = User.query.filter_by(email=email).first()
+
+        if user is None:
+            print('incorrect email')
+            return json.dumps({
+                'res': 'incorrect email'
+            })
+        else:
+            if token != user.pw_reset_token:
+                print('invalid token')
+                return json.dumps({
+                    'res': 'invalid token'
+                })
+            else:
+                # db.session.query().filter(User.email == email).update({'password': new_pw})
+                # user.password = new_pw
+                user.password_hash = user.set_password(new_pw)
+                user.pw_reset_token = None
+                db.session.commit()
+                print('success')
+                return json.dumps({
+                    'res': 'success'
+                })
+
+
+@app.route('/api/pw_reset_email', methods=['POST'])
+def pw_reset_email():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        response = password_reset_email(db, User, data)
+
+        return response
 
 
 @app.route("/api/complete_first_login", methods=['POST'])
