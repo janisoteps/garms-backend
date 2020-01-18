@@ -56,6 +56,7 @@ class User(UserMixin, db.Model):
     first_login = db.Column(db.Integer)
     wardrobe = db.Column(MutableList.as_mutable(JSONB))
     looks = db.Column(MutableList.as_mutable(JSONB))
+    pw_reset_token = db.Column(db.String(64))
 
     def __init__(
             self,
@@ -68,7 +69,8 @@ class User(UserMixin, db.Model):
             insta_username,
             first_login,
             wardrobe,
-            looks
+            looks,
+            pw_reset_token
     ):
         self.password_hash = self.set_password(password)
         self.username = username
@@ -80,6 +82,7 @@ class User(UserMixin, db.Model):
         self.first_login = first_login
         self.wardrobe = wardrobe
         self.looks = looks
+        self.pw_reset_token = pw_reset_token
 
     def set_password(self, password):
         pwd_hash = generate_password_hash(password)
