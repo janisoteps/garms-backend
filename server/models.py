@@ -511,7 +511,7 @@ class ImagesV2Skinny(db.Model):
     __tablename__ = 'images_v2_skinny'
 
     __table_args__ = (
-        db.Index('name_idx_v2', 'img_name', postgresql_ops={'img_name': "gin_trgm_ops"},
+        db.Index('name_idx_v2_skinny', 'img_name', postgresql_ops={'img_name': "gin_trgm_ops"},
                  postgresql_using='gin'),
     )
 
