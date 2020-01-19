@@ -719,6 +719,15 @@ def get_random_loading_content():
         return loading_content_serial
 
 
+@app.route('/api/health', methods=['GET'])
+def health():
+    if request.method == 'GET':
+
+        return json.dumps({
+            'ok': 'ok'
+        })
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', threaded=True, port=5000)
 
