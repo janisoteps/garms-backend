@@ -243,6 +243,7 @@ def image_commit_v2_skinny(db, ImagesV2Skinny, data):
     img_url = data['img_url']
     prod_id = data['prod_id']
     prod_url = data['prod_url']
+    brand = data['brand']
     color_string = data['color_string']
     date = data['date']
     name = data['name']
@@ -267,6 +268,7 @@ def image_commit_v2_skinny(db, ImagesV2Skinny, data):
         img_url=img_url,
         prod_id=prod_id,
         prod_url=prod_url,
+        brand=brand,
         color_string=color_string,
         date=date,
         name=name,
@@ -304,6 +306,7 @@ def image_commit_v2_skinny(db, ImagesV2Skinny, data):
         existing_image.img_url = img_url
         existing_image.prod_id = prod_id
         existing_image.prod_url = prod_url
+        existing_image.brand = brand
         existing_image.color_string = color_string
         existing_image.date = date
         existing_image.name = name
