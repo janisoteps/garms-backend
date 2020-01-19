@@ -1,6 +1,7 @@
 import asyncio
 import aiohttp
 import json
+import endpoints
 
 
 async def send_file(url, image_file):
@@ -14,9 +15,9 @@ async def send_file(url, image_file):
 
 
 def get_features_v2(image):
-    cat_api = 'http://34.245.0.175/api/cats'
-    color_enc_api = 'http://54.72.183.142/api/encoding'
-    vgg16_enc_api = 'http://34.255.97.110/api/encoding'
+    cat_api = endpoints.CAT_API_PATH
+    color_enc_api = endpoints.COLOR_ENC_API_PATH
+    vgg16_enc_api = endpoints.VGG16_API_PATH
 
     api_urls = [
         color_enc_api,
