@@ -53,6 +53,7 @@ sqlparse==0.2.4
 tabulate==0.7.5
 Tempita==0.5.2
 termcolor==1.1.0
+uWSGI==2.0.18
 wcwidth==0.1.7
 websocket-client==0.47.0
 Werkzeug==0.14.1
