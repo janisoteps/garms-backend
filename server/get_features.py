@@ -15,8 +15,8 @@ async def send_file(url, image_file):
 
 def get_features_v2(image):
     cat_api = 'http://34.245.0.175/api/cats'
-    color_enc_api = 'http://18.202.253.26/api/encoding'
-    vgg16_enc_api = 'http://34.241.91.98/api/encoding'
+    color_enc_api = 'http://54.72.183.142/api/encoding'
+    vgg16_enc_api = 'http://34.255.97.110/api/encoding'
 
     api_urls = [
         color_enc_api,
