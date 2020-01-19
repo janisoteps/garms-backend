@@ -238,6 +238,96 @@ def image_commit_v2(db, ImagesV2, data):
         return json.dumps(True)
 
 
+def image_commit_v2_skinny(db, ImagesV2Skinny, data):
+    img_hash = data['img_hash']
+    img_url = data['img_url']
+    prod_id = data['prod_id']
+    prod_url = data['prod_url']
+    color_string = data['color_string']
+    date = data['date']
+    name = data['name']
+    price = data['price']
+    sale = data['sale']
+    saleprice = data['saleprice']
+    discount_rate = data['discount_rate']
+    sex = data['sex']
+    shop = data['shop']
+    kind_cats = data['kind_cats']
+    color_pattern_cats = data['color_pattern_cats']
+    style_cats = data['style_cats']
+    material_cats = data['material_cats']
+    attribute_cats = data['attribute_cats']
+    filter_cats = data['filter_cats']
+    all_cats = data['all_cats']
+    size_stock = data['size_stock']
+    in_stock = data['in_stock']
+
+    img_data_submission = ImagesV2Skinny(
+        img_hash=img_hash,
+        img_url=img_url,
+        prod_id=prod_id,
+        prod_url=prod_url,
+        color_string=color_string,
+        date=date,
+        name=name,
+        price=price,
+        sale=sale,
+        saleprice=saleprice,
+        discount_rate=discount_rate,
+        sex=sex,
+        shop=shop,
+        kind_cats=kind_cats,
+        color_pattern_cats=color_pattern_cats,
+        style_cats=style_cats,
+        material_cats=material_cats,
+        attribute_cats=attribute_cats,
+        filter_cats=filter_cats,
+        all_cats=all_cats,
+        size_stock=size_stock,
+        in_stock=in_stock
+    )
+
+    try:
+        existing_image = ImagesV2Skinny.query.filter_by(img_hash=img_hash).first()
+    except:
+        existing_image = None
+
+    if existing_image is None:
+        print('Adding a new product')
+        db.session.add(img_data_submission)
+        db.session.commit()
+        return json.dumps(True)
+
+    else:
+        print('Updating existing product')
+
+        existing_image.img_url = img_url
+        existing_image.prod_id = prod_id
+        existing_image.prod_url = prod_url
+        existing_image.color_string = color_string
+        existing_image.date = date
+        existing_image.name = name
+        existing_image.price = price
+        existing_image.sale = sale
+        existing_image.saleprice = saleprice
+        existing_image.discount_rate = discount_rate
+        existing_image.sex = sex
+        existing_image.shop = shop
+        existing_image.kind_cats = kind_cats
+        existing_image.color_pattern_cats = color_pattern_cats
+        existing_image.style_cats = style_cats
+        existing_image.material_cats = material_cats
+        existing_image.attribute_cats = attribute_cats
+        existing_image.filter_cats = filter_cats
+        existing_image.all_cats = all_cats
+        existing_image.size_stock = size_stock
+        existing_image.in_stock = in_stock
+
+        db.session.commit()
+
+        return json.dumps(True)
+
+
 def product_commit(db, Products, data):
     prod_hash = data['prod_hash']
     prod_url = data['prod_url']
