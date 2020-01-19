@@ -10,7 +10,7 @@ from sqlalchemy import func, any_, or_
 import aiohttp
 from get_features import get_features, get_features_v2
 from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2, LoadingContentSchema
-from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2
+from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2, image_commit_v2_skinny
 from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2, search_from_upload_v3
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
@@ -18,6 +18,7 @@ from send_email import password_reset_email
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
+import transformation.skinny_transform as skinny_transformation
 import data.cats as cats
 from hashlib import sha256
 import random
@@ -27,7 +28,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import User, ProductsV2, Products, Images, InstaMentions, ImagesV2, LoadingContent
+from models import User, ProductsV2, Products, Images, InstaMentions, ImagesV2, LoadingContent, ImagesV2Skinny
 
 
 # # # # # # # Functions # # # # # # #
@@ -336,6 +337,25 @@ def commit_image_v2():
         upload_response = image_commit_v2(db, ImagesV2, data)
 
         return upload_response
+
+
+# Upload new product image to database
+@app.route("/api/transform_skinny", methods=['post'])
+def transform_skinny():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        # print(str(data))
+        #     SkinnyTransform
+
+        req_response = skinny_transformation.SkinnyTransform().img_skinny_transform(
+            db,
+            ImagesV2,
+            ImagesV2Skinny,
+            image_commit_v2_skinny,
+            data
+        )
+
+        return req_response
 
 
 # Upload new product object to database
