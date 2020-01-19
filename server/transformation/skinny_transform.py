@@ -50,6 +50,6 @@ class SkinnyTransform:
                 }
 
                 image_commit_v2_skinny(db, ImagesV2Skinny, commit_dict)
-                print(f'COMITTED: {query_result.mg_url}')
+                print(f'COMITTED: {query_result.img_url}')
 
         return json.dumps(True)
