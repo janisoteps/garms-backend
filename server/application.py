@@ -496,7 +496,7 @@ def search_similar():
     print('Search similar requested, request method', str(request.method))
     if request.method == 'POST':
         print('Calling search_similar_images')
-        search_results = search_similar_images(request, db, ImagesV2, ProductsV2)
+        search_results = search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
 
         # Make it HTTP friendly
         res = jsonify(res=search_results)

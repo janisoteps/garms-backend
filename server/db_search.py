@@ -10,36 +10,26 @@ from flask import jsonify
 import data.cats as cats
 
 
-def search_similar_images(request, db, ImagesV2, ProductsV2):
+def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
     data = request.get_json(force=True)
     data = json.loads(data)
     req_img_hash = data['img_hash']
     req_tags_positive = data['tags_positive']
     req_tags_negative = data['tags_negative']
     req_color_1 = data['color_1']
-    # req_color_2 = data['color_2']
     req_sex = data['sex']
     max_price = int(data['max_price'])
     req_brands = data['brands']
 
-    # req_img_hash = request.args.get('img_hash')
-    # req_tags_positive = request.args.get('tags_positive').strip('\'[]').split(',')
-    # req_tags_negative = request.args.get('tags_negative').strip('\'[]').split(',')
-    # req_tags_negative = [tag for tag in req_tags_negative if tag is not '']
-    # req_color_1 = request.args.get('color_1').strip('\'[]').split(',')  # RGB color array
-    # req_color_2 = request.args.get('color_2').strip('\'[]').split(',')  # RGB color array
-    # req_sex = request.args.get('sex')
     req_image_data = ImagesV2.query.filter_by(img_hash=req_img_hash).first()
-    # req_shop_excl = request.args.get('no_shop')
-    # max_price = int(request.args.get('max_price'))
-    # req_brands = request.args.get('brands').strip('\'[]').split(',')
-    # req_brands = [brand.lower() for brand in req_brands if brand is not '']
+
     print('RGB 1: ', str(req_color_1))
-    # print('RGB 2: ', str(req_color_2))
     print(f'Positive tags: {req_tags_positive}')
     print(f'Negative tags: {req_tags_negative}')
 
-    # Assemble DB query conditions in array from tags
+    if req_tags_positive is None:
+        req_tags_positive = req_image_data.all_cats
+
     tag_list = cats.Cats()
     kind_cats = tag_list.kind_cats
     filter_cats = tag_list.filter_cats
@@ -47,106 +37,234 @@ def search_similar_images(request, db, ImagesV2, ProductsV2):
     filter_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in filter_cats]
 
     print('Assembling db query conditions')
-    conditions = []
-    all_cat_conds = []
-    brand_conds = []
+    conditions_base = []
+    conditions_kind_cats = []
+    conditions_filter_cats = []
+    conditions_all_cats = []
+    conditions_brand = []
+
     maternity = False
-    for kind_search_cat in kind_search_cats:
-        conditions.append(
-            ImagesV2.kind_cats.any(kind_search_cat)
-        )
-    for filter_search_cat in filter_search_cats:
-        conditions.append(
-            ImagesV2.filter_cats.any(filter_search_cat)
-        )
     for tag in req_tags_positive:
-        all_cat_conds.append(
-            ImagesV2.all_cats.any(tag)
+        conditions_all_cats.append(
+            ImagesV2Skinny.all_cats.any(tag)
         )
         if tag in ['mom', 'mamalicious', 'maternity']:
             maternity = True
 
+    for kind_search_cat in kind_search_cats:
+        conditions_kind_cats.append(
+            ImagesV2Skinny.kind_cats.any(kind_search_cat)
+        )
+
+    if maternity == False:
+        conditions_base.append(
+            (~ImagesV2Skinny.all_cats.any('maternity'))
+        )
+        conditions_base.append(
+            (~ImagesV2Skinny.all_cats.any('mamalicious'))
+        )
+        conditions_base.append(
+            (~ImagesV2Skinny.all_cats.any('mom'))
+        )
+
+    for filter_search_cat in filter_search_cats:
+        conditions_filter_cats.append(
+            ImagesV2Skinny.filter_cats.any(filter_search_cat)
+        )
+
     for tag in req_tags_negative:
         print(f'negative tag: {tag}')
-        conditions.append(
-            (any_(ImagesV2.all_cats) != tag)
+        conditions_base.append(
+            (~ImagesV2Skinny.all_cats.any(tag))
         )
+
     if len(req_sex) > 2:
-        conditions.append(
-            (ImagesV2.sex == req_sex)
+        conditions_base.append(
+            (ImagesV2Skinny.sex == req_sex)
         )
+
     if len(req_brands) > 0:
         for req_brand in req_brands:
-            brand_conds.append(
-                ImagesV2.brand == req_brand
+            conditions_brand.append(
+                ImagesV2Skinny.brand == req_brand
             )
-            brand_conds.append(
-                ImagesV2.brand.ilike('%{0}%'.format(req_brand))
+            conditions_brand.append(
+                ImagesV2Skinny.brand.ilike('%{0}%'.format(req_brand))
             )
         print('filtering for brands')
         print(req_brands)
 
     if max_price < 1000000:
-        conditions.append(
-            or_((ImagesV2.price < max_price), and_((ImagesV2.sale == True), (ImagesV2.saleprice < max_price)))
+        conditions_base.append(
+            or_((ImagesV2Skinny.price < max_price),
+                and_((ImagesV2Skinny.sale == True), (ImagesV2Skinny.saleprice < max_price)))
         )
-    conditions.append(
-        (ImagesV2.in_stock == True)
+    conditions_base.append(
+        (ImagesV2Skinny.in_stock == True)
     )
-    conditions.append(
-        (ImagesV2.encoding_vgg16 != None)
-    )
-    if maternity == False:
-        conditions.append(
-            (~ImagesV2.all_cats.any('maternity'))
+
+    img_table_query_results = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
+        ImagesV2Skinny.img_hash == ImagesV2.img_hash
+    ).filter(
+        and_(
+            and_(*conditions_base),
+            and_(*conditions_all_cats),
+            or_(*conditions_brand)
         )
-        conditions.append(
-            (~ImagesV2.all_cats.any('mamalicious'))
-        )
-        conditions.append(
-            (~ImagesV2.all_cats.any('mom'))
-        )
+    ).limit(2000).all())
 
 
-    # Use those conditions as argument for a filter function
-    print('Querying database')
-    query = db.session.query(ImagesV2).filter(
-        and_(and_(*conditions), or_(*all_cat_conds), or_(*brand_conds))
-    )
-    query_results = query.order_by(func.random()).limit(2000).all()
 
-    print(f'result length: {len(query_results)}')
-    if len(query_results) < 20:
-        print('not enough results')
-        relaxed_conditions = []
-        relaxed_kind_conds = []
-        for kind_search_cat in kind_search_cats:
-            relaxed_kind_conds.append(
-                ImagesV2.kind_cats.any(kind_search_cat)
-            )
-        # for filter_search_cat in filter_search_cats:
-        #     relaxed_conditions.append(
-        #         ImagesV2.filter_cats.any(filter_search_cat)
-        #     )
-        if len(req_sex) > 2:
-            relaxed_conditions.append(
-                (ImagesV2.sex == req_sex)
-            )
-        if max_price < 1000000:
-            relaxed_conditions.append(
-                or_((ImagesV2.price < max_price), and_((ImagesV2.sale == True), (ImagesV2.saleprice < max_price)))
-            )
-        relaxed_conditions.append(
-            (ImagesV2.in_stock == True)
-        )
-        relaxed_conditions.append(
-            (ImagesV2.encoding_vgg16 != None)
-        )
-        query = db.session.query(ImagesV2).filter(
-            and_(and_(*relaxed_conditions), or_(*all_cat_conds), or_(*brand_conds), or_(*relaxed_kind_conds))
-        )
-        query_results = query.order_by(func.random()).limit(2000).all()
-        print(f'updated result length: {len(query_results)}')
+
+    # query_strict = db.session.query(ImagesV2Skinny).filter(
+    #     and_(
+    #         and_(*conditions_base),
+    #         and_(*conditions_all_cats),
+    #         or_(*conditions_brand)
+    #     )
+    # )
+    # query_results_skinny = query_strict.order_by(func.random()).limit(2000).all()
+    #
+    # print(f'STRICT QUERY RESULT LEN: {len(query_results_skinny)}')
+    #
+    # if len(query_results_skinny) < 2000:
+    #     query_relaxed = db.session.query(ImagesV2Skinny).filter(
+    #         and_(
+    #             and_(*conditions_base),
+    #             and_(*conditions_kind_cats),
+    #             and_(*conditions_filter_cats),
+    #             or_(*conditions_brand)
+    #         )
+    #     )
+    #     query_results_relaxed = query_relaxed.order_by(func.random()).limit(2000 - len(query_results_skinny)).all()
+    #     query_results_skinny += query_results_relaxed
+    #
+    # print('SKINNY QUERY COMPLETED')
+    # # =============== Perform query on the main table ==================
+    # img_table_conds = []
+    # for query_result_skinny in query_results_skinny:
+    #     img_table_conds.append(
+    #         ImagesV2.img_hash == query_result_skinny.img_hash
+    #     )
+    # img_table_query_results = db.session.query(ImagesV2).filter(
+    #     and_(or_(*img_table_conds))
+    # ).all()
+    #
+    # print('MAIN TABLE QUERY COMPLETED')
+
+    #
+    #
+    #
+    #
+    #
+    #
+    # tag_list = cats.Cats()
+    # kind_cats = tag_list.kind_cats
+    # filter_cats = tag_list.filter_cats
+    # kind_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in kind_cats]
+    # filter_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in filter_cats]
+    #
+    # print('Assembling db query conditions')
+    # conditions = []
+    # all_cat_conds = []
+    # conditions_brand = []
+    # maternity = False
+    # for kind_search_cat in kind_search_cats:
+    #     conditions.append(
+    #         ImagesV2.kind_cats.any(kind_search_cat)
+    #     )
+    # for filter_search_cat in filter_search_cats:
+    #     conditions.append(
+    #         ImagesV2.filter_cats.any(filter_search_cat)
+    #     )
+    # for tag in req_tags_positive:
+    #     all_cat_conds.append(
+    #         ImagesV2.all_cats.any(tag)
+    #     )
+    #     if tag in ['mom', 'mamalicious', 'maternity']:
+    #         maternity = True
+    #
+    # for tag in req_tags_negative:
+    #     print(f'negative tag: {tag}')
+    #     conditions.append(
+    #         (any_(ImagesV2.all_cats) != tag)
+    #     )
+    # if len(req_sex) > 2:
+    #     conditions.append(
+    #         (ImagesV2.sex == req_sex)
+    #     )
+    # if len(req_brands) > 0:
+    #     for req_brand in req_brands:
+    #         conditions_brand.append(
+    #             ImagesV2.brand == req_brand
+    #         )
+    #         conditions_brand.append(
+    #             ImagesV2.brand.ilike('%{0}%'.format(req_brand))
+    #         )
+    #     print('filtering for brands')
+    #     print(req_brands)
+    #
+    # if max_price < 1000000:
+    #     conditions.append(
+    #         or_((ImagesV2.price < max_price), and_((ImagesV2.sale == True), (ImagesV2.saleprice < max_price)))
+    #     )
+    # conditions.append(
+    #     (ImagesV2.in_stock == True)
+    # )
+    # conditions.append(
+    #     (ImagesV2.encoding_vgg16 != None)
+    # )
+    # if maternity == False:
+    #     conditions.append(
+    #         (~ImagesV2.all_cats.any('maternity'))
+    #     )
+    #     conditions.append(
+    #         (~ImagesV2.all_cats.any('mamalicious'))
+    #     )
+    #     conditions.append(
+    #         (~ImagesV2.all_cats.any('mom'))
+    #     )
+    #
+    #
+    # # Use those conditions as argument for a filter function
+    # print('Querying database')
+    # query = db.session.query(ImagesV2).filter(
+    #     and_(and_(*conditions), or_(*all_cat_conds), or_(*conditions_brand))
+    # )
+    # query_results = query.order_by(func.random()).limit(2000).all()
+    #
+    # print(f'result length: {len(query_results)}')
+    # if len(query_results) < 20:
+    #     print('not enough results')
+    #     relaxed_conditions = []
+    #     relaxed_kind_conds = []
+    #     for kind_search_cat in kind_search_cats:
+    #         relaxed_kind_conds.append(
+    #             ImagesV2.kind_cats.any(kind_search_cat)
+    #         )
+    #     # for filter_search_cat in filter_search_cats:
+    #     #     relaxed_conditions.append(
+    #     #         ImagesV2.filter_cats.any(filter_search_cat)
+    #     #     )
+    #     if len(req_sex) > 2:
+    #         relaxed_conditions.append(
+    #             (ImagesV2.sex == req_sex)
+    #         )
+    #     if max_price < 1000000:
+    #         relaxed_conditions.append(
+    #             or_((ImagesV2.price < max_price), and_((ImagesV2.sale == True), (ImagesV2.saleprice < max_price)))
+    #         )
+    #     relaxed_conditions.append(
+    #         (ImagesV2.in_stock == True)
+    #     )
+    #     relaxed_conditions.append(
+    #         (ImagesV2.encoding_vgg16 != None)
+    #     )
+    #     query = db.session.query(ImagesV2).filter(
+    #         and_(and_(*relaxed_conditions), or_(*all_cat_conds), or_(*conditions_brand), or_(*relaxed_kind_conds))
+    #     )
+    #     query_results = query.order_by(func.random()).limit(2000).all()
+    #     print(f'updated result length: {len(query_results)}')
 
     req_encoding_crop = req_image_data.encoding_crop
     req_encoding_vgg16 = req_image_data.encoding_vgg16
@@ -154,7 +272,8 @@ def search_similar_images(request, db, ImagesV2, ProductsV2):
     # Start with main RBG color distances to reduce the amount of the rest of the distances to calc
     print('Calculating color distances')
     color_list = []
-    for query_result in query_results:
+    for img_table_query_result in img_table_query_results:
+        query_result = img_table_query_result[1]
         try:
             image_prod_name = query_result.name
         except:
@@ -884,6 +1003,7 @@ def search_from_upload_v3(request, db, ImagesV2, ProductsV2):
         print('Results obtained from DB')
 
         return result_list
+
 
 #######################################################################################################################
 #######################################################################################################################
