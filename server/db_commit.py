@@ -301,32 +301,32 @@ def image_commit_v2_skinny(db, ImagesV2Skinny, data):
         return json.dumps(True)
 
     else:
-        print('Updating existing product')
+        print('PRODUCT EXISTS, SKIPPING')
 
-        existing_image.img_url = img_url
-        existing_image.prod_id = prod_id
-        existing_image.prod_url = prod_url
-        existing_image.brand = brand
-        existing_image.color_string = color_string
-        existing_image.date = date
-        existing_image.name = name
-        existing_image.price = price
-        existing_image.sale = sale
-        existing_image.saleprice = saleprice
-        existing_image.discount_rate = discount_rate
-        existing_image.sex = sex
-        existing_image.shop = shop
-        existing_image.kind_cats = kind_cats
-        existing_image.color_pattern_cats = color_pattern_cats
-        existing_image.style_cats = style_cats
-        existing_image.material_cats = material_cats
-        existing_image.attribute_cats = attribute_cats
-        existing_image.filter_cats = filter_cats
-        existing_image.all_cats = all_cats
-        existing_image.size_stock = size_stock
-        existing_image.in_stock = in_stock
-
-        db.session.commit()
+        # existing_image.img_url = img_url
+        # existing_image.prod_id = prod_id
+        # existing_image.prod_url = prod_url
+        # existing_image.brand = brand
+        # existing_image.color_string = color_string
+        # existing_image.date = date
+        # existing_image.name = name
+        # existing_image.price = price
+        # existing_image.sale = sale
+        # existing_image.saleprice = saleprice
+        # existing_image.discount_rate = discount_rate
+        # existing_image.sex = sex
+        # existing_image.shop = shop
+        # existing_image.kind_cats = kind_cats
+        # existing_image.color_pattern_cats = color_pattern_cats
+        # existing_image.style_cats = style_cats
+        # existing_image.material_cats = material_cats
+        # existing_image.attribute_cats = attribute_cats
+        # existing_image.filter_cats = filter_cats
+        # existing_image.all_cats = all_cats
+        # existing_image.size_stock = size_stock
+        # existing_image.in_stock = in_stock
+        #
+        # db.session.commit()
 
         return json.dumps(True)
 
