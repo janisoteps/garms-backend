@@ -1,6 +1,6 @@
 import os
 import json
-# from sqlalchemy import func
+from sqlalchemy import func
 
 
 # Iterate through all rows in Image db and recalculate kind, filter and all_cats columns
@@ -11,7 +11,7 @@ class SkinnyTransform:
 
             img_hashes = db.session.query(
                 ImagesV2.img_hash
-            ).all()
+            ).order_by(func.random()).all()
 
             counter = 0
             for img_hash in img_hashes:
