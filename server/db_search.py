@@ -199,9 +199,9 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
         ).filter(
             and_(
                 and_(*conditions_base),
-                and_(*conditions_kind_cats),
+                or_(*conditions_kind_cats),
                 or_(*query_conditions_all),
-                and_(*conditions_filter_cats),
+                or_(*conditions_filter_cats),
             )
         ).limit(100).all())
 
@@ -939,7 +939,7 @@ def db_text_search(request, db, ProductsV2, ImagesV2):
     query = db.session.query(ImagesV2).filter(
         and_(and_(*query_conditions), or_(*query_conditions_all))
     )
-    query_results = query.order_by(func.random()).limit(500).all()
+    query_results = query.order_by(func.random()).limit(50).all()
 
     result_list = []
     prod_check = set()
