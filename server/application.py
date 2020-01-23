@@ -427,7 +427,7 @@ def submit_instagram():
 @app.route("/api/text_search", methods=['get'])
 def text_search():
     if request.method == 'GET':
-        res = db_text_search(request, db, ProductsV2, ImagesV2Skinny, ImagesV2)
+        res = db_text_search(request, db, ProductsV2, ImagesV2)
         print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
 
         return res
