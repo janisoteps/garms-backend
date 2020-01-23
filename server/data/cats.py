@@ -37,7 +37,7 @@ class Cats:
         'coats',
         'corset',
         'dress',
-        'dresses',
+        # 'dresses',
         'dungaree',
         'dungarees',
         'earrings',
@@ -105,7 +105,7 @@ class Cats:
         'swim',
         'swimming',
         'swimsuit',
-        'swimwear',
+        # 'swimwear',
         't-shirt',
         't-shirts',
         'tee',
@@ -285,7 +285,7 @@ class Cats:
         'oxford',
         'pencil',
         'peplum',
-        'petite',
+        # 'petite',
         'pinafore',
         'platform',
         'pleated',
@@ -318,7 +318,7 @@ class Cats:
         'strappy',
         'tailored',
         'tall',
-        'tank',
+        # 'tank',
         'tapered',
         'track',
         'training',
@@ -434,5 +434,17 @@ class Cats:
         'mamalicious',
         'maternity',
         'bridal',
+    ]
+    length_cats = [
+        'ankle',
+        'full',
+        'knee',
+        'length',
+        'long',
+        'maxi',
+        'mid',
+        'mid-rise',
+        'midi',
+        'mini'
     ]
     all_cats = kind_cats + color_pattern_cats + style_cats + material_cats + attribute_cats + filter_cats
