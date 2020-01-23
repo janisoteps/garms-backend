@@ -8,10 +8,10 @@ from flask import render_template, request, jsonify
 import string
 from sqlalchemy import func, any_, or_
 import aiohttp
-from get_features import get_features, get_features_v2
+from get_features import get_features
 from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2, LoadingContentSchema
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2, image_commit_v2_skinny
-from db_search import search_similar_images, search_from_upload, db_text_search, search_from_upload_v2, search_from_upload_v3
+from db_search import search_similar_images, search_from_upload, db_text_search
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
 from send_email import password_reset_email
@@ -449,40 +449,11 @@ def img_features():
 
 
 # Return color, encoding and category predictions from uploaded image
-@app.route("/api/img_features_v2", methods=['POST'])
-def img_features_v2():
-    if request.method == 'POST':
-        if request.files.get("image"):
-            post_image = request.files["image"].read()
-            # Obtain features from all AI servers
-            features = get_features_v2(post_image)
-
-            # Make it HTTP friendly
-            res = jsonify(res=features)
-
-            return res
-
-
-# Return color, encoding and category predictions from uploaded image
 @app.route("/api/search_from_image", methods=['POST'])
 def search_from_image():
     if request.method == 'POST':
 
-        results = search_from_upload(request, db, Images, Products)
-        # print('Search from image results: ', str(results))
-        # Make it HTTP friendly
-        res = jsonify(res=results)
-
-        return res
-
-
-# Return color, encoding and category predictions from uploaded image
-@app.route("/api/search_from_image_v2", methods=['POST'])
-def search_from_image_v2():
-    if request.method == 'POST':
-
-        # results = search_from_upload_v2(request, db, ImagesV2, ProductsV2)
-        results = search_from_upload_v3(request, db, ImagesV2, ProductsV2)
+        results = search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
         # print('Search from image results: ', str(results))
         # Make it HTTP friendly
         res = jsonify(res=results)
@@ -496,7 +467,7 @@ def search_similar():
     print('Search similar requested, request method', str(request.method))
     if request.method == 'POST':
         print('Calling search_similar_images')
-        search_results = search_similar_images(request, db, ImagesV2, ProductsV2)
+        search_results = search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
 
         # Make it HTTP friendly
         res = jsonify(res=search_results)
