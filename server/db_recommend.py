@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ProductsSchema, ImageSchema, ProductSchemaV2
+from marshmallow_schema import ProductSchemaV2
 import json
 import data.cats as cats
 from random import shuffle
@@ -87,10 +87,6 @@ def recommend_similar_tags(db, User, ProductsV2, data):
                     'prod_suggestions': [prod_serial]
                 })
             print('---------------------------')
-
-
-
-
 
     else:
         query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None)).filter(and_(
