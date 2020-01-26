@@ -40,11 +40,13 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
     filter_cats = tag_list.filter_cats
     length_cats = tag_list.length_cats
     color_pattern_cats = tag_list.color_pattern_cats
+    material_cats = tag_list.material_cats
     kind_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in kind_cats]
     style_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in style_cats]
     length_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in length_cats]
     color_pattern_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in color_pattern_cats]
     filter_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in filter_cats]
+    material_search_cats = [req_tag for req_tag in req_tags_positive if req_tag in material_cats]
 
     search_string_clean = ' '.join(req_tags_positive)
 
@@ -53,6 +55,7 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
     print(f'LENGTH CATS: {length_search_cats}')
     print(f'COLOR PATTERN CATS: {color_pattern_search_cats}')
     print(f'FILTER CATS: {filter_search_cats}')
+    print(f'MATERIAL CATS: {material_search_cats}')
 
     print('Assembling db query conditions')
     conditions_base = []
@@ -62,61 +65,67 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
     conditions_color_pattern_cats = []
     conditions_filter_cats = []
     conditions_all_cats = []
+    conditions_material = []
     conditions_brand = []
     query_conditions_all = []
 
     maternity = False
     for tag in req_tags_positive:
         conditions_all_cats.append(
-            ImagesV2Skinny.all_cats.any(tag)
+            (ImagesV2Skinny.all_cats.any(tag))
         )
         if tag in ['mom', 'mamalicious', 'maternity']:
             maternity = True
 
+    # if maternity == False:
+    #     print('NO MATERNITY')
+    #     conditions_base.append(
+    #         (~ImagesV2Skinny.all_cats.any('maternity'))
+    #     )
+    #     conditions_base.append(
+    #         (~ImagesV2Skinny.filter_cats.any('maternity'))
+    #     )
+    #     conditions_base.append(
+    #         (~ImagesV2Skinny.name.ilike('%{0}%'.format('maternity')))
+    #     )
+    #     conditions_base.append(
+    #         (~ImagesV2Skinny.all_cats.any('mamalicious'))
+    #     )
+    #     conditions_base.append(
+    #         (~ImagesV2Skinny.filter_cats.any('mamalicious'))
+    #     )
+    #     conditions_base.append(
+    #         (~ImagesV2Skinny.all_cats.any('mom'))
+    #     )
+
     for kind_search_cat in kind_search_cats:
         conditions_kind_cats.append(
-            ImagesV2Skinny.kind_cats.any(kind_search_cat)
-        )
-
-    if maternity == False:
-        print('NO MATERNITY')
-        conditions_base.append(
-            (~ImagesV2Skinny.all_cats.any('maternity'))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.filter_cats.any('maternity'))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.name.ilike('%{0}%'.format('maternity')))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.all_cats.any('mamalicious'))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.filter_cats.any('mamalicious'))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.all_cats.any('mom'))
+            (ImagesV2Skinny.all_cats.any(kind_search_cat))
         )
 
     for filter_search_cat in filter_search_cats:
         conditions_filter_cats.append(
-            ImagesV2Skinny.filter_cats.any(filter_search_cat)
+            (ImagesV2Skinny.filter_cats.any(filter_search_cat))
         )
 
     for style_search_cat in style_search_cats:
         conditions_style_cats.append(
-            ImagesV2Skinny.style_cats.any(style_search_cat)
+            (ImagesV2Skinny.style_cats.any(style_search_cat))
         )
 
     for length_search_cat in length_search_cats:
         conditions_length_cats.append(
-            ImagesV2Skinny.all_cats.any(length_search_cat)
+            (ImagesV2Skinny.all_cats.any(length_search_cat))
         )
 
     for color_pattern_search_cat in color_pattern_search_cats:
         conditions_color_pattern_cats.append(
-            ImagesV2Skinny.color_pattern_cats.any(color_pattern_search_cat)
+            (ImagesV2Skinny.color_pattern_cats.any(color_pattern_search_cat))
+        )
+
+    for material_search_cat in material_search_cats:
+        conditions_material.append(
+            (ImagesV2Skinny.material_cats.any(material_search_cat))
         )
 
     for tag in req_tags_negative:
@@ -133,10 +142,10 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
     if len(req_brands) > 0:
         for req_brand in req_brands:
             conditions_brand.append(
-                ImagesV2Skinny.brand == req_brand
+                (ImagesV2Skinny.brand == req_brand)
             )
             conditions_brand.append(
-                ImagesV2Skinny.brand.ilike('%{0}%'.format(req_brand))
+                (ImagesV2Skinny.brand.ilike('%{0}%'.format(req_brand)))
             )
         print('filtering for brands')
         print(req_brands)
@@ -153,7 +162,7 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
         (ImagesV2.encoding_vgg16 != None)
     )
     query_conditions_all.append(
-        func.lower(ImagesV2Skinny.name).op('%%')(search_string_clean)
+        (func.lower(ImagesV2Skinny.name).op('%%')(search_string_clean))
     )
 
     # ====== MAIN QUERY ======
@@ -166,6 +175,7 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
             and_(*conditions_length_cats),
             or_(*conditions_style_cats),
             or_(*conditions_color_pattern_cats),
+            or_(*conditions_material),
             and_(*conditions_filter_cats),
             or_(*conditions_brand)
         )
@@ -173,7 +183,7 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
 
     print(f'RESULT LENGTH: {len(img_table_query_results)}')
 
-    if len(img_table_query_results) < result_limit:
+    if len(img_table_query_results) < 50:
         print('ADDING RELAXED RESULTS')
         query_results_relaxed = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
             ImagesV2Skinny.img_hash == ImagesV2.img_hash
@@ -186,13 +196,13 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
                 and_(*conditions_filter_cats),
                 or_(*conditions_brand)
             )
-        ).limit(result_limit - len(img_table_query_results)).all())
+        ).limit(50 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed)} RELAXED RESULTS ADDED')
 
         img_table_query_results += query_results_relaxed
 
-    if len(img_table_query_results) < 100:
+    if len(img_table_query_results) < 50:
         print('ADDING EVEN MORE RELAXED RESULTS')
         query_results_relaxed_2 = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
             ImagesV2Skinny.img_hash == ImagesV2.img_hash
@@ -203,11 +213,26 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
                 or_(*query_conditions_all),
                 or_(*conditions_filter_cats),
             )
-        ).limit(100).all())
+        ).limit(50 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
 
         img_table_query_results += query_results_relaxed_2
+
+    if len(img_table_query_results) < 30:
+        print('ADDING EVEN MORE RELAXED RESULTS')
+        query_results_relaxed_3 = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
+            ImagesV2Skinny.img_hash == ImagesV2.img_hash
+        ).filter(
+            and_(
+                and_(*conditions_base),
+                or_(*conditions_all_cats)
+            )
+        ).limit(30).all())
+
+        print(f'{len(query_results_relaxed_3)} MORE RELAXED RESULTS ADDED')
+
+        img_table_query_results += query_results_relaxed_3
 
     req_encoding_crop = req_image_data.encoding_crop
     req_encoding_vgg16 = req_image_data.encoding_vgg16
@@ -219,9 +244,11 @@ def search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
         query_result = img_table_query_result[1]
         try:
             image_prod_name = query_result.name
+            vgg_16_len = len(query_result.encoding_vgg16)
         except:
             image_prod_name = None
-        if image_prod_name is not None:
+            vgg_16_len = 0
+        if image_prod_name is not None and vgg_16_len == 4096:
             image_prod_name_arr = image_prod_name.lower().strip('*\'[]\*').split(' ')
 
             neg_tag_check = False
@@ -573,107 +600,6 @@ def search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
         img_table_query_results += query_results_relaxed_2
 
 
-    #
-    # conditions = []
-    # maternity = False
-    # # req_color_arr_1 = np.asarray(req_color_1)
-    # # req_color_arr_2 = np.asarray(req_color_2)
-    # req_encoding_arr = np.asarray(req_encoding)
-    # req_vgg16_encoding_arr = np.asarray(req_vgg16_encoding)
-    # tag_list = cats.Cats()
-    # kind_cats = tag_list.kind_cats
-    # all_cats = tag_list.all_cats
-    # kind_search_cats = [req_tag for req_tag in req_tags if req_tag in kind_cats]
-    # all_cat_search_arr = np.zeros(len(all_cats))
-    # for req_tag in req_tags:
-    #     if req_tag in all_cats:
-    #         all_cat_search_arr[all_cats.index(req_tag)] = 1
-    #         conditions.append(
-    #             ImagesV2.all_cats.any(req_tag)
-    #         )
-    #     if req_tag in ['mom', 'mamalicious', 'maternity']:
-    #         maternity = True
-    #
-    # for kind_search_cat in kind_search_cats:
-    #     conditions.append(
-    #         ImagesV2.kind_cats.any(kind_search_cat)
-    #     )
-    # conditions.append(
-    #     (ImagesV2.sex == req_sex)
-    # )
-    # conditions.append(
-    #     (ImagesV2.in_stock == True)
-    # )
-    # conditions.append(
-    #     (ImagesV2.encoding_vgg16 != None)
-    # )
-    # if len(req_shop_excl) > 0:
-    #     conditions.append(
-    #         (ImagesV2.shop != any_(req_shop_excl))
-    #     )
-    # if maternity == False:
-    #     conditions.append(
-    #         (~ImagesV2.all_cats.any('maternity'))
-    #     )
-    #     conditions.append(
-    #         (~ImagesV2.all_cats.any('mamalicious'))
-    #     )
-    #     conditions.append(
-    #         (~ImagesV2.all_cats.any('mom'))
-    #     )
-    #
-    # print('Querying database...')
-    # query = db.session.query(
-    #     ImagesV2.name,
-    #     ImagesV2.img_hash,
-    #     ImagesV2.color_1,
-    #     ImagesV2.color_1_hex,
-    #     ImagesV2.color_2,
-    #     ImagesV2.color_2_hex,
-    #     ImagesV2.color_3,
-    #     ImagesV2.color_3_hex,
-    #     ImagesV2.all_arr,
-    #     ImagesV2.encoding_crop,
-    #     ImagesV2.encoding_vgg16
-    # ).filter(
-    #     and_(*conditions)
-    # )
-    # query_results = query.order_by(func.random()).limit(3000).all()
-    #
-    # if len(query_results) < 100:
-    #     conditions = []
-    #     cat_conditions = []
-    #     for kind_search_cat in kind_search_cats:
-    #         cat_conditions.append(
-    #             func.lower(ImagesV2.name).ilike('%{}%'.format(kind_search_cat))
-    #         )
-    #     conditions.append(
-    #         (ImagesV2.sex == req_sex)
-    #     )
-    #     conditions.append(
-    #         (ImagesV2.encoding_vgg16 != None)
-    #     )
-    #     if len(req_shop_excl) > 0:
-    #         conditions.append(
-    #             (ImagesV2.shop != any_(req_shop_excl))
-    #         )
-    #     query = db.session.query(
-    #         ImagesV2.name,
-    #         ImagesV2.img_hash,
-    #         ImagesV2.color_1,
-    #         ImagesV2.color_1_hex,
-    #         ImagesV2.color_2,
-    #         ImagesV2.color_2_hex,
-    #         ImagesV2.color_3,
-    #         ImagesV2.color_3_hex,
-    #         ImagesV2.all_arr,
-    #         ImagesV2.encoding_crop,
-    #         ImagesV2.encoding_vgg16
-    #     ).filter(
-    #         and_(and_(*conditions), or_(*cat_conditions))
-    #     )
-    #     query_results = query.order_by(func.random()).limit(3000).all()
-
     if len(img_table_query_results) == 0:
         return 'No results'
     else:
@@ -871,15 +797,10 @@ def db_text_search(request, db, ProductsV2, ImagesV2):
     search_string.replace('+', ' ')
     req_sex = request.args.get('sex')
 
-    result_limit = 100
-
     string_list = search_string.strip().lower().split()
     linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after', 'by', 'and']
     string_list_clean = [e for e in string_list if e not in linking_words]
     print('Cleaned string list', str(string_list_clean))
-    # color_word_dict = color_check(string_list_clean)
-    # color_list = color_word_dict['colors']
-    # word_list = color_word_dict['words']
     search_string_clean = ' '.join(string_list_clean)
 
     maternity = False
@@ -921,16 +842,23 @@ def db_text_search(request, db, ProductsV2, ImagesV2):
         query_conditions_all.append(
             ImagesV2.all_cats.any(all_search_cat)
         )
-    if maternity == False:
-        query_conditions.append(
-            (~ImagesV2.all_cats.any('maternity'))
-        )
-        query_conditions.append(
-            (~ImagesV2.all_cats.any('mamalicious'))
-        )
-        query_conditions.append(
-            (~ImagesV2.all_cats.any('mom'))
-        )
+    # if maternity == False:
+    #     query_conditions.append(
+    #         (~ImagesV2.all_cats.any('maternity'))
+    #     )
+    #     query_conditions.append(
+    #         (~ImagesV2.all_cats.any('mamalicious'))
+    #     )
+    #     query_conditions.append(
+    #         (~ImagesV2.all_cats.any('mom'))
+    #     )
+
+    query_conditions.append(
+        (ImagesV2.in_stock == True)
+    )
+    query_conditions.append(
+        (ImagesV2.encoding_vgg16 != None)
+    )
 
     query_conditions_all.append(
         func.lower(ImagesV2.name).op('%%')(search_string_clean)
@@ -962,3 +890,94 @@ def db_text_search(request, db, ProductsV2, ImagesV2):
 
     res = jsonify(res=result_list, tags=all_search_cats)
     return res
+
+
+def db_test_search(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
+    data = request.get_json(force=True)
+    # data = json.loads(data)
+
+    sex = data['sex']
+    tags = data['tags']
+
+    tag_list = cats.Cats()
+    kind_cats = tag_list.kind_cats
+    style_cats = tag_list.style_cats
+    filter_cats = tag_list.filter_cats
+    length_cats = tag_list.length_cats
+    color_pattern_cats = tag_list.color_pattern_cats
+    kind_search_cats = [req_tag for req_tag in tags if req_tag in kind_cats]
+    style_search_cats = [req_tag for req_tag in tags if req_tag in style_cats]
+    length_search_cats = [req_tag for req_tag in tags if req_tag in length_cats]
+    color_pattern_search_cats = [req_tag for req_tag in tags if req_tag in color_pattern_cats]
+    filter_search_cats = [req_tag for req_tag in tags if req_tag in filter_cats]
+
+    print(f'KIND CATS: {kind_search_cats}')
+    print(f'STYLE CATS: {style_search_cats}')
+    print(f'LENGTH CATS: {length_search_cats}')
+    print(f'COLOR PATTERN CATS: {color_pattern_search_cats}')
+    print(f'FILTER CATS: {filter_search_cats}')
+
+    query_conds = []
+
+    for kind_search_cat in kind_search_cats:
+        query_conds.append(
+            (ImagesV2Skinny.kind_cats.any(kind_search_cat))
+        )
+
+    for style_search_cat in style_search_cats:
+        query_conds.append(
+            (ImagesV2Skinny.style_cats.any(style_search_cat))
+        )
+
+    for length_search_cat in length_search_cats:
+        query_conds.append(
+            (ImagesV2Skinny.all_cats.any(length_search_cat))
+        )
+
+    for color_pattern_search_cat in color_pattern_search_cats:
+        query_conds.append(
+            (ImagesV2Skinny.color_pattern_cats.any(color_pattern_search_cat))
+        )
+
+    for filter_search_cat in filter_search_cats:
+        query_conds.append(
+            (ImagesV2Skinny.filter_cats.any(filter_search_cat))
+        )
+
+    query_conds.append(
+        (ImagesV2Skinny.sex == sex)
+    )
+
+    query_conds.append(
+        (ImagesV2Skinny.in_stock == True)
+    )
+    query_conds.append(
+        (ImagesV2.encoding_vgg16 != None)
+    )
+
+    img_table_query_results = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
+        ImagesV2Skinny.img_hash == ImagesV2.img_hash
+    ).filter(
+        and_(*query_conds)
+    ).limit(500).all())
+
+    result_len = len(img_table_query_results)
+
+    limited_query_results = img_table_query_results[:100]
+
+    result_list = []
+    for img_table_query_result in limited_query_results:
+        query_result_skinny = img_table_query_result[0]
+
+        result_prod_id = query_result_skinny.prod_id
+        prod_search = db.session.query(ProductsV2).filter(ProductsV2.prod_id == result_prod_id).first()
+        prod_serial = ProductSchemaV2().dump(prod_search)
+
+        result_dict = {
+            'count': result_len,
+            'prod_serial': prod_serial[0]
+        }
+        result_list.append(result_dict)
+
+    return result_list
+

@@ -11,9 +11,10 @@ import aiohttp
 from get_features import get_features
 from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2, LoadingContentSchema
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2, image_commit_v2_skinny
-from db_search import search_similar_images, search_from_upload, db_text_search
+from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random
+from db_deals import get_deals
 from send_email import password_reset_email
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
@@ -475,6 +476,19 @@ def search_similar():
         return res
 
 
+@app.route("/api/test_search", methods=['POST'])
+def test_search():
+    print('Search similar requested, request method', str(request.method))
+    if request.method == 'POST':
+        print('Calling test_search')
+        search_results = db_test_search(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
+
+        # Make it HTTP friendly
+        res = jsonify(res=search_results)
+
+        return res
+
+
 @app.route("/api/add_look", methods=['POST'])
 def add_look():
     if request.method == 'POST':
@@ -580,6 +594,16 @@ def recommend_random():
         data = request.get_json(force=True)
 
         suggestions = recommend_from_random(db, ProductsV2, data)
+
+        return suggestions
+
+
+@app.route("/api/recommend_deals", methods=['POST'])
+def recommend_deals():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        suggestions = get_deals(db, ImagesV2Skinny, ProductsV2, data)
 
         return suggestions
 

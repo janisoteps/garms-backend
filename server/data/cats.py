@@ -110,7 +110,7 @@ class Cats:
         't-shirts',
         'tee',
         'thong',
-        'tie',
+        # 'tie',
         'tights',
         'top',
         'tops',
