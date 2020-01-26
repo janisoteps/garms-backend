@@ -1,4 +1,4 @@
-from sqlalchemy import func, any_, and_, or_
+from sqlalchemy import func, and_, or_
 from marshmallow_schema import ProductSchemaV2
 import json
 
