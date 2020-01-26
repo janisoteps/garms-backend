@@ -1,8 +1,6 @@
 from sqlalchemy import func, any_, and_, or_
 from marshmallow_schema import ProductSchemaV2
 import json
-# from random import shuffle
-# import random
 
 
 def get_deals(db, ImagesV2Skinny, ProductsV2, data):
