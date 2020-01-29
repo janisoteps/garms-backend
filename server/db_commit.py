@@ -1,108 +1,264 @@
 import json
 
 
-def image_commit(db, Images, data):
+# def image_commit(db, Images, data):
+#
+#     img_hash = data['img_hash']
+#     prod_url = data['prod_url']
+#     img_url = data['img_url']
+#     name = data['name']
+#     description = data['description']
+#     brand = data['brand']
+#     shop = data['shop']
+#     date = data['date']
+#     sex = data['sex']
+#     currency = data['currency']
+#     price = data['price']
+#     sale = data['sale']
+#     saleprice = data['saleprice']
+#     spider_cat = data['spider_cat']
+#     img_cats_ai_txt = data['img_cats_ai_txt']
+#     img_cats_sc_txt = data['img_cats_sc_txt']
+#     color_name = data['color_name']
+#     color_512 = data['color_512']
+#     color_1 = data['color_1']
+#     color_1_hex = data['color_1_hex']
+#     color_2 = data['color_2']
+#     color_2_hex = data['color_2_hex']
+#     color_3 = data['color_3']
+#     color_3_hex = data['color_3_hex']
+#     encoding_nocrop = data['encoding_nocrop']
+#     encoding_crop = data['encoding_crop']
+#     encoding_squarecrop = data['encoding_squarecrop']
+#
+#     product_submission = Images(
+#         img_hash=img_hash,
+#         prod_url=prod_url,
+#         img_url=img_url,
+#         name=name,
+#         description=description,
+#         brand=brand,
+#         shop=shop,
+#         date=date,
+#         sex=sex,
+#         currency=currency,
+#         price=price,
+#         sale=sale,
+#         saleprice=saleprice,
+#         spider_cat=spider_cat,
+#         img_cats_ai_txt=img_cats_ai_txt,
+#         img_cats_sc_txt=img_cats_sc_txt,
+#         color_name=color_name,
+#         color_512=color_512,
+#         color_1=color_1,
+#         color_1_hex=color_1_hex,
+#         color_2=color_2,
+#         color_2_hex=color_2_hex,
+#         color_3=color_3,
+#         color_3_hex=color_3_hex,
+#         encoding_nocrop=encoding_nocrop,
+#         encoding_crop=encoding_crop,
+#         encoding_squarecrop=encoding_squarecrop
+#     )
+#
+#     try:
+#         existing_image = Images.query.filter_by(img_hash=img_hash).first()
+#     except:
+#         existing_image = None
+#
+#     if existing_image is None:
+#         print('Adding a new product')
+#         db.session.add(product_submission)
+#         db.session.commit()
+#         return json.dumps(True)
+#
+#     else:
+#         print('Updating existing product')
+#
+#         existing_image.prod_url = prod_url
+#         existing_image.name = name
+#         existing_image.description = description
+#         existing_image.brand = brand
+#         existing_image.shop = shop
+#         existing_image.date = date
+#         existing_image.sex = sex
+#         existing_image.currency = currency
+#         existing_image.price = price
+#         existing_image.sale = sale
+#         existing_image.saleprice = saleprice
+#         existing_image.img_url = img_url
+#         existing_image.spider_cat = spider_cat
+#         existing_image.img_cats_ai_txt = img_cats_ai_txt
+#         existing_image.img_cats_sc_txt = img_cats_sc_txt
+#         existing_image.color_name = color_name
+#         existing_image.color_512 = color_512
+#         existing_image.color_1 = color_1
+#         existing_image.color_1_hex = color_1_hex
+#         existing_image.color_2 = color_2
+#         existing_image.color_2_hex = color_2_hex
+#         existing_image.color_3 = color_3
+#         existing_image.color_3_hex = color_3_hex
+#         existing_image.encoding_nocrop = encoding_nocrop
+#         existing_image.encoding_crop = encoding_crop
+#         existing_image.encoding_squarecrop = encoding_squarecrop
+#
+#         db.session.commit()
+#
+#         return json.dumps(True)
 
+
+def image_commit(db, ImagesModel, SkinnyImagesModel, data):
     img_hash = data['img_hash']
-    prod_url = data['prod_url']
     img_url = data['img_url']
-    name = data['name']
-    description = data['description']
-    brand = data['brand']
-    shop = data['shop']
+    prod_id = data['prod_id']
+    prod_url = data['prod_url']
+    color_string = data['color_string']
     date = data['date']
-    sex = data['sex']
-    currency = data['currency']
+    name = data['name']
     price = data['price']
     sale = data['sale']
     saleprice = data['saleprice']
-    spider_cat = data['spider_cat']
-    img_cats_ai_txt = data['img_cats_ai_txt']
-    img_cats_sc_txt = data['img_cats_sc_txt']
-    color_name = data['color_name']
-    color_512 = data['color_512']
+    discount_rate = data['discount_rate']
+    sex = data['sex']
+    shop = data['shop']
+    kind_cats = data['kind_cats']
+    pattern_cats = data['pattern_cats']
+    color_cats = data['color_cats']
+    style_cats = data['style_cats']
+    material_cats = data['material_cats']
+    attribute_cats = data['attribute_cats']
+    length_cats = data['length_cats']
+    filter_cats = data['filter_cats']
+    all_cats = data['all_cats']
     color_1 = data['color_1']
     color_1_hex = data['color_1_hex']
     color_2 = data['color_2']
     color_2_hex = data['color_2_hex']
     color_3 = data['color_3']
     color_3_hex = data['color_3_hex']
-    encoding_nocrop = data['encoding_nocrop']
-    encoding_crop = data['encoding_crop']
-    encoding_squarecrop = data['encoding_squarecrop']
+    size_stock = data['size_stock']
+    in_stock = data['in_stock']
+    encoding_vgg16 = data['encoding_vgg16']
 
-    product_submission = Images(
+    img_full_submission = ImagesModel(
         img_hash=img_hash,
-        prod_url=prod_url,
         img_url=img_url,
-        name=name,
-        description=description,
-        brand=brand,
-        shop=shop,
+        prod_id=prod_id,
+        prod_url=prod_url,
+        color_string=color_string,
         date=date,
-        sex=sex,
-        currency=currency,
+        name=name,
         price=price,
         sale=sale,
         saleprice=saleprice,
-        spider_cat=spider_cat,
-        img_cats_ai_txt=img_cats_ai_txt,
-        img_cats_sc_txt=img_cats_sc_txt,
-        color_name=color_name,
-        color_512=color_512,
+        discount_rate=discount_rate,
+        sex=sex,
+        shop=shop,
+        kind_cats=kind_cats,
+        pattern_cats=pattern_cats,
+        color_cats=color_cats,
+        style_cats=style_cats,
+        material_cats=material_cats,
+        attribute_cats=attribute_cats,
+        length_cats=length_cats,
+        filter_cats=filter_cats,
+        all_cats=all_cats,
         color_1=color_1,
         color_1_hex=color_1_hex,
         color_2=color_2,
         color_2_hex=color_2_hex,
         color_3=color_3,
         color_3_hex=color_3_hex,
-        encoding_nocrop=encoding_nocrop,
-        encoding_crop=encoding_crop,
-        encoding_squarecrop=encoding_squarecrop
+        size_stock=size_stock,
+        in_stock=in_stock,
+        encoding_vgg16=encoding_vgg16
+    )
+
+    img_skinny_submission = SkinnyImagesModel(
+        img_hash=img_hash,
+        img_url=img_url,
+        prod_id=prod_id,
+        prod_url=prod_url,
+        color_string=color_string,
+        date=date,
+        name=name,
+        price=price,
+        sale=sale,
+        saleprice=saleprice,
+        discount_rate=discount_rate,
+        sex=sex,
+        shop=shop,
+        kind_cats=kind_cats,
+        pattern_cats=pattern_cats,
+        color_cats=color_cats,
+        style_cats=style_cats,
+        material_cats=material_cats,
+        attribute_cats=attribute_cats,
+        length_cats=length_cats,
+        filter_cats=filter_cats,
+        all_cats=all_cats,
+        color_1=color_1,
+        color_2=color_2,
+        color_3=color_3,
+        size_stock=size_stock,
+        in_stock=in_stock
     )
 
     try:
-        existing_image = Images.query.filter_by(img_hash=img_hash).first()
+        existing_img_full_row = ImagesModel.query.filter_by(img_hash=img_hash).first()
+        existing_img_skinny_row = SkinnyImagesModel.query.filter_by(img_hash=img_hash).first()
     except:
-        existing_image = None
+        existing_img_full_row = None
+        existing_img_skinny_row = None
 
-    if existing_image is None:
-        print('Adding a new product')
-        db.session.add(product_submission)
+    if existing_img_full_row is None or existing_img_skinny_row is None:
+        print('Adding new IMG rows')
+        db.session.add(img_full_submission)
+        db.session.add(img_skinny_submission)
         db.session.commit()
         return json.dumps(True)
 
     else:
-        print('Updating existing product')
+        print('Product ALREADY IN DB')
 
-        existing_image.prod_url = prod_url
-        existing_image.name = name
-        existing_image.description = description
-        existing_image.brand = brand
-        existing_image.shop = shop
-        existing_image.date = date
-        existing_image.sex = sex
-        existing_image.currency = currency
-        existing_image.price = price
-        existing_image.sale = sale
-        existing_image.saleprice = saleprice
-        existing_image.img_url = img_url
-        existing_image.spider_cat = spider_cat
-        existing_image.img_cats_ai_txt = img_cats_ai_txt
-        existing_image.img_cats_sc_txt = img_cats_sc_txt
-        existing_image.color_name = color_name
-        existing_image.color_512 = color_512
-        existing_image.color_1 = color_1
-        existing_image.color_1_hex = color_1_hex
-        existing_image.color_2 = color_2
-        existing_image.color_2_hex = color_2_hex
-        existing_image.color_3 = color_3
-        existing_image.color_3_hex = color_3_hex
-        existing_image.encoding_nocrop = encoding_nocrop
-        existing_image.encoding_crop = encoding_crop
-        existing_image.encoding_squarecrop = encoding_squarecrop
-
-        db.session.commit()
+        # existing_img_full_row.img_url = img_url
+        # existing_img_full_row.prod_id = prod_id
+        # existing_img_full_row.prod_url = prod_url
+        # existing_img_full_row.color_string = color_string
+        # existing_img_full_row.date = date
+        # existing_img_full_row.name = name
+        # existing_img_full_row.price = price
+        # existing_img_full_row.sale = sale
+        # existing_img_full_row.price = price
+        # existing_img_full_row.sale = sale
+        # existing_img_full_row.saleprice = saleprice
+        # existing_img_full_row.sex = sex
+        # existing_img_full_row.shop = shop
+        # existing_img_full_row.kind_cats = kind_cats
+        # existing_img_full_row.color_pattern_cats = color_pattern_cats
+        # existing_img_full_row.style_cats = style_cats
+        # existing_img_full_row.material_cats = material_cats
+        # existing_img_full_row.attribute_cats = attribute_cats
+        # existing_img_full_row.filter_cats = filter_cats
+        # existing_img_full_row.all_cats = all_cats
+        # existing_img_full_row.kind_arr = kind_arr
+        # existing_img_full_row.col_pat_arr = col_pat_arr
+        # existing_img_full_row.style_arr = style_arr
+        # existing_img_full_row.material_arr = material_arr
+        # existing_img_full_row.attr_arr = attr_arr
+        # existing_img_full_row.filter_arr = filter_arr
+        # existing_img_full_row.all_arr = all_arr
+        # existing_img_full_row.color_1 = color_1
+        # existing_img_full_row.color_1_hex = color_1_hex
+        # existing_img_full_row.color_2 = color_2
+        # existing_img_full_row.color_2_hex = color_2_hex
+        # existing_img_full_row.color_3 = color_3
+        # existing_img_full_row.color_3_hex = color_3_hex
+        # existing_img_full_row.encoding_crop = encoding_crop
+        # existing_img_full_row.size_stock = size_stock
+        # existing_img_full_row.in_stock = in_stock
+        #
+        # db.session.commit()
 
         return json.dumps(True)
 

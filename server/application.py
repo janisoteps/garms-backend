@@ -29,7 +29,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import User, ProductsV2, Products, Images, InstaMentions, ImagesV2, LoadingContent, ImagesV2Skinny
+from models import User, ProductsV2, ImagesFullWomenA, ImagesSkinnyWomenA, InstaMentions, ImagesV2, LoadingContent, ImagesV2Skinny, ProductsWomenA
 
 
 # # # # # # # Functions # # # # # # #
@@ -321,11 +321,15 @@ def logout():
 def commit_image():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # print(str(data))
 
-        upload_response = image_commit(db, Images, data)
-
-        return upload_response
+        db_tables = data['db_tables']
+        if db_tables == 'women_a':
+            upload_response = image_commit(db, ImagesFullWomenA, ImagesSkinnyWomenA, data)
+            return upload_response
+        else:
+            return json.dumps({
+                'message': 'Tables not made yet'
+            })
 
 
 # Upload new product image to database
