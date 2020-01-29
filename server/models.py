@@ -211,8 +211,8 @@ class ImagesFullWomenA(db.Model):
     )
 
     id = db.Column(db.Integer, primary_key=True)
-    # img_hash = db.Column(db.String(40), db.ForeignKey("images_skinny_women_a.img_hash"), index=True, unique=True)
-    img_hash = db.Column(db.String(40), index=True, unique=True)
+    img_hash = db.Column(db.String(40), db.ForeignKey("images_skinny_women_a.img_hash"), index=True, unique=True)
+    # img_hash = db.Column(db.String(40), index=True, unique=True)
     img_url = db.Column(db.String)
     prod_id = db.Column(db.String)
     prod_url = db.Column(db.String)
