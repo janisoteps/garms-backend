@@ -9,7 +9,7 @@ import string
 from sqlalchemy import func, any_, or_
 import aiohttp
 from get_features import get_features
-from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2, LoadingContentSchema
+from marshmallow_schema import ProductSchemaV2, ImageSchemaV2, LoadingContentSchema, ImagesFullWomenASchema, ProductsWomenASchema
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2, image_commit_v2_skinny
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
@@ -29,7 +29,7 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import User, ProductsV2, Products, Images, InstaMentions, ImagesV2, LoadingContent, ImagesV2Skinny
+from models import User, ProductsV2, ImagesFullWomenA, ImagesSkinnyWomenA, InstaMentions, ImagesV2, LoadingContent, ImagesV2Skinny, ProductsWomenA
 
 
 # # # # # # # Functions # # # # # # #
@@ -321,11 +321,31 @@ def logout():
 def commit_image():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # print(str(data))
 
-        upload_response = image_commit(db, Images, data)
+        db_tables = data['db_tables']
+        if db_tables == 'women_a':
+            upload_response = image_commit(db, ImagesFullWomenA, ImagesSkinnyWomenA, data)
+            return upload_response
+        else:
+            return json.dumps({
+                'message': 'Tables not made yet'
+            })
 
-        return upload_response
+
+# Upload new product object to database
+@app.route("/api/commit_product", methods=['post'])
+def commit_product():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        db_tables = data['db_tables']
+        if db_tables == 'women_a':
+            upload_response = product_commit(db, ProductsWomenA, data)
+            return upload_response
+        else:
+            return json.dumps({
+                'message': 'Tables not made yet'
+            })
 
 
 # Upload new product image to database
@@ -357,18 +377,6 @@ def transform_skinny():
         )
 
         return req_response
-
-
-# Upload new product object to database
-@app.route("/api/commit_product", methods=['post'])
-def commit_product():
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-
-        # print(str(data))
-        upload_response = product_commit(db, Products, data)
-
-        return upload_response
 
 
 # Upload new product object to database
