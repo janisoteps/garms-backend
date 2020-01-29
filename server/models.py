@@ -101,7 +101,7 @@ class ImagesSkinnyWomenA(db.Model):
     __tablename__ = 'images_skinny_women_a'
 
     __table_args__ = (
-        db.Index('images_skinny_women_a_name_idx', 'img_skinny_name', postgresql_ops={'name': "gin_trgm_ops"},
+        db.Index('images_skinny_women_a_name_idx', 'img_skinny_name', postgresql_ops={'img_skinny_name': "gin_trgm_ops"},
                  postgresql_using='gin'),
     )
 
@@ -206,7 +206,7 @@ class ImagesFullWomenA(db.Model):
     __tablename__ = 'images_full_women_a'
 
     __table_args__ = (
-        db.Index('images_full_women_a_name_idx', 'img_full_name', postgresql_ops={'img_name': "gin_trgm_ops"},
+        db.Index('images_full_women_a_name_idx', 'img_full_name', postgresql_ops={'img_full_name': "gin_trgm_ops"},
                  postgresql_using='gin'),
     )
 
