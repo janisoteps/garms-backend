@@ -101,19 +101,20 @@ class ImagesSkinnyWomenA(db.Model):
     __tablename__ = 'images_skinny_women_a'
 
     __table_args__ = (
-        db.Index('images_skinny_women_a_name_idx', 'name', postgresql_ops={'name': "gin_trgm_ops"},
+        db.Index('images_skinny_women_a_name_idx', 'img_skinny_name', postgresql_ops={'name': "gin_trgm_ops"},
                  postgresql_using='gin'),
     )
 
     id = db.Column(db.Integer)
-    img_hash = db.Column(db.String(40), db.ForeignKey("images_full_women_a.img_hash"), index=True, unique=True, primary_key=True)
+    # img_hash = db.Column(db.String(40), db.ForeignKey("images_full_women_a.img_hash"), index=True, unique=True, primary_key=True)
+    img_hash = db.Column(db.String(40), index=True, unique=True, primary_key=True)
     img_url = db.Column(db.String)
     prod_id = db.Column(db.String)
     prod_url = db.Column(db.String)
     brand = db.Column(db.Text)
     color_string = db.Column(db.String)
     date = db.Column(db.Integer)
-    name = db.Column('img_name', db.Text, index=True)
+    name = db.Column('img_skinny_name', db.Text, index=True)
     price = db.Column(db.Float)
     sale = db.Column(db.Boolean)
     saleprice = db.Column(db.Float)
@@ -205,19 +206,20 @@ class ImagesFullWomenA(db.Model):
     __tablename__ = 'images_full_women_a'
 
     __table_args__ = (
-        db.Index('images_full_women_a_name_idx', 'img_name', postgresql_ops={'img_name': "gin_trgm_ops"},
+        db.Index('images_full_women_a_name_idx', 'img_full_name', postgresql_ops={'img_name': "gin_trgm_ops"},
                  postgresql_using='gin'),
     )
 
     id = db.Column(db.Integer, primary_key=True)
-    img_hash = db.Column(db.String(40), db.ForeignKey("images_skinny_women_a.img_hash"), index=True, unique=True)
+    # img_hash = db.Column(db.String(40), db.ForeignKey("images_skinny_women_a.img_hash"), index=True, unique=True)
+    img_hash = db.Column(db.String(40), index=True, unique=True)
     img_url = db.Column(db.String)
     prod_id = db.Column(db.String)
     prod_url = db.Column(db.String)
     brand = db.Column(db.Text)
     color_string = db.Column(db.String)
     date = db.Column(db.Integer)
-    name = db.Column('img_name', db.Text, index=True)
+    name = db.Column('img_full_name', db.Text, index=True)
     price = db.Column(db.Float)
     sale = db.Column(db.Boolean)
     saleprice = db.Column(db.Float)

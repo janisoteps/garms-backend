@@ -9,7 +9,7 @@ import string
 from sqlalchemy import func, any_, or_
 import aiohttp
 from get_features import get_features
-from marshmallow_schema import ProductSchemaV2, ImageSchema, ProductsSchema, ImageSchemaV2, LoadingContentSchema
+from marshmallow_schema import ProductSchemaV2, ImageSchemaV2, LoadingContentSchema, ImagesFullWomenASchema, ProductsWomenASchema
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2, image_commit_v2_skinny
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
