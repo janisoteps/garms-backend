@@ -216,8 +216,9 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
 
     if existing_img_full_row is None or existing_img_skinny_row is None:
         print('Adding new IMG rows')
-        db.session.add(img_full_submission)
         db.session.add(img_skinny_submission)
+        db.session.commit()
+        db.session.add(img_full_submission)
         db.session.commit()
         return json.dumps(True)
 
