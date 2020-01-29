@@ -332,6 +332,22 @@ def commit_image():
             })
 
 
+# Upload new product object to database
+@app.route("/api/commit_product", methods=['post'])
+def commit_product():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        db_tables = data['db_tables']
+        if db_tables == 'women_a':
+            upload_response = product_commit(db, ProductsWomenA, data)
+            return upload_response
+        else:
+            return json.dumps({
+                'message': 'Tables not made yet'
+            })
+
+
 # Upload new product image to database
 @app.route("/api/commit_image_v2", methods=['post'])
 def commit_image_v2():
@@ -361,18 +377,6 @@ def transform_skinny():
         )
 
         return req_response
-
-
-# Upload new product object to database
-@app.route("/api/commit_product", methods=['post'])
-def commit_product():
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-
-        # print(str(data))
-        upload_response = product_commit(db, Products, data)
-
-        return upload_response
 
 
 # Upload new product object to database
