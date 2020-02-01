@@ -702,6 +702,17 @@ def count_vgg16():
         })
 
 
+@app.route("/api/count_all", methods=['GET'])
+def count_all():
+    if request.method == 'GET':
+        # row_count = db.session.query(ImagesSkinnyWomenA).count()
+        row_count = db.session.query(ImagesFullWomenA).count()
+
+        return json.dumps({
+            'row_count': row_count
+        })
+
+
 @app.route("/api/count_prod_brands", methods=['GET'])
 def count_prod_brands():
     if request.method == 'GET':
