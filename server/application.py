@@ -12,7 +12,7 @@ from get_features import get_features
 from marshmallow_schema import ProductSchemaV2, ImageSchemaV2, LoadingContentSchema, ImagesFullWomenASchema, ProductsWomenASchema
 from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2, image_commit_v2_skinny
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search
-from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit
+from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look
 from db_recommend import recommend_similar_tags, recommend_from_random
 from db_deals import get_deals
 from send_email import password_reset_email
@@ -517,6 +517,16 @@ def remove_look():
         return remove_look_response
 
 
+@app.route("/api/rename_look", methods=['POST'])
+def rename_look():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        rename_look_response = db_rename_look(db, User, data)
+
+        return rename_look_response
+
+
 @app.route("/api/get_looks", methods=['POST'])
 def get_looks():
     if request.method == 'POST':
@@ -705,8 +715,9 @@ def count_vgg16():
 @app.route("/api/count_all", methods=['GET'])
 def count_all():
     if request.method == 'GET':
-        # row_count = db.session.query(ImagesSkinnyWomenA).count()
-        row_count = db.session.query(ImagesFullWomenA).count()
+        # row_count = db.session.query(ProductsWomenA).count()
+        row_count = db.session.query(ImagesSkinnyWomenA).count()
+        # row_count = db.session.query(ImagesFullWomenA).count()
 
         return json.dumps({
             'row_count': row_count

@@ -152,3 +152,45 @@ def db_remove_outfit(db, User, data):
             return 'Outfit not found'
     else:
         return 'Invalid look'
+
+
+def db_rename_look(db, User, data):
+    email = data['email']
+    look_name = data['look_name']
+    new_look_name = data['new_look_name']
+
+    user_data = User.query.filter_by(email=email).first()
+    if user_data is None:
+        return 'Invalid user email'
+    user_looks = user_data.looks
+    user_outfits = user_data.wardrobe
+    look_exists = any(d['look_name'] == look_name for d in user_looks)
+    if look_exists:
+        update_look = list(filter(lambda look: look['look_name'] == look_name, user_looks))
+        update_outfits = list(filter(lambda outfit: outfit['look_name'] == look_name, user_outfits))
+        user_looks.remove(update_look[0])
+        for del_outfit in update_outfits:
+            user_outfits.remove(del_outfit)
+
+        new_look = [{
+            'look_date': u_look['look_date'],
+            'look_name': new_look_name
+        } for u_look in update_look]
+        new_outfits = [{
+            'prod_id': u_outfit['prod_id'],
+            'look_name': new_look_name,
+            'outfit_date': u_outfit['outfit_date']
+        } for u_outfit in update_outfits]
+
+        user_looks += new_look
+        user_outfits += new_outfits
+
+        user_data.looks = user_looks
+        user_data.wardrobe = user_outfits
+        db.session.commit()
+        return json.dumps({
+            'looks': user_data.looks,
+            'wardrobe': user_data.wardrobe
+        })
+    else:
+        return json.dumps('Look not found')
