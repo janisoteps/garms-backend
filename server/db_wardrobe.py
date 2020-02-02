@@ -159,6 +159,8 @@ def db_rename_look(db, User, data):
     look_name = data['look_name']
     new_look_name = data['new_look_name']
 
+    print(look_name)
+
     user_data = User.query.filter_by(email=email).first()
     if user_data is None:
         return 'Invalid user email'
