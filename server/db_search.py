@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ProductSchemaV2, ImageSchemaV2
+from marshmallow_schema import ProductSchemaV2, ImageSchemaV2, ImagesFullWomenASchema, ProductsWomenASchema
 import scipy.spatial as spatial
 import numpy as np
 from operator import itemgetter
@@ -791,7 +791,7 @@ def search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
 #######################################################################################################################
 
 
-def db_text_search(request, db, ProductsV2, ImagesV2):
+def db_text_search(request, db, Products, Images):
     search_string = request.args.get('search_string')
     print('search string: ' + search_string)
     search_string.replace('+', ' ')
@@ -806,42 +806,135 @@ def db_text_search(request, db, ProductsV2, ImagesV2):
     maternity = False
     tag_list = cats.Cats()
     kind_cats = tag_list.kind_cats
-    color_pattern_cats = tag_list.color_pattern_cats
+    pattern_cats = tag_list.pattern_cats
+    color_cats = tag_list.color_cats
+    style_cats = tag_list.style_cats
+    material_cats = tag_list.material_cats
+    attribute_cats = tag_list.attribute_cats
+    length_cats = tag_list.length_cats
+    filter_cats = tag_list.filter_cats
     all_cats = tag_list.all_cats
-    kind_search_cats = [req_tag for req_tag in string_list_clean if req_tag in kind_cats]
-    color_pattern_search_cats = [req_tag for req_tag in string_list_clean if req_tag in color_pattern_cats]
-    all_search_cats = [req_tag for req_tag in string_list_clean if req_tag in all_cats]
-    print('color_pattern_search_cats')
-    print(color_pattern_search_cats)
-    all_cat_search_arr = np.zeros(len(all_cats))
-    for req_tag in all_search_cats:
-        if req_tag in all_cats:
-            all_cat_search_arr[all_cats.index(req_tag)] = 1
-        if req_tag in ['mom', 'mamalicious', 'maternity']:
-            maternity = True
+    # kind_search_cats = [req_tag for req_tag in string_list_clean if req_tag in kind_cats or f'{req_tag}s' in kind_cats or f'{req_tag}es' in kind_cats or f'{req_tag}ed' in kind_cats]
+    # pattern_search_cats = [req_tag for req_tag in string_list_clean if req_tag in pattern_cats or f'{req_tag}s' in pattern_cats or f'{req_tag}es' in pattern_cats or f'{req_tag}ed' in pattern_cats]
+    # color_search_cats = [req_tag for req_tag in string_list_clean if req_tag in color_cats or f'{req_tag}s' in color_cats or f'{req_tag}es' in color_cats or f'{req_tag}ed' in color_cats]
+    # all_search_cats = [req_tag for req_tag in string_list_clean if req_tag in all_cats or f'{req_tag}s' in all_cats or f'{req_tag}es' in all_cats or f'{req_tag}ed' in all_cats]
+    kind_cats_search = []
+    pattern_cats_search = []
+    color_cats_search = []
+    style_cats_search = []
+    material_cats_search = []
+    attribute_cats_search = []
+    length_cats_search = []
+    filter_cats_search = []
+    all_cats_search = []
+
+    for word in string_list_clean:
+        for cat in kind_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                kind_cats_search.append(cat)
+        for cat in pattern_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                pattern_cats_search.append(cat)
+        for cat in color_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                color_cats_search.append(cat)
+        for cat in style_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                style_cats_search.append(cat)
+        for cat in material_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                material_cats_search.append(cat)
+        for cat in attribute_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                attribute_cats_search.append(cat)
+        for cat in length_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                length_cats_search.append(cat)
+        for cat in filter_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                filter_cats_search.append(cat)
+        for cat in all_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                all_cats_search.append(cat)
+
+    print('kind_cats_search')
+    print(kind_cats_search)
+    print('pattern_cats_search')
+    print(pattern_cats_search)
+    print('color_cats_search')
+    print(color_cats_search)
+    print('style_cats_search')
+    print(style_cats_search)
+    print('material_cats_search')
+    print(material_cats_search)
+    print('attribute_cats_search')
+    print(attribute_cats_search)
+    print('length_cats_search')
+    print(length_cats_search)
+    print('filter_cats_search')
+    print(filter_cats_search)
+    print('all_cats_search')
+    print(all_cats_search)
+    # all_cat_search_arr = np.zeros(len(all_cats))
+    # for req_tag in all_search_cats:
+    #     if req_tag in all_cats:
+    #         all_cat_search_arr[all_cats.index(req_tag)] = 1
+    #     if req_tag in ['mom', 'mamalicious', 'maternity']:
+    #         maternity = True
 
     query_conditions = []
     query_conditions_all = []
-    for kind_search_cat in kind_search_cats:
+    for kind_cat in kind_cats_search:
         query_conditions.append(
-            ImagesV2.kind_cats.any(kind_search_cat)
+            Images.kind_cats.any(kind_cat)
         )
 
-    for color_pattern_search_cat in color_pattern_search_cats:
+    for pattern_cat in pattern_cats_search:
         query_conditions.append(
-            ImagesV2.color_pattern_cats.any(color_pattern_search_cat)
+            Images.pattern_cats.any(pattern_cat)
         )
+
+    for color_cat in color_cats_search:
+        query_conditions.append(
+            Images.color_cats.any(color_cat)
+        )
+
+    for style_cat in style_cats_search:
+        query_conditions.append(
+            Images.style_cats.any(style_cat)
+        )
+
+    for material_cat in material_cats_search:
+        query_conditions.append(
+            Images.material_cats.any(material_cat)
+        )
+
+    for attribute_cat in attribute_cats_search:
+        query_conditions.append(
+            Images.attribute_cats.any(attribute_cat)
+        )
+
+    for length_cat in length_cats_search:
+        query_conditions.append(
+            Images.length_cats.any(length_cat)
+        )
+
+    for filter_cat in filter_cats_search:
+        query_conditions.append(
+            Images.filter_cats.any(filter_cat)
+        )
+
     if len(req_sex) > 2:
         query_conditions.append(
-            (ImagesV2.sex == req_sex)
+            (Images.sex == req_sex)
         )
     query_conditions.append(
-        (ImagesV2.shop != 'Boohoo')
+        (Images.shop != 'Boohoo')
     )
-    for all_search_cat in all_search_cats:
-        query_conditions_all.append(
-            ImagesV2.all_cats.any(all_search_cat)
-        )
+    # for all_search_cat in all_cats_search:
+    #     query_conditions_all.append(
+    #         Images.all_cats.any(all_search_cat)
+    #     )
     # if maternity == False:
     #     query_conditions.append(
     #         (~ImagesV2.all_cats.any('maternity'))
@@ -854,20 +947,34 @@ def db_text_search(request, db, ProductsV2, ImagesV2):
     #     )
 
     query_conditions.append(
-        (ImagesV2.in_stock == True)
+        (Images.in_stock == True)
     )
     query_conditions.append(
-        (ImagesV2.encoding_vgg16 != None)
+        (Images.encoding_vgg16 != None)
     )
 
     query_conditions_all.append(
-        func.lower(ImagesV2.name).op('%%')(search_string_clean)
+        func.lower(Images.name).op('%%')(search_string_clean)
     )
 
-    query = db.session.query(ImagesV2).filter(
-        and_(and_(*query_conditions), or_(*query_conditions_all))
+    # query = db.session.query(Images).filter(
+    #     and_(and_(*query_conditions), or_(*query_conditions_all))
+    # )
+
+    query = db.session.query(Images).filter(
+        and_(*query_conditions)
     )
-    query_results = query.order_by(func.random()).limit(50).all()
+
+    query_results = query.order_by(func.random()).limit(100).all()
+
+    print(f'RESULT LENGTH: {len(query_results)}')
+
+    if len(query_results) < 50:
+        relaxed_query = db.session.query(Images).filter(
+            and_(or_(*query_conditions), or_(*query_conditions_all))
+        )
+        relaxed_query_results = relaxed_query.order_by(func.random()).limit(50).all()
+        query_results += relaxed_query_results
 
     result_list = []
     prod_check = set()
@@ -878,17 +985,21 @@ def db_text_search(request, db, ProductsV2, ImagesV2):
 
         # prod_hash = prod_search.prod_id
         if result_prod_id not in prod_check:
-            prod_search = db.session.query(ProductsV2).filter(ProductsV2.prod_id == result_prod_id).first()
-            prod_serial = ProductSchemaV2().dump(prod_search)
-            prod_check.add(result_prod_id)
-            img_serial = ImageSchemaV2().dump(img_table_query_result)
-            result_dict = {
-                'prod_serial': prod_serial[0],
-                'image_data': img_serial[0]
-            }
-            result_list.append(result_dict)
+            prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
+            if prod_search is not None:
+                if req_sex == 'women':
+                    prod_serial = ProductsWomenASchema().dump(prod_search)
+                    img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
 
-    res = jsonify(res=result_list, tags=all_search_cats)
+                prod_check.add(result_prod_id)
+
+                result_dict = {
+                    'prod_serial': prod_serial[0],
+                    'image_data': img_serial[0]
+                }
+                result_list.append(result_dict)
+
+    res = jsonify(res=result_list, tags=all_cats_search)
     return res
 
 

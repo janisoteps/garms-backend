@@ -436,8 +436,15 @@ def submit_instagram():
 @app.route("/api/text_search", methods=['get'])
 def text_search():
     if request.method == 'GET':
-        res = db_text_search(request, db, ProductsV2, ImagesV2)
-        print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+        req_sex = request.args.get('sex')
+        if req_sex == 'women':
+            res = db_text_search(request, db, ProductsWomenA, ImagesFullWomenA)
+        else:
+            result_list = [{
+                'prod_serial': None,
+                'image_data': None
+            }]
+            res = jsonify(res=result_list, tags=[])
 
         return res
 
