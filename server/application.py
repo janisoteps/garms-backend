@@ -483,10 +483,19 @@ def search_similar():
     print('Search similar requested, request method', str(request.method))
     if request.method == 'POST':
         print('Calling search_similar_images')
-        search_results = search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
-
-        # Make it HTTP friendly
-        res = jsonify(res=search_results)
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        req_sex = data['sex']
+        if req_sex == 'women':
+            # res = db_text_search(request, db, ProductsWomenA, ImagesFullWomenA)
+            search_results = search_similar_images(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
+            res = jsonify(res=search_results)
+        else:
+            result_list = [{
+                'prod_serial': None,
+                'image_data': None
+            }]
+            res = jsonify(res=result_list)
 
         return res
 
@@ -575,15 +584,15 @@ def get_products():
         conditions = []
         for prod_hash in prod_hashes:
             conditions.append(
-                (ProductsV2.prod_id == prod_hash)
+                (ProductsWomenA.prod_id == prod_hash)
             )
-        query = db.session.query(ProductsV2).filter(
+        query = db.session.query(ProductsWomenA).filter(
             or_(*conditions)
         )
         query_results = query.all()
         prod_results = []
         for query_result in query_results:
-            prod_serial = ProductSchemaV2().dump(query_result)
+            prod_serial = ProductsWomenASchema().dump(query_result)
             prod_results.append(prod_serial)
 
         return json.dumps(prod_results)
@@ -639,9 +648,9 @@ def get_image():
         data = request.get_json(force=True)
         img_hash = data['img_hash']
 
-        query = db.session.query(ImagesV2).filter(ImagesV2.img_hash == img_hash)
+        query = db.session.query(ImagesFullWomenA).filter(ImagesFullWomenA.img_hash == img_hash)
         query_result = query.first()
-        img_serial = ImageSchemaV2().dump(query_result)
+        img_serial = ImagesFullWomenASchema().dump(query_result)
 
         return json.dumps(img_serial)
 
