@@ -93,11 +93,12 @@ def recommend_similar_tags(db, User, Products, data):
             Products.sex == req_sex,
             (Products.shop != "Farfetch")
         ))
-        query_results = query.order_by(func.random()).limit(30).all()
+        query_results = query.order_by(func.random()).limit(40).all()
         prod_results = []
         for query_result in query_results:
-            prod_serial = ProductsWomenASchema().dump(query_result)
-            prod_results.append(prod_serial)
+            if len(query_result.image_urls) > 0:
+                prod_serial = ProductsWomenASchema().dump(query_result)
+                prod_results.append(prod_serial)
         suggestions.append({
             'look_name': 'All',
             'prod_suggestions': prod_results
