@@ -245,7 +245,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
 
     print(f'RESULT LENGTH: {len(img_table_query_results)}')
 
-    if len(img_table_query_results) < 1000:
+    if len(img_table_query_results) < 500:
         print('ADDING RELAXED RESULTS')
         query_results_relaxed = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
@@ -257,13 +257,13 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 and_(*conditions_filter_cats),
                 or_(*conditions_brand)
             )
-        ).limit(1000 - len(img_table_query_results)).all())
+        ).limit(500 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed)} RELAXED RESULTS ADDED')
 
         img_table_query_results += query_results_relaxed
 
-    if len(img_table_query_results) < 50:
+    if len(img_table_query_results) < 200:
         print('ADDING EVEN MORE RELAXED RESULTS')
         query_results_relaxed_2 = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
@@ -274,7 +274,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 or_(*query_conditions_all),
                 or_(*conditions_filter_cats),
             )
-        ).limit(50 - len(img_table_query_results)).all())
+        ).limit(200 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
 
@@ -408,7 +408,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
         request_prod['encoding_crop_dist'] = -1000
 
     top_encoding_list = sorted(closest_n_enc_results, key=itemgetter('color_dist'))
-    top_encoding_list = top_encoding_list[0:50]
+    top_encoding_list = top_encoding_list[0:70]
 
     # Serialize the results and return as array
     result_list = []

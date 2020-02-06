@@ -617,7 +617,7 @@ def recommend_tags():
         data = request.get_json(force=True)
         # data = json.loads(data)
 
-        suggestions = recommend_similar_tags(db, User, ProductsV2, data)
+        suggestions = recommend_similar_tags(db, User, ProductsWomenA, data)
 
         return suggestions
 
@@ -627,7 +627,7 @@ def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        suggestions = recommend_from_random(db, ProductsV2, data)
+        suggestions = recommend_from_random(db, ProductsWomenA, data)
 
         return suggestions
 

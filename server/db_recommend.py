@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ProductSchemaV2
+from marshmallow_schema import ProductSchemaV2, ProductsWomenASchema
 import json
 import data.cats as cats
 from random import shuffle
@@ -7,7 +7,7 @@ from operator import add
 import random
 
 
-def recommend_similar_tags(db, User, ProductsV2, data):
+def recommend_similar_tags(db, User, Products, data):
     req_email = data['email']
     req_sex = data['sex']
     req_look_name = data['req_looks']
@@ -32,7 +32,7 @@ def recommend_similar_tags(db, User, ProductsV2, data):
 
         if len(outfits) > 0:
             kind_conditions = []
-            query_prods = db.session.query(ProductsV2).filter(ProductsV2.prod_id.in_(outfits)).all()
+            query_prods = db.session.query(Products).filter(Products.prod_id.in_(outfits)).all()
 
             print(f'len query_prods: {len(query_prods)}')
             look_cats_kind = []
@@ -61,16 +61,16 @@ def recommend_similar_tags(db, User, ProductsV2, data):
                 #     func.lower(ProductsV2.name).ilike('%{}%'.format(top_cat[0]))
                 # )
                 kind_conditions.append(
-                    (ProductsV2.kind_cats.any(top_cat[0]))
+                    (Products.kind_cats.any(top_cat[0]))
                 )
 
             print('querying for recommended prods')
-            query = db.session.query(ProductsV2).filter(
+            query = db.session.query(Products).filter(
                 and_(
                     or_(*kind_conditions),
-                    (ProductsV2.sex == req_sex),
-                    ProductsV2.prod_id.isnot(None),
-                    (ProductsV2.shop != "Farfetch")
+                    (Products.sex == req_sex),
+                    Products.prod_id.isnot(None),
+                    (Products.shop != "Farfetch")
                 )
             )
 
@@ -89,14 +89,14 @@ def recommend_similar_tags(db, User, ProductsV2, data):
             print('---------------------------')
 
     else:
-        query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None)).filter(and_(
-            ProductsV2.sex == req_sex,
-            (ProductsV2.shop != "Farfetch")
+        query = db.session.query(Products).filter(Products.prod_id.isnot(None)).filter(and_(
+            Products.sex == req_sex,
+            (Products.shop != "Farfetch")
         ))
         query_results = query.order_by(func.random()).limit(30).all()
         prod_results = []
         for query_result in query_results:
-            prod_serial = ProductSchemaV2().dump(query_result)
+            prod_serial = ProductsWomenASchema().dump(query_result)
             prod_results.append(prod_serial)
         suggestions.append({
             'look_name': 'All',
@@ -107,22 +107,23 @@ def recommend_similar_tags(db, User, ProductsV2, data):
     return json.dumps(suggestions)
 
 
-def recommend_from_random(db, ProductsV2, data):
+def recommend_from_random(db, Products, data):
     req_sex = data['sex']
     print(f'req_sex = {req_sex}')
     if req_sex is not '':
         if req_sex == 'both':
-            query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None))
+            query = db.session.query(Products).filter(Products.prod_id.isnot(None))
         else:
-            query = db.session.query(ProductsV2).filter(ProductsV2.sex == req_sex).filter(ProductsV2.prod_id.isnot(None))
+            query = db.session.query(Products).filter(Products.sex == req_sex).filter(Products.prod_id.isnot(None))
     else:
-        query = db.session.query(ProductsV2).filter(ProductsV2.prod_id.isnot(None))
+        query = db.session.query(Products).filter(Products.prod_id.isnot(None))
 
-    query_results = query.filter(ProductsV2.shop != "Farfetch").order_by(func.random()).limit(30).all()
+    query_results = query.filter(Products.shop != "Farfetch").order_by(func.random()).limit(40).all()
     prod_results = []
     for query_result in query_results:
-        prod_serial = ProductSchemaV2().dump(query_result)
-        prod_results.append(prod_serial)
+        if len(query_result.image_urls) > 0:
+            prod_serial = ProductsWomenASchema().dump(query_result)
+            prod_results.append(prod_serial)
 
     suggestions = [
         {
