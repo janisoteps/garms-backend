@@ -328,7 +328,6 @@ def product_commit(db, ProductModel, data):
         size_stock=size_stock,
         in_stock=in_stock,
         is_fav=is_fav
-
     )
 
     try:
@@ -603,82 +602,6 @@ def image_commit_v2_skinny(db, ImagesV2Skinny, data):
         # db.session.commit()
 
         return json.dumps(True)
-
-
-# def product_commit(db, Products, data):
-#     prod_hash = data['prod_hash']
-#     prod_url = data['prod_url']
-#     name = data['name']
-#     description = data['description']
-#     brand = data['brand']
-#     shop = data['shop']
-#     date = data['date']
-#     sex = data['sex']
-#     currency = data['currency']
-#     price = data['price']
-#     sale = data['sale']
-#     saleprice = data['saleprice']
-#     img_url = data['img_url']
-#     img_urls = data['img_urls']
-#     img_hashes = data['img_hashes']
-#     spider_cat = data['spider_cat']
-#     img_cats_sc_txt = data['img_cats_sc_txt']
-#
-#     product_submission = Products(
-#         prod_hash=prod_hash,
-#         prod_url=prod_url,
-#         name=name,
-#         description=description,
-#         brand=brand,
-#         shop=shop,
-#         date=date,
-#         sex=sex,
-#         currency=currency,
-#         price=price,
-#         sale=sale,
-#         saleprice=saleprice,
-#         img_url=img_url,
-#         img_urls=img_urls,
-#         img_hashes=img_hashes,
-#         spider_cat=spider_cat,
-#         img_cats_sc_txt=img_cats_sc_txt
-#     )
-#
-#     try:
-#         existing_product = Products.query.filter_by(prod_hash=prod_hash).first()
-#     except:
-#         existing_product = None
-#
-#     if existing_product is None:
-#         print('Adding a new product')
-#         db.session.add(product_submission)
-#         db.session.commit()
-#         return json.dumps(True)
-#
-#     else:
-#         print('Updating existing product')
-#
-#         existing_product.prod_hash = prod_hash
-#         existing_product.prod_url = prod_url
-#         existing_product.name = name
-#         existing_product.description = description
-#         existing_product.brand = brand
-#         existing_product.shop = shop
-#         existing_product.date = date
-#         existing_product.sex = sex
-#         existing_product.currency = currency
-#         existing_product.price = price
-#         existing_product.sale = sale
-#         existing_product.saleprice = saleprice
-#         existing_product.img_url = img_url
-#         existing_product.img_urls = img_urls
-#         existing_product.img_hashes = img_hashes
-#         existing_product.spider_cat = spider_cat
-#         existing_product.img_cats_sc_txt = img_cats_sc_txt
-#
-#         db.session.commit()
-#
-#         return json.dumps(True)
 
 
 def product_commit_v2(db, ProductsV2, data):

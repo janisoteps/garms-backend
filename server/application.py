@@ -20,6 +20,7 @@ import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
 import transformation.skinny_transform as skinny_transformation
+import transformation.preserve_faves_transform as preserve_transform
 import data.cats as cats
 from hashlib import sha256
 import random
@@ -373,6 +374,27 @@ def transform_skinny():
             ImagesV2,
             ImagesV2Skinny,
             image_commit_v2_skinny,
+            data
+        )
+
+        return req_response
+
+
+# Upload new product image to database
+@app.route("/api/transform_preserve_faves", methods=['post'])
+def transform_preserve_faves():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = preserve_transform.PreserveFaves().preserve_faves_transform(
+            db,
+            ImagesFullWomenA,
+            ImagesV2,
+            ImagesSkinnyWomenA,
+            ImagesV2Skinny,
+            ProductsWomenA,
+            ProductsV2,
+            User,
             data
         )
 

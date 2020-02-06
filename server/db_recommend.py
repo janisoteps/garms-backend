@@ -74,18 +74,17 @@ def recommend_similar_tags(db, User, Products, data):
                 )
             )
 
-            query_results = query.order_by(func.random()).limit(30).all()
+            query_results = query.order_by(func.random()).limit(40).all()
             print(f'loaded recommended prods, LENGTH: {len(query_results)}')
             # prod_results = []
             for query_result in query_results:
-                # print(query_result.kind_cats)
-                prod_serial = ProductSchemaV2().dump(query_result)
-                # prod_results.append(prod_serial)
+                if len(query_result.image_urls) > 0:
+                    prod_serial = ProductsWomenASchema().dump(query_result)
 
-                suggestions.append({
-                    'look_name': 'all' if req_look_name is None else req_look_name,
-                    'prod_suggestions': [prod_serial]
-                })
+                    suggestions.append({
+                        'look_name': 'all' if req_look_name is None else req_look_name,
+                        'prod_suggestions': [prod_serial]
+                    })
             print('---------------------------')
 
     else:
