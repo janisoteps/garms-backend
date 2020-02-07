@@ -253,8 +253,10 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
             and_(
                 and_(*conditions_base),
                 and_(*conditions_kind_cats),
-                and_(*conditions_length_cats),
-                and_(*conditions_filter_cats),
+                or_(*conditions_pattern_cats),
+                or_(*conditions_style_cats),
+                or_(*conditions_length_cats),
+                or_(*conditions_filter_cats),
                 or_(*conditions_brand)
             )
         ).limit(500 - len(img_table_query_results)).all())
@@ -270,7 +272,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
         ).filter(
             and_(
                 and_(*conditions_base),
-                or_(*conditions_kind_cats),
+                and_(*conditions_kind_cats),
                 or_(*query_conditions_all),
                 or_(*conditions_filter_cats),
             )
@@ -280,16 +282,16 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
 
         img_table_query_results += query_results_relaxed_2
 
-    if len(img_table_query_results) < 30:
+    if len(img_table_query_results) < 200:
         print('ADDING EVEN MORE RELAXED RESULTS')
         query_results_relaxed_3 = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
         ).filter(
             and_(
                 and_(*conditions_base),
-                or_(*conditions_all_cats)
+                or_(*conditions_kind_cats)
             )
-        ).limit(30).all())
+        ).limit(200 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed_3)} MORE RELAXED RESULTS ADDED')
 
@@ -408,7 +410,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
         request_prod['encoding_crop_dist'] = -1000
 
     top_encoding_list = sorted(closest_n_enc_results, key=itemgetter('color_dist'))
-    top_encoding_list = top_encoding_list[0:70]
+    top_encoding_list = top_encoding_list[0:80]
 
     # Serialize the results and return as array
     result_list = []

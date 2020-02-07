@@ -491,7 +491,7 @@ def img_features():
 def search_from_image():
     if request.method == 'POST':
 
-        results = search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
+        results = search_from_upload(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
         # print('Search from image results: ', str(results))
         # Make it HTTP friendly
         res = jsonify(res=results)
@@ -581,7 +581,7 @@ def add_outfit():
     if request.method == 'POST':
         data = request.get_json(force=True)
         data = json.loads(data)
-        add_outfit_response = db_add_outfit(db, User, ProductsV2, data)
+        add_outfit_response = db_add_outfit(db, User, ProductsWomenA, data)
 
         return add_outfit_response
 
@@ -627,7 +627,7 @@ def get_prod_hash():
         data = json.loads(data)
         print(data)
         img_hash = data['img_hash']
-        product = db.session.query(ProductsV2).filter(ProductsV2.image_hash.any(img_hash)).first()
+        product = db.session.query(ProductsWomenA).filter(ProductsWomenA.image_hash.any(img_hash)).first()
         prod_id = product.prod_id
         print({'prod_id': prod_id})
         return json.dumps({'prod_id': prod_id})
@@ -659,7 +659,7 @@ def recommend_deals():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        suggestions = get_deals(db, ImagesV2Skinny, ProductsV2, data)
+        suggestions = get_deals(db, ImagesSkinnyWomenA, ProductsWomenA, data)
 
         return suggestions
 
