@@ -65,12 +65,19 @@ def recommend_similar_tags(db, User, Products, data):
                 )
 
             print('querying for recommended prods')
+            # query = db.session.query(Products).filter(
+            #     and_(
+            #         or_(*kind_conditions),
+            #         (Products.sex == req_sex),
+            #         Products.prod_id.isnot(None),
+            #         (Products.shop != "Farfetch")
+            #     )
+            # )
             query = db.session.query(Products).filter(
                 and_(
                     or_(*kind_conditions),
                     (Products.sex == req_sex),
-                    Products.prod_id.isnot(None),
-                    (Products.shop != "Farfetch")
+                    Products.prod_id.isnot(None)
                 )
             )
 

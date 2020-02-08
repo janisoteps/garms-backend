@@ -451,7 +451,7 @@ def calc_cross_entropy(vector_1, vector_2):
 #######################################################################################################################
 
 
-def search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
+def search_from_upload(request, db, Images, ImagesSkinny, Products):
     data = request.get_json(force=True)
     data = json.loads(data)
     print('Request received')
@@ -460,134 +460,188 @@ def search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
     # req_shop_excl = data['no_shop']
     req_color_1 = data['color_1']
     # req_color_2 = data['color_2']
-    req_encoding = data['encoding_rcnn']
+    # req_encoding = data['encoding_rcnn']
     req_vgg16_encoding = data['vgg16_encoding']
 
-    result_limit = 1000
+    result_limit = 2000
 
     req_vgg16_encoding_arr = np.asarray(req_vgg16_encoding)
-    req_encoding_arr = np.asarray(req_encoding)
-
+    # req_encoding_arr = np.asarray(req_encoding)
+    search_string_clean = ' '.join(req_tags)
     print(f'Req tags: {req_tags}')
 
     tag_list = cats.Cats()
     kind_cats = tag_list.kind_cats
+    pattern_cats = tag_list.pattern_cats
+    color_cats = tag_list.color_cats
     style_cats = tag_list.style_cats
-    filter_cats = tag_list.filter_cats
+    material_cats = tag_list.material_cats
+    attribute_cats = tag_list.attribute_cats
     length_cats = tag_list.length_cats
-    color_pattern_cats = tag_list.color_pattern_cats
-    kind_search_cats = [req_tag for req_tag in req_tags if req_tag in kind_cats]
-    style_search_cats = [req_tag for req_tag in req_tags if req_tag in style_cats]
-    length_search_cats = [req_tag for req_tag in req_tags if req_tag in length_cats]
-    color_pattern_search_cats = [req_tag for req_tag in req_tags if req_tag in color_pattern_cats]
-    filter_search_cats = [req_tag for req_tag in req_tags if req_tag in filter_cats]
+    filter_cats = tag_list.filter_cats
+    all_cats = tag_list.all_cats
 
-    print(f'KIND CATS: {kind_search_cats}')
-    print(f'STYLE CATS: {style_search_cats}')
-    print(f'LENGTH CATS: {length_search_cats}')
-    print(f'COLOR PATTERN CATS: {color_pattern_search_cats}')
+    kind_cats_search = []
+    pattern_cats_search = []
+    color_cats_search = []
+    style_cats_search = []
+    material_cats_search = []
+    attribute_cats_search = []
+    length_cats_search = []
+    filter_cats_search = []
+    all_cats_search = []
+
+    for word in req_tags:
+        for cat in kind_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                kind_cats_search.append(cat)
+        for cat in pattern_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                pattern_cats_search.append(cat)
+        for cat in color_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                color_cats_search.append(cat)
+        for cat in style_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                style_cats_search.append(cat)
+        for cat in material_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                material_cats_search.append(cat)
+        for cat in attribute_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                attribute_cats_search.append(cat)
+        for cat in length_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                length_cats_search.append(cat)
+        for cat in filter_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                filter_cats_search.append(cat)
+        for cat in all_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                all_cats_search.append(cat)
+
+    print('kind_cats_search')
+    print(kind_cats_search)
+    print('pattern_cats_search')
+    print(pattern_cats_search)
+    print('color_cats_search')
+    print(color_cats_search)
+    print('style_cats_search')
+    print(style_cats_search)
+    print('material_cats_search')
+    print(material_cats_search)
+    print('attribute_cats_search')
+    print(attribute_cats_search)
+    print('length_cats_search')
+    print(length_cats_search)
+    print('filter_cats_search')
+    print(filter_cats_search)
+    print('all_cats_search')
+    print(all_cats_search)
 
     print('Assembling db query conditions')
     conditions_base = []
     conditions_kind_cats = []
+    conditions_pattern_cats = []
+    conditions_color_cats = []
     conditions_style_cats = []
+    conditions_material_cats = []
+    conditions_attribute_cats = []
     conditions_length_cats = []
-    conditions_color_pattern_cats = []
     conditions_filter_cats = []
     conditions_all_cats = []
 
-    maternity = False
-    for tag in req_tags:
-        conditions_all_cats.append(
-            ImagesV2Skinny.all_cats.any(tag)
-        )
-        if tag in ['mom', 'mamalicious', 'maternity']:
-            maternity = True
+    query_conditions_all = []
 
-    for kind_search_cat in kind_search_cats:
+    for kind_search_cat in kind_cats_search:
         conditions_kind_cats.append(
-            ImagesV2Skinny.kind_cats.any(kind_search_cat)
+            (ImagesSkinny.kind_cats.any(kind_search_cat))
         )
 
-    if maternity == False:
-        print('NO MATERNITY')
-        conditions_base.append(
-            (~ImagesV2Skinny.all_cats.any('maternity'))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.filter_cats.any('maternity'))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.name.ilike('%{0}%'.format('maternity')))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.all_cats.any('mamalicious'))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.filter_cats.any('mamalicious'))
-        )
-        conditions_base.append(
-            (~ImagesV2Skinny.all_cats.any('mom'))
+    for pattern_search_cat in pattern_cats_search:
+        conditions_pattern_cats.append(
+            (ImagesSkinny.pattern_cats.any(pattern_search_cat))
         )
 
-    for filter_search_cat in filter_search_cats:
-        conditions_filter_cats.append(
-            ImagesV2Skinny.filter_cats.any(filter_search_cat)
+    for color_search_cat in color_cats_search:
+        conditions_color_cats.append(
+            (ImagesSkinny.color_cats.any(color_search_cat))
         )
 
-    for style_search_cat in style_search_cats:
+    for style_search_cat in style_cats_search:
         conditions_style_cats.append(
-            ImagesV2Skinny.style_cats.any(style_search_cat)
+            (ImagesSkinny.style_cats.any(style_search_cat))
         )
 
-    for length_search_cat in length_search_cats:
+    for material_search_cat in material_cats_search:
+        conditions_material_cats.append(
+            (ImagesSkinny.material_cats.any(material_search_cat))
+        )
+
+    for attribute_search_cat in attribute_cats_search:
+        conditions_attribute_cats.append(
+            (ImagesSkinny.attribute_cats.any(attribute_search_cat))
+        )
+
+    for length_search_cat in length_cats_search:
         conditions_length_cats.append(
-            ImagesV2Skinny.all_cats.any(length_search_cat)
+            (ImagesSkinny.length_cats.any(length_search_cat))
         )
 
-    for color_pattern_search_cat in color_pattern_search_cats:
-        conditions_color_pattern_cats.append(
-            ImagesV2Skinny.color_pattern_cats.any(color_pattern_search_cat)
+    for filter_search_cat in filter_cats_search:
+        conditions_filter_cats.append(
+            (ImagesSkinny.filter_cats.any(filter_search_cat))
         )
 
     if len(req_sex) > 2:
         conditions_base.append(
-            (ImagesV2Skinny.sex == req_sex)
+            (ImagesSkinny.sex == req_sex)
         )
 
+    query_conditions_all.append(
+        (func.lower(ImagesSkinny.name).op('%%')(search_string_clean))
+    )
+
     conditions_base.append(
-        (ImagesV2Skinny.in_stock == True)
+        (ImagesSkinny.in_stock == True)
     )
     conditions_base.append(
-        (ImagesV2.encoding_vgg16 != None)
+        (Images.encoding_vgg16 != None)
     )
 
     # ====== MAIN QUERY ======
-    img_table_query_results = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
-        ImagesV2Skinny.img_hash == ImagesV2.img_hash
+    img_table_query_results = (db.session.query(ImagesSkinny, Images).filter(
+        ImagesSkinny.img_hash == Images.img_hash
     ).filter(
         and_(
             and_(*conditions_base),
-            and_(*conditions_all_cats)
+            and_(*conditions_kind_cats),
+            or_(*conditions_pattern_cats),
+            or_(*conditions_color_cats),
+            or_(*conditions_style_cats),
+            or_(*conditions_material_cats),
+            or_(*conditions_attribute_cats),
+            and_(*conditions_length_cats),
+            and_(*conditions_filter_cats)
         )
     ).limit(result_limit).all())
 
     print(f'RESULT LENGTH: {len(img_table_query_results)}')
 
-    if len(img_table_query_results) < result_limit:
+    if len(img_table_query_results) < 500:
         print('ADDING RELAXED RESULTS')
-        query_results_relaxed = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
-            ImagesV2Skinny.img_hash == ImagesV2.img_hash
+        query_results_relaxed = (db.session.query(ImagesSkinny, Images).filter(
+            ImagesSkinny.img_hash == Images.img_hash
         ).filter(
             and_(
                 and_(*conditions_base),
                 and_(*conditions_kind_cats),
-                and_(*conditions_length_cats),
+                or_(*conditions_pattern_cats),
                 or_(*conditions_style_cats),
-                or_(*conditions_color_pattern_cats),
-                and_(*conditions_filter_cats)
+                or_(*conditions_length_cats),
+                or_(*conditions_filter_cats)
             )
-        ).limit(result_limit - len(img_table_query_results)).all())
+        ).limit(500 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed)} RELAXED RESULTS ADDED')
 
@@ -595,40 +649,35 @@ def search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
 
     if len(img_table_query_results) < 200:
         print('ADDING EVEN MORE RELAXED RESULTS')
-        query_results_relaxed_2 = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
-            ImagesV2Skinny.img_hash == ImagesV2.img_hash
+        query_results_relaxed_2 = (db.session.query(ImagesSkinny, Images).filter(
+            ImagesSkinny.img_hash == Images.img_hash
         ).filter(
             and_(
                 and_(*conditions_base),
                 and_(*conditions_kind_cats),
-                and_(*conditions_length_cats),
-                or_(*conditions_style_cats),
-                and_(*conditions_filter_cats)
+                or_(*query_conditions_all),
+                or_(*conditions_filter_cats),
             )
-        ).limit(200).all())
+        ).limit(200 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
 
         img_table_query_results += query_results_relaxed_2
 
     if len(img_table_query_results) < 200:
-        print('ADDING EVEN EVEN MORE RELAXED RESULTS')
-        query_results_relaxed_2 = (db.session.query(ImagesV2Skinny, ImagesV2).filter(
-            ImagesV2Skinny.img_hash == ImagesV2.img_hash
+        print('ADDING EVEN MORE RELAXED RESULTS')
+        query_results_relaxed_3 = (db.session.query(ImagesSkinny, Images).filter(
+            ImagesSkinny.img_hash == Images.img_hash
         ).filter(
             and_(
                 and_(*conditions_base),
-                or_(*conditions_kind_cats),
-                and_(*conditions_length_cats),
-                or_(*conditions_style_cats),
-                and_(*conditions_filter_cats)
+                or_(*conditions_kind_cats)
             )
-        ).limit(100).all())
+        ).limit(200 - len(img_table_query_results)).all())
 
-        print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
+        print(f'{len(query_results_relaxed_3)} MORE RELAXED RESULTS ADDED')
 
-        img_table_query_results += query_results_relaxed_2
-
+        img_table_query_results += query_results_relaxed_3
 
     if len(img_table_query_results) == 0:
         return 'No results'
@@ -645,26 +694,22 @@ def search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
                 np.array(query_result.color_1, dtype=int))
             query_color_2_norm = np.array(query_result.color_2, dtype=int) / np.sum(
                 np.array(query_result.color_2, dtype=int))
-            # query_color_3_norm = np.array(closest_n_result.color_3, dtype=int) / np.sum(
-            #     np.array(closest_n_result.color_3, dtype=int))
+            query_color_3_norm = np.array(query_result.color_3, dtype=int) / np.sum(
+                np.array(query_result.color_3, dtype=int))
 
             # compute the chi-squared distances
             distance_color_1 = calc_chi_distance(req_color_norm_1, query_color_1_norm)
             distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
-            # distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
+            distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
             # distance_color_1_2 = calc_chi_distance(req_color_norm_2, query_color_1_norm)
             # distance_color_2_2 = calc_chi_distance(req_color_norm_2, query_color_2_norm)
             # distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
-            # distance_color = 2 * min([
-            #     distance_color_1,
-            #     distance_color_2,
-            #     # distance_color_3
-            # ]) + min([
-            #     distance_color_1_2,
-            #     distance_color_2_2,
-            #     # distance_color_3_2
-            # ])
-            distance_color = 2 * (distance_color_1 + distance_color_2)
+            distance_color = 2 * min([
+                distance_color_1,
+                distance_color_2,
+                distance_color_3
+            ])
+            # distance_color = 2 * (distance_color_1 + distance_color_2)
             # print('Chi distance: ', str(distance_color))
 
             distance_color_euc_1 = int(
@@ -675,59 +720,30 @@ def search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
                 spatial.distance.euclidean(np.array(req_color_1, dtype=int),
                                            np.array(query_result.color_2, dtype=int),
                                            w=None))
-            # distance_color_euc_3 = int(
-            #     spatial.distance.euclidean(np.array(req_color_1, dtype=int),
-            #                                np.array(closest_n_result.color_3, dtype=int),
-            #                                w=None))
+            distance_color_euc_3 = int(
+                spatial.distance.euclidean(np.array(req_color_1, dtype=int),
+                                           np.array(query_result.color_3, dtype=int),
+                                           w=None))
 
-            # distance_color_euc_1_2 = int(
-            #     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
-            #                                np.array(closest_n_result.color_1, dtype=int),
-            #                                w=None))
-            # distance_color_euc_2_2 = int(
-            #     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
-            #                                np.array(closest_n_result.color_2, dtype=int),
-            #                                w=None))
-            # distance_color_euc_3_2 = int(
-            #     spatial.distance.euclidean(np.array(req_color_2, dtype=int),
-            #                                np.array(closest_n_result.color_3, dtype=int),
-            #                                w=None))
-
-            # distance_color_euc = (1 / 500) * (2 * min([
-            #     distance_color_euc_1,
-            #     distance_color_euc_2,
-            #     # distance_color_euc_3
-            # ]) + min([
-            #     distance_color_euc_1_2,
-            #     distance_color_euc_2_2,
-            #     # distance_color_euc_3_2
-            # ]))
-            distance_color_euc = (1 / 500) * (2 * (distance_color_euc_1 + distance_color_euc_2))
+            distance_color_euc = (1 / 500) * (2 * min([
+                distance_color_euc_1,
+                distance_color_euc_2,
+                distance_color_euc_3
+            ]))
+            # distance_color_euc = (1 / 500) * (2 * (distance_color_euc_1 + distance_color_euc_2))
             # print('Euclidean distance: ', str(distance_color_euc))
             color_query_result = {
-                'all_arr': query_result.all_arr,
-                'encoding_crop': query_result.encoding_crop,
                 'encoding_vgg16': query_result.encoding_vgg16,
                 'img_hash': query_result.img_hash,
-                'color_dist': distance_color + distance_color_euc
+                'color_dist': distance_color + distance_color_euc,
+                'prod_id': query_result.prod_id,
+                'query_result': query_result
             }
             color_list.append(color_query_result)
 
         sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
         top_color_list = sorted_color_list[0:500]
         print('Closest colors calculated')
-
-        # # CALCULATE TAG SIMILARITY
-        # all_cat_arrays = []
-        # for query_result in top_color_list:
-        #     all_cat_arrays.append(query_result['all_arr'])
-        # all_cat_matrix = np.asarray(all_cat_arrays)
-        # print(f'all_cat_matrix.shape : {all_cat_matrix.shape}')
-        # print(f'all_cat_search_arr.shape : {all_cat_search_arr.shape}')
-        # similarity_matrix = np.sum(all_cat_matrix * all_cat_search_arr, axis=1)
-        # closest_n_indices = similarity_matrix.argsort()[-1500:][::-1]
-        # closest_n_results = [top_color_list[x] for x in closest_n_indices]
-        # print('Closest all cats calculated')
 
         # Calculate VGG16 encoding distances
         vgg16_arrays = []
@@ -737,84 +753,92 @@ def search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
         print(f'vgg16_matrix.shape : {vgg16_matrix.shape}')
         print(f'req_vgg16_encoding_arr.shape : {req_vgg16_encoding_arr.shape}')
         dist_vgg16_arr = np.linalg.norm(vgg16_matrix - req_vgg16_encoding_arr, axis=1)
-        closest_n_vgg16_ind = dist_vgg16_arr.argsort()[:300]
+        closest_n_vgg16_ind = dist_vgg16_arr.argsort()[:150]
         closest_n_vgg16_results = [top_color_list[x] for x in closest_n_vgg16_ind]
 
-        # CALCULATE ENCODING DISTANCES
-        encoding_arrays = []
-        for query_result in closest_n_vgg16_results:
-            encoding_arrays.append(query_result['encoding_crop'])
-        encoding_matrix = np.asarray(encoding_arrays)
-
-        dist_encoding_arr = np.linalg.norm(encoding_matrix - req_encoding_arr, axis=1)
-        closest_n_enc_ind = dist_encoding_arr.argsort()[:200]
-        closest_n_enc_results = [closest_n_vgg16_results[x] for x in closest_n_enc_ind]
-        print('Closest encodings calculated')
-
-        final_sorted_color_list = sorted(closest_n_enc_results, key=itemgetter('color_dist'))
-        final_top_color_list = final_sorted_color_list[0:50]
+        final_sorted_color_list = sorted(closest_n_vgg16_results, key=itemgetter('color_dist'))
+        final_top_color_list = final_sorted_color_list[0:80]
 
         result_list = []
         prod_check = set()
-        for closest_n_color_result in final_top_color_list:
-            result_img_hash = closest_n_color_result['img_hash']
-
-            img_search = db.session.query(
-                ImagesV2.name,
-                ImagesV2.img_hash,
-                ImagesV2.prod_id,
-                ImagesV2.color_1,
-                ImagesV2.color_1_hex,
-                ImagesV2.color_2,
-                ImagesV2.color_2_hex,
-                ImagesV2.color_3,
-                ImagesV2.color_3_hex,
-                ImagesV2.encoding_crop,
-                ImagesV2.encoding_vgg16,
-                ImagesV2.all_arr,
-                ImagesV2.all_cats,
-                ImagesV2.size_stock,
-                ImagesV2.img_url,
-                ImagesV2.price,
-                ImagesV2.sale,
-                ImagesV2.saleprice,
-                ImagesV2.in_stock,
-                ImagesV2.shop,
-                ImagesV2.prod_url
-            ).filter(ImagesV2.img_hash == result_img_hash).first()
-            prod_hash = img_search.prod_id
-            if prod_hash not in prod_check:
-                prod_check.add(prod_hash)
-                img_serial = ImageSchemaV2().dump(img_search)
-                prod_search = db.session.query(
-                    ProductsV2.prod_id,
-                    ProductsV2.name,
-                    ProductsV2.prod_url,
-                    ProductsV2.brand,
-                    ProductsV2.category,
-                    ProductsV2.color_string,
-                    ProductsV2.currency,
-                    ProductsV2.date,
-                    ProductsV2.description,
-                    ProductsV2.image_hash,
-                    ProductsV2.image_urls,
-                    ProductsV2.price,
-                    ProductsV2.sale,
-                    ProductsV2.saleprice,
-                    ProductsV2.sex,
-                    ProductsV2.shop,
-                    ProductsV2.size_stock,
-                ).filter(ProductsV2.prod_id == prod_hash).first()
-                prod_serial = ProductSchemaV2().dump(prod_search)
-
-                result_dict = {
-                    'prod_serial': prod_serial[0],
-                    'image_data': img_serial[0]
-                }
-                result_list.append(result_dict)
-        print('Results obtained from DB')
+        print('Obtaining result data')
+        for obj in final_top_color_list:
+            result_prod_id = obj['prod_id']
+            prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
+            if prod_search is not None:
+                prod_hash = prod_search.prod_id
+                if prod_hash not in prod_check:
+                    prod_serial = ProductsWomenASchema().dump(prod_search)
+                    prod_check.add(prod_hash)
+                    img_serial = ImagesFullWomenASchema().dump(obj['query_result'])
+                    result_dict = {
+                        'prod_serial': prod_serial[0],
+                        'image_data': img_serial[0]
+                    }
+                    result_list.append(result_dict)
 
         return result_list
+        # result_list = []
+        # prod_check = set()
+        # for closest_n_color_result in final_top_color_list:
+        #     result_img_hash = closest_n_color_result['img_hash']
+        #
+        #     img_search = db.session.query(
+        #         Images.name,
+        #         Images.img_hash,
+        #         Images.prod_id,
+        #         Images.color_1,
+        #         Images.color_1_hex,
+        #         Images.color_2,
+        #         Images.color_2_hex,
+        #         Images.color_3,
+        #         Images.color_3_hex,
+        #         Images.encoding_crop,
+        #         Images.encoding_vgg16,
+        #         Images.all_arr,
+        #         Images.all_cats,
+        #         Images.size_stock,
+        #         Images.img_url,
+        #         Images.price,
+        #         Images.sale,
+        #         Images.saleprice,
+        #         Images.in_stock,
+        #         Images.shop,
+        #         Images.prod_url
+        #     ).filter(Images.img_hash == result_img_hash).first()
+        #     prod_hash = img_search.prod_id
+        #     if prod_hash not in prod_check:
+        #         prod_check.add(prod_hash)
+        #         img_serial = ImageSchemaV2().dump(img_search)
+        #         prod_search = db.session.query(
+        #             Products.prod_id,
+        #             Products.name,
+        #             Products.prod_url,
+        #             Products.brand,
+        #             Products.category,
+        #             Products.color_string,
+        #             Products.currency,
+        #             Products.date,
+        #             Products.description,
+        #             Products.image_hash,
+        #             Products.image_urls,
+        #             Products.price,
+        #             Products.sale,
+        #             Products.saleprice,
+        #             Products.sex,
+        #             Products.shop,
+        #             Products.size_stock,
+        #         ).filter(Products.prod_id == prod_hash).first()
+        #         prod_serial = ProductSchemaV2().dump(prod_search)
+        #
+        #         result_dict = {
+        #             'prod_serial': prod_serial[0],
+        #             'image_data': img_serial[0]
+        #         }
+        #         result_list.append(result_dict)
+        # print('Results obtained from DB')
+        #
+        # return result_list
 
 
 #######################################################################################################################
