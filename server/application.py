@@ -20,6 +20,7 @@ import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
 import transformation.skinny_transform as skinny_transformation
+import transformation.preserve_faves_transform as preserve_transform
 import data.cats as cats
 from hashlib import sha256
 import random
@@ -379,6 +380,27 @@ def transform_skinny():
         return req_response
 
 
+# Upload new product image to database
+@app.route("/api/transform_preserve_faves", methods=['post'])
+def transform_preserve_faves():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = preserve_transform.PreserveFaves().preserve_faves_transform(
+            db,
+            ImagesFullWomenA,
+            ImagesV2,
+            ImagesSkinnyWomenA,
+            ImagesV2Skinny,
+            ProductsWomenA,
+            ProductsV2,
+            User,
+            data
+        )
+
+        return req_response
+
+
 # Upload new product object to database
 @app.route("/api/commit_product_v2", methods=['post'])
 def commit_product_v2():
@@ -436,8 +458,15 @@ def submit_instagram():
 @app.route("/api/text_search", methods=['get'])
 def text_search():
     if request.method == 'GET':
-        res = db_text_search(request, db, ProductsV2, ImagesV2)
-        print(BColors.WARNING + 'Response: ' + BColors.ENDC + str(res))
+        req_sex = request.args.get('sex')
+        if req_sex == 'women':
+            res = db_text_search(request, db, ProductsWomenA, ImagesFullWomenA)
+        else:
+            result_list = [{
+                'prod_serial': None,
+                'image_data': None
+            }]
+            res = jsonify(res=result_list, tags=[])
 
         return res
 
@@ -462,7 +491,7 @@ def img_features():
 def search_from_image():
     if request.method == 'POST':
 
-        results = search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
+        results = search_from_upload(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
         # print('Search from image results: ', str(results))
         # Make it HTTP friendly
         res = jsonify(res=results)
@@ -476,10 +505,19 @@ def search_similar():
     print('Search similar requested, request method', str(request.method))
     if request.method == 'POST':
         print('Calling search_similar_images')
-        search_results = search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
-
-        # Make it HTTP friendly
-        res = jsonify(res=search_results)
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        req_sex = data['sex']
+        if req_sex == 'women':
+            # res = db_text_search(request, db, ProductsWomenA, ImagesFullWomenA)
+            search_results = search_similar_images(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
+            res = jsonify(res=search_results)
+        else:
+            result_list = [{
+                'prod_serial': None,
+                'image_data': None
+            }]
+            res = jsonify(res=result_list)
 
         return res
 
@@ -543,7 +581,7 @@ def add_outfit():
     if request.method == 'POST':
         data = request.get_json(force=True)
         data = json.loads(data)
-        add_outfit_response = db_add_outfit(db, User, ProductsV2, data)
+        add_outfit_response = db_add_outfit(db, User, ProductsWomenA, data)
 
         return add_outfit_response
 
@@ -568,15 +606,15 @@ def get_products():
         conditions = []
         for prod_hash in prod_hashes:
             conditions.append(
-                (ProductsV2.prod_id == prod_hash)
+                (ProductsWomenA.prod_id == prod_hash)
             )
-        query = db.session.query(ProductsV2).filter(
+        query = db.session.query(ProductsWomenA).filter(
             or_(*conditions)
         )
         query_results = query.all()
         prod_results = []
         for query_result in query_results:
-            prod_serial = ProductSchemaV2().dump(query_result)
+            prod_serial = ProductsWomenASchema().dump(query_result)
             prod_results.append(prod_serial)
 
         return json.dumps(prod_results)
@@ -589,7 +627,7 @@ def get_prod_hash():
         data = json.loads(data)
         print(data)
         img_hash = data['img_hash']
-        product = db.session.query(ProductsV2).filter(ProductsV2.image_hash.any(img_hash)).first()
+        product = db.session.query(ProductsWomenA).filter(ProductsWomenA.image_hash.any(img_hash)).first()
         prod_id = product.prod_id
         print({'prod_id': prod_id})
         return json.dumps({'prod_id': prod_id})
@@ -601,7 +639,7 @@ def recommend_tags():
         data = request.get_json(force=True)
         # data = json.loads(data)
 
-        suggestions = recommend_similar_tags(db, User, ProductsV2, data)
+        suggestions = recommend_similar_tags(db, User, ProductsWomenA, data)
 
         return suggestions
 
@@ -611,7 +649,7 @@ def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        suggestions = recommend_from_random(db, ProductsV2, data)
+        suggestions = recommend_from_random(db, ProductsWomenA, data)
 
         return suggestions
 
@@ -621,7 +659,7 @@ def recommend_deals():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        suggestions = get_deals(db, ImagesV2Skinny, ProductsV2, data)
+        suggestions = get_deals(db, ImagesSkinnyWomenA, ProductsWomenA, data)
 
         return suggestions
 
@@ -632,9 +670,9 @@ def get_image():
         data = request.get_json(force=True)
         img_hash = data['img_hash']
 
-        query = db.session.query(ImagesV2).filter(ImagesV2.img_hash == img_hash)
+        query = db.session.query(ImagesFullWomenA).filter(ImagesFullWomenA.img_hash == img_hash)
         query_result = query.first()
-        img_serial = ImageSchemaV2().dump(query_result)
+        img_serial = ImagesFullWomenASchema().dump(query_result)
 
         return json.dumps(img_serial)
 
