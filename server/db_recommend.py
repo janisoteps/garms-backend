@@ -103,7 +103,10 @@ def recommend_similar_tags(db, User, Products, data):
         prod_results = []
         for query_result in query_results:
             if len(query_result.image_urls) > 0:
-                prod_serial = ProductsWomenASchema().dump(query_result)
+                if req_sex == 'women':
+                    prod_serial = ProductsWomenASchema().dump(query_result)
+                else:
+                    prod_serial = ProductSchemaV2().dump(query_result)
                 prod_results.append(prod_serial)
         suggestions.append({
             'look_name': 'All',
@@ -129,7 +132,10 @@ def recommend_from_random(db, Products, data):
     prod_results = []
     for query_result in query_results:
         if len(query_result.image_urls) > 0:
-            prod_serial = ProductsWomenASchema().dump(query_result)
+            if req_sex == 'women':
+                prod_serial = ProductsWomenASchema().dump(query_result)
+            else:
+                prod_serial = ProductSchemaV2().dump(query_result)
             prod_results.append(prod_serial)
 
     suggestions = [

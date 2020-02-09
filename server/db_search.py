@@ -32,6 +32,8 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
     if req_tags_positive is None:
         req_tags_positive = req_image_data.all_cats
 
+    req_tags_positive = list(set(req_tags_positive))
+
     print(f'Updated Positive tags: {req_tags_positive}')
     search_string_clean = ' '.join(req_tags_positive)
 
@@ -153,15 +155,16 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
             (ImagesSkinny.kind_cats.any(kind_search_cat))
         )
 
-    for pattern_search_cat in pattern_cats_search:
-        conditions_pattern_cats.append(
-            (ImagesSkinny.pattern_cats.any(pattern_search_cat))
-        )
+    if req_sex == 'women':
+        for pattern_search_cat in pattern_cats_search:
+            conditions_pattern_cats.append(
+                (ImagesSkinny.pattern_cats.any(pattern_search_cat))
+            )
 
-    for color_search_cat in color_cats_search:
-        conditions_color_cats.append(
-            (ImagesSkinny.color_cats.any(color_search_cat))
-        )
+        for color_search_cat in color_cats_search:
+            conditions_color_cats.append(
+                (ImagesSkinny.color_cats.any(color_search_cat))
+            )
 
     for style_search_cat in style_cats_search:
         conditions_style_cats.append(
@@ -178,10 +181,11 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
             (ImagesSkinny.attribute_cats.any(attribute_search_cat))
         )
 
-    for length_search_cat in length_cats_search:
-        conditions_length_cats.append(
-            (ImagesSkinny.length_cats.any(length_search_cat))
-        )
+    if req_sex == 'women':
+        for length_search_cat in length_cats_search:
+            conditions_length_cats.append(
+                (ImagesSkinny.length_cats.any(length_search_cat))
+            )
 
     for filter_search_cat in filter_cats_search:
         conditions_filter_cats.append(
@@ -260,9 +264,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 or_(*conditions_brand)
             )
         ).limit(500 - len(img_table_query_results)).all())
-
         print(f'{len(query_results_relaxed)} RELAXED RESULTS ADDED')
-
         img_table_query_results += query_results_relaxed
 
     if len(img_table_query_results) < 200:
@@ -277,9 +279,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 or_(*conditions_filter_cats),
             )
         ).limit(200 - len(img_table_query_results)).all())
-
         print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
-
         img_table_query_results += query_results_relaxed_2
 
     if len(img_table_query_results) < 200:
@@ -376,23 +376,6 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
     closest_n_enc_results = [top_color_list[x] for x in closest_n_enc_ind]
     print(f'Closest encodings calculated, length: {len(closest_n_enc_results)}')
 
-    # # Calculate cropped encoding vector distances
-    # encoding_crop_list = []
-    # for encoding_result in closest_n_enc_results:
-    #     query_result = encoding_result['query_result']
-    #     encoding_crop_dist = int(
-    #         spatial.distance.euclidean(np.array(req_encoding_crop, dtype=int),
-    #                                    np.array(query_result.encoding_crop, dtype=int),
-    #                                    w=None))
-    #     encoding_result = {
-    #         'query_result': query_result,
-    #         'img_hash': query_result.img_hash,
-    #         'prod_id': query_result.prod_id,
-    #         'color_dist': encoding_result['color_dist'],
-    #         'encoding_crop_dist': encoding_crop_dist
-    #     }
-    #     encoding_crop_list.append(encoding_result)
-
     # Make sure we return the original request image back on top
     if not any(d['img_hash'] == req_img_hash for d in closest_n_enc_results):
         print('Product not in list, need to add')
@@ -422,9 +405,14 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
         if prod_search is not None:
             prod_hash = prod_search.prod_id
             if prod_hash not in prod_check:
-                prod_serial = ProductsWomenASchema().dump(prod_search)
-                prod_check.add(prod_hash)
-                img_serial = ImagesFullWomenASchema().dump(obj['query_result'])
+                if req_sex == 'women':
+                    prod_serial = ProductsWomenASchema().dump(prod_search)
+                    prod_check.add(prod_hash)
+                    img_serial = ImagesFullWomenASchema().dump(obj['query_result'])
+                else:
+                    prod_serial = ProductSchemaV2().dump(prod_search)
+                    prod_check.add(prod_hash)
+                    img_serial = ImageSchemaV2().dump(obj['query_result'])
                 result_dict = {
                     'prod_serial': prod_serial[0],
                     'image_data': img_serial[0]
@@ -558,15 +546,16 @@ def search_from_upload(request, db, Images, ImagesSkinny, Products):
             (ImagesSkinny.kind_cats.any(kind_search_cat))
         )
 
-    for pattern_search_cat in pattern_cats_search:
-        conditions_pattern_cats.append(
-            (ImagesSkinny.pattern_cats.any(pattern_search_cat))
-        )
+    if req_sex == 'women':
+        for pattern_search_cat in pattern_cats_search:
+            conditions_pattern_cats.append(
+                (ImagesSkinny.pattern_cats.any(pattern_search_cat))
+            )
 
-    for color_search_cat in color_cats_search:
-        conditions_color_cats.append(
-            (ImagesSkinny.color_cats.any(color_search_cat))
-        )
+        for color_search_cat in color_cats_search:
+            conditions_color_cats.append(
+                (ImagesSkinny.color_cats.any(color_search_cat))
+            )
 
     for style_search_cat in style_cats_search:
         conditions_style_cats.append(
@@ -583,10 +572,11 @@ def search_from_upload(request, db, Images, ImagesSkinny, Products):
             (ImagesSkinny.attribute_cats.any(attribute_search_cat))
         )
 
-    for length_search_cat in length_cats_search:
-        conditions_length_cats.append(
-            (ImagesSkinny.length_cats.any(length_search_cat))
-        )
+    if req_sex == 'women':
+        for length_search_cat in length_cats_search:
+            conditions_length_cats.append(
+                (ImagesSkinny.length_cats.any(length_search_cat))
+            )
 
     for filter_search_cat in filter_cats_search:
         conditions_filter_cats.append(
@@ -594,9 +584,10 @@ def search_from_upload(request, db, Images, ImagesSkinny, Products):
         )
 
     if len(req_sex) > 2:
-        conditions_base.append(
-            (ImagesSkinny.sex == req_sex)
-        )
+        if req_sex != 'both':
+            conditions_base.append(
+                (ImagesSkinny.sex == req_sex)
+            )
 
     query_conditions_all.append(
         (func.lower(ImagesSkinny.name).op('%%')(search_string_clean))
@@ -768,9 +759,15 @@ def search_from_upload(request, db, Images, ImagesSkinny, Products):
             if prod_search is not None:
                 prod_hash = prod_search.prod_id
                 if prod_hash not in prod_check:
-                    prod_serial = ProductsWomenASchema().dump(prod_search)
-                    prod_check.add(prod_hash)
-                    img_serial = ImagesFullWomenASchema().dump(obj['query_result'])
+                    if req_sex == 'women':
+                        prod_serial = ProductsWomenASchema().dump(prod_search)
+                        prod_check.add(prod_hash)
+                        img_serial = ImagesFullWomenASchema().dump(obj['query_result'])
+                    else:
+                        prod_serial = ProductSchemaV2().dump(prod_search)
+                        prod_check.add(prod_hash)
+                        img_serial = ImageSchemaV2().dump(obj['query_result'])
+
                     result_dict = {
                         'prod_serial': prod_serial[0],
                         'image_data': img_serial[0]
@@ -845,7 +842,7 @@ def search_from_upload(request, db, Images, ImagesSkinny, Products):
 #######################################################################################################################
 
 
-def db_text_search(request, db, Products, Images):
+def db_text_search(request, db, Products, Images, ImagesSkinny):
     search_string = request.args.get('search_string')
     print('search string: ' + search_string)
     search_string.replace('+', ' ')
@@ -937,82 +934,100 @@ def db_text_search(request, db, Products, Images):
     query_conditions_all = []
     for kind_cat in kind_cats_search:
         query_conditions.append(
-            Images.kind_cats.any(kind_cat)
+            ImagesSkinny.kind_cats.any(kind_cat)
         )
 
-    for pattern_cat in pattern_cats_search:
-        query_conditions.append(
-            Images.pattern_cats.any(pattern_cat)
-        )
+    if req_sex == 'women':
+        for pattern_cat in pattern_cats_search:
+            query_conditions.append(
+                ImagesSkinny.pattern_cats.any(pattern_cat)
+            )
 
-    for color_cat in color_cats_search:
-        query_conditions.append(
-            Images.color_cats.any(color_cat)
-        )
+        for color_cat in color_cats_search:
+            query_conditions.append(
+                ImagesSkinny.color_cats.any(color_cat)
+            )
 
     for style_cat in style_cats_search:
         query_conditions.append(
-            Images.style_cats.any(style_cat)
+            ImagesSkinny.style_cats.any(style_cat)
         )
 
     for material_cat in material_cats_search:
         query_conditions.append(
-            Images.material_cats.any(material_cat)
+            ImagesSkinny.material_cats.any(material_cat)
         )
 
     for attribute_cat in attribute_cats_search:
         query_conditions.append(
-            Images.attribute_cats.any(attribute_cat)
+            ImagesSkinny.attribute_cats.any(attribute_cat)
         )
 
-    for length_cat in length_cats_search:
-        query_conditions.append(
-            Images.length_cats.any(length_cat)
-        )
+    if req_sex == 'women':
+        for length_cat in length_cats_search:
+            query_conditions.append(
+                ImagesSkinny.length_cats.any(length_cat)
+            )
 
     for filter_cat in filter_cats_search:
         query_conditions.append(
-            Images.filter_cats.any(filter_cat)
+            ImagesSkinny.filter_cats.any(filter_cat)
         )
 
     if len(req_sex) > 2:
-        query_conditions.append(
-            (Images.sex == req_sex)
-        )
+        if req_sex != 'both':
+            query_conditions.append(
+                (ImagesSkinny.sex == req_sex)
+            )
+            query_conditions_all.append(
+                (ImagesSkinny.sex == req_sex)
+            )
+
     query_conditions.append(
-        (Images.shop != 'Boohoo')
+        (ImagesSkinny.shop != 'Boohoo')
     )
 
     query_conditions.append(
-        (Images.in_stock == True)
+        (ImagesSkinny.in_stock == True)
     )
     query_conditions.append(
         (Images.encoding_vgg16 != None)
     )
 
     query_conditions_all.append(
-        func.lower(Images.name).op('%%')(search_string_clean)
+        func.lower(ImagesSkinny.name).op('%%')(search_string_clean)
     )
 
-    query = db.session.query(Images).filter(
+    query_results = (db.session.query(ImagesSkinny, Images).filter(
+        ImagesSkinny.img_hash == Images.img_hash
+    ).filter(
         and_(*query_conditions)
-    )
+    ).limit(100).all())
 
-    query_results = query.order_by(func.random()).limit(100).all()
+    # query = db.session.query(ImagesSkinny).filter(
+    #     and_(*query_conditions)
+    # )
+    #
+    # query_results = query.order_by(func.random()).limit(100).all()
 
     print(f'RESULT LENGTH: {len(query_results)}')
 
     if len(query_results) < 50:
-        relaxed_query = db.session.query(Images).filter(
-            and_(or_(*query_conditions), or_(*query_conditions_all))
-        )
-        relaxed_query_results = relaxed_query.order_by(func.random()).limit(50).all()
+        relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
+            ImagesSkinny.img_hash == Images.img_hash
+        ).filter(
+            and_(
+                or_(*query_conditions),
+                or_(*query_conditions_all)
+            )
+        ).limit(100).all())
         query_results += relaxed_query_results
 
     result_list = []
     prod_check = set()
     print('Obtaining result data')
-    for img_table_query_result in query_results:
+    for query_result in query_results:
+        img_table_query_result = query_result[1]
         result_prod_id = img_table_query_result.prod_id
 
         if result_prod_id not in prod_check:
@@ -1021,7 +1036,9 @@ def db_text_search(request, db, Products, Images):
                 if req_sex == 'women':
                     prod_serial = ProductsWomenASchema().dump(prod_search)
                     img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
-
+                else:
+                    prod_serial = ProductSchemaV2().dump(prod_search)
+                    img_serial = ImageSchemaV2().dump(img_table_query_result)
                 prod_check.add(result_prod_id)
 
                 result_dict = {

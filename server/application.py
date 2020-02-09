@@ -460,13 +460,10 @@ def text_search():
     if request.method == 'GET':
         req_sex = request.args.get('sex')
         if req_sex == 'women':
-            res = db_text_search(request, db, ProductsWomenA, ImagesFullWomenA)
+            print('searching from WOMEN')
+            res = db_text_search(request, db, ProductsWomenA, ImagesFullWomenA, ImagesSkinnyWomenA)
         else:
-            result_list = [{
-                'prod_serial': None,
-                'image_data': None
-            }]
-            res = jsonify(res=result_list, tags=[])
+            res = db_text_search(request, db, ProductsV2, ImagesV2, ImagesV2Skinny)
 
         return res
 
@@ -490,9 +487,13 @@ def img_features():
 @app.route("/api/search_from_image", methods=['POST'])
 def search_from_image():
     if request.method == 'POST':
-
-        results = search_from_upload(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
-        # print('Search from image results: ', str(results))
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        req_sex = data['sex']
+        if req_sex == 'women':
+            results = search_from_upload(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
+        else:
+            results = search_from_upload(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
         # Make it HTTP friendly
         res = jsonify(res=results)
 
@@ -509,15 +510,11 @@ def search_similar():
         data = json.loads(data)
         req_sex = data['sex']
         if req_sex == 'women':
-            # res = db_text_search(request, db, ProductsWomenA, ImagesFullWomenA)
             search_results = search_similar_images(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
             res = jsonify(res=search_results)
         else:
-            result_list = [{
-                'prod_serial': None,
-                'image_data': None
-            }]
-            res = jsonify(res=result_list)
+            search_results = search_similar_images(request, db, ImagesV2, ImagesV2Skinny, ProductsV2)
+            res = jsonify(res=search_results)
 
         return res
 
@@ -581,7 +578,11 @@ def add_outfit():
     if request.method == 'POST':
         data = request.get_json(force=True)
         data = json.loads(data)
-        add_outfit_response = db_add_outfit(db, User, ProductsWomenA, data)
+        sex = data['sex']
+        if sex == 'women':
+            add_outfit_response = db_add_outfit(db, User, ProductsWomenA, data)
+        else:
+            add_outfit_response = db_add_outfit(db, User, ProductsV2, data)
 
         return add_outfit_response
 
@@ -602,20 +603,35 @@ def get_products():
         data = request.get_json(force=True)
         data = json.loads(data)
         prod_hashes = data['prod_hashes']
+        sex = data['sex']
         # print(prod_hashes)
         conditions = []
-        for prod_hash in prod_hashes:
-            conditions.append(
-                (ProductsWomenA.prod_id == prod_hash)
-            )
-        query = db.session.query(ProductsWomenA).filter(
-            or_(*conditions)
-        )
-        query_results = query.all()
         prod_results = []
-        for query_result in query_results:
-            prod_serial = ProductsWomenASchema().dump(query_result)
-            prod_results.append(prod_serial)
+        if sex == 'women':
+            for prod_hash in prod_hashes:
+                conditions.append(
+                    (ProductsWomenA.prod_id == prod_hash)
+                )
+            query = db.session.query(ProductsWomenA).filter(
+                or_(*conditions)
+            )
+            query_results = query.all()
+            for query_result in query_results:
+                prod_serial = ProductsWomenASchema().dump(query_result)
+                prod_results.append(prod_serial)
+
+        else:
+            for prod_hash in prod_hashes:
+                conditions.append(
+                    (ProductsV2.prod_id == prod_hash)
+                )
+            query = db.session.query(ProductsV2).filter(
+                or_(*conditions)
+            )
+            query_results = query.all()
+            for query_result in query_results:
+                prod_serial = ProductSchemaV2().dump(query_result)
+                prod_results.append(prod_serial)
 
         return json.dumps(prod_results)
 
@@ -627,7 +643,11 @@ def get_prod_hash():
         data = json.loads(data)
         print(data)
         img_hash = data['img_hash']
-        product = db.session.query(ProductsWomenA).filter(ProductsWomenA.image_hash.any(img_hash)).first()
+        sex = data['sex']
+        if sex == 'women':
+            product = db.session.query(ProductsWomenA).filter(ProductsWomenA.image_hash.any(img_hash)).first()
+        else:
+            product = db.session.query(ProductsV2).filter(ProductsV2.image_hash.any(img_hash)).first()
         prod_id = product.prod_id
         print({'prod_id': prod_id})
         return json.dumps({'prod_id': prod_id})
@@ -637,10 +657,11 @@ def get_prod_hash():
 def recommend_tags():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        # data = json.loads(data)
-
-        suggestions = recommend_similar_tags(db, User, ProductsWomenA, data)
-
+        req_sex = data['sex']
+        if req_sex == 'women':
+            suggestions = recommend_similar_tags(db, User, ProductsWomenA, data)
+        else:
+            suggestions = recommend_similar_tags(db, User, ProductsV2, data)
         return suggestions
 
 
@@ -648,8 +669,12 @@ def recommend_tags():
 def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
-
-        suggestions = recommend_from_random(db, ProductsWomenA, data)
+        req_sex = data['sex']
+        if req_sex == 'women':
+            print('suggesting from women table')
+            suggestions = recommend_from_random(db, ProductsWomenA, data)
+        else:
+            suggestions = recommend_from_random(db, ProductsV2, data)
 
         return suggestions
 
@@ -658,8 +683,12 @@ def recommend_random():
 def recommend_deals():
     if request.method == 'POST':
         data = request.get_json(force=True)
+        sex = data['sex']
 
-        suggestions = get_deals(db, ImagesSkinnyWomenA, ProductsWomenA, data)
+        if sex == 'women':
+            suggestions = get_deals(db, ImagesSkinnyWomenA, ProductsWomenA, data)
+        else:
+            suggestions = get_deals(db, ImagesV2Skinny, ProductsV2, data)
 
         return suggestions
 
@@ -669,10 +698,16 @@ def get_image():
     if request.method == 'POST':
         data = request.get_json(force=True)
         img_hash = data['img_hash']
+        sex = data['sex']
 
-        query = db.session.query(ImagesFullWomenA).filter(ImagesFullWomenA.img_hash == img_hash)
-        query_result = query.first()
-        img_serial = ImagesFullWomenASchema().dump(query_result)
+        if sex == 'women':
+            query = db.session.query(ImagesFullWomenA).filter(ImagesFullWomenA.img_hash == img_hash)
+            query_result = query.first()
+            img_serial = ImagesFullWomenASchema().dump(query_result)
+        else:
+            query = db.session.query(ImagesV2).filter(ImagesV2.img_hash == img_hash)
+            query_result = query.first()
+            img_serial = ImageSchemaV2().dump(query_result)
 
         return json.dumps(img_serial)
 

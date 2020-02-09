@@ -1,5 +1,5 @@
 from sqlalchemy import func, and_, or_
-from marshmallow_schema import ProductsWomenASchema
+from marshmallow_schema import ProductsWomenASchema, ProductSchemaV2
 import json
 
 
@@ -48,7 +48,10 @@ def get_deals(db, ImagesSkinny, Products, data):
 
         if result_prod_id not in prod_check:
             prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-            prod_serial = ProductsWomenASchema().dump(prod_search)
+            if req_sex == 'women':
+                prod_serial = ProductsWomenASchema().dump(prod_search)
+            else:
+                prod_serial = ProductSchemaV2().dump(prod_search)
             prod_check.add(result_prod_id)
             prod_results.append(prod_serial[0])
 

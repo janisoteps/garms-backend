@@ -83,7 +83,7 @@ def db_get_looks(db, User, data):
 def db_add_outfit(db, User, Products, data):
     email = data['email']
     look_name = data['look_name']
-    # print(data)
+    sex = data['sex']
     prod_id = data['prod_id']
 
     user_data = User.query.filter_by(email=email).first()
