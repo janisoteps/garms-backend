@@ -110,6 +110,41 @@ def cat_clean_transform(cats, db, ImagesSkinny, data):
         return False
 
 
+def cat_fix_liu(db, ImagesSkinny, data):
+    transform_key = os.environ['TRANSFORM_KEY']
+    if data['transform_key'] == transform_key:
+        img_hashes = db.session.query(
+            ImagesSkinny.img_hash
+        ).filter(
+            ImagesSkinny.brand == 'LIU JO'
+        ).order_by(func.random()).all()
+
+        total_count = len(img_hashes)
+        counter = 0
+        for img_hash in img_hashes:
+            query_result = ImagesSkinny.query.filter_by(img_hash=img_hash).first()
+            query_name = query_result.name
+            counter += 1
+            print(f'line: {counter}')
+            if query_name.count('JEANS') == 1:
+                query_kind_cats = query_result.kind_cats
+                query_all_cats = query_result.all_cats
+
+                query_kind_cats.remove('jean')
+                query_all_cats.remove('jean')
+
+                query_result.kind_cats = query_kind_cats
+                query_result.all_cats = query_all_cats
+
+                db.session.commit()
+                print(f'from: {total_count}')
+                print(f'UPDATED: {query_name}')
+
+        return True
+    else:
+        return False
+
+
 class CatTransform:
     def cat_transform(self, cats, db, ImagesV2, data):
         key_string = os.environ['TRANSFORM_KEY']

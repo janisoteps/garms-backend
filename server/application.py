@@ -732,6 +732,16 @@ def cat_cleanse_transform():
         return json.dumps(req_response)
 
 
+@app.route("/api/cat_fix_liu", methods=['POST'])
+def cat_fix_liu():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = cat_transformation.cat_fix_liu(db, ImagesSkinnyWomenA, data)
+
+        return json.dumps(req_response)
+
+
 @app.route("/api/enc_transform", methods=['POST'])
 def enc_transform():
     if request.method == 'POST':
