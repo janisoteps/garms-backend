@@ -74,36 +74,78 @@ def cat_clean_transform(cats, db, ImagesSkinny, data):
 
                 for removable_cat in removable_cats:
                     if removable_cat in query_kind_cats:
-                        query_kind_cats.remove(removable_cat)
-                    if removable_cat in query_pattern_cats:
-                        query_pattern_cats.remove(removable_cat)
-                    if removable_cat in query_color_cats:
-                        query_color_cats.remove(removable_cat)
-                    if removable_cat in query_style_cats:
-                        query_style_cats.remove(removable_cat)
-                    if removable_cat in query_material_cats:
-                        query_material_cats.remove(removable_cat)
-                    if removable_cat in query_attribute_cats:
-                        query_attribute_cats.remove(removable_cat)
-                    if removable_cat in query_length_cats:
-                        query_length_cats.remove(removable_cat)
-                    if removable_cat in query_filter_cats:
-                        query_filter_cats.remove(removable_cat)
-                    if removable_cat in query_all_cats:
-                        query_all_cats.remove(removable_cat)
+                        new_kind_cats = [cat for cat in query_kind_cats if cat != removable_cat]
+                        query_result.kind_cats = new_kind_cats
 
-                query_result.kind_cats = query_kind_cats
-                query_result.pattern_cats = query_pattern_cats
-                query_result.color_cats = query_color_cats
-                query_result.style_cats = query_style_cats
-                query_result.material_cats = query_material_cats
-                query_result.attribute_cats = query_attribute_cats
-                query_result.length_cats = query_length_cats
-                query_result.filter_cats = query_filter_cats
-                query_result.all_cats = query_all_cats
+                    if removable_cat in query_pattern_cats:
+                        new_pattern_cats = [cat for cat in query_pattern_cats if cat != removable_cat]
+                        query_result.pattern_cats = new_pattern_cats
+
+                    if removable_cat in query_color_cats:
+                        new_color_cats = [cat for cat in query_color_cats if cat != removable_cat]
+                        query_result.color_cats = new_color_cats
+
+                    if removable_cat in query_style_cats:
+                        new_style_cats = [cat for cat in query_style_cats if cat != removable_cat]
+                        query_result.style_cats = new_style_cats
+
+                    if removable_cat in query_material_cats:
+                        new_material_cats = [cat for cat in query_material_cats if cat != removable_cat]
+                        query_result.material_cats = new_material_cats
+
+                    if removable_cat in query_attribute_cats:
+                        new_attribute_cats = [cat for cat in query_attribute_cats if cat != removable_cat]
+                        query_result.attribute_cats = new_attribute_cats
+
+                    if removable_cat in query_length_cats:
+                        new_length_cats = [cat for cat in query_length_cats if cat != removable_cat]
+                        query_result.length_cats = new_length_cats
+
+                    if removable_cat in query_filter_cats:
+                        new_filter_cats = [cat for cat in query_filter_cats if cat != removable_cat]
+                        query_result.filter_cats = new_filter_cats
+
+                    if removable_cat in query_all_cats:
+                        new_all_cats = [cat for cat in query_all_cats if cat != removable_cat]
+                        query_result.all_cats = new_all_cats
 
                 db.session.commit()
             print('-------------------------------------------------')
+
+        return True
+    else:
+        return False
+
+
+def cat_fix_liu(db, ImagesSkinny, data):
+    transform_key = os.environ['TRANSFORM_KEY']
+    if data['transform_key'] == transform_key:
+        img_hashes = db.session.query(
+            ImagesSkinny.img_hash
+        ).filter(
+            ImagesSkinny.brand == 'LIU JO'
+        ).order_by(func.random()).all()
+
+        total_count = len(img_hashes)
+        counter = 0
+        for img_hash in img_hashes:
+            query_result = ImagesSkinny.query.filter_by(img_hash=img_hash).first()
+            query_name = query_result.name
+            counter += 1
+            print(f'line: {counter}')
+            if query_name.count('JEANS') == 1:
+                query_kind_cats = query_result.kind_cats
+                query_all_cats = query_result.all_cats
+
+                new_kind_cats = [cat for cat in query_kind_cats if cat != 'jean']
+                new_all_cats = [cat for cat in query_all_cats if cat != 'jean']
+
+                query_result.kind_cats = new_kind_cats
+                query_result.all_cats = new_all_cats
+
+                db.session.commit()
+                print(f'from: {total_count}')
+                print(f'UPDATED: {query_name}')
 
         return True
     else:

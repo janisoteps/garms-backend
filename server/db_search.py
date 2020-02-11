@@ -931,9 +931,13 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
     #         maternity = True
 
     query_conditions = []
+    query_conditions_kind = []
     query_conditions_all = []
     for kind_cat in kind_cats_search:
         query_conditions.append(
+            ImagesSkinny.kind_cats.any(kind_cat)
+        )
+        query_conditions_kind.append(
             ImagesSkinny.kind_cats.any(kind_cat)
         )
 
@@ -1017,7 +1021,7 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
             ImagesSkinny.img_hash == Images.img_hash
         ).filter(
             and_(
-                or_(*query_conditions),
+                and_(*query_conditions_kind),
                 or_(*query_conditions_all)
             )
         ).limit(100).all())
