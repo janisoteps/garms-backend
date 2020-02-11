@@ -6,6 +6,8 @@ def cat_clean_transform(cats, db, ImagesSkinny, data):
     transform_key = os.environ['TRANSFORM_KEY']
     if data['transform_key'] == transform_key:
 
+        cat_class = cats.Cats()
+
         img_hashes = db.session.query(
             ImagesSkinny.img_hash
         ).order_by(func.random()).all()
@@ -29,14 +31,14 @@ def cat_clean_transform(cats, db, ImagesSkinny, data):
             name_word_list = [word.replace('*', '') for word in name_word_list]
 
             brand_cat_list = []
-            for cat in cats.all_cats:
+            for cat in cat_class.all_cats:
                 for word in brand_word_list:
                     if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
                         brand_cat_list.append(cat)
 
             name_cat_list = []
             name_cat_counts = {}
-            for cat in cats.all_cats:
+            for cat in cat_class.all_cats:
                 for word in name_word_list:
                     if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
                         if cat not in name_cat_list:
