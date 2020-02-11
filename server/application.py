@@ -269,27 +269,27 @@ def addfav():
             return json.dumps(True)
 
 
-@app.route("/api/insta_pics", methods=['GET'])
-def insta_pics():
-    if request.method == 'GET':
-        email = request.args.get('email')
-        user = User.query.filter_by(email=email).first()
-        insta_username = user.insta_username
-
-        if insta_username is None:
-            res = jsonify(res=None, insta_username=None)
-            return res
-        else:
-            insta_pics = db.session.query(InstaMentions).filter((InstaMentions.mention_username == insta_username)).all()
-
-            result_list = []
-            for insta_pic in insta_pics:
-                insta_serial = InstaMentionSchema().dump(insta_pic)
-                result_list.append(insta_serial)
-
-            res = jsonify(res=result_list, insta_username=insta_username)
-
-            return res
+# @app.route("/api/insta_pics", methods=['GET'])
+# def insta_pics():
+#     if request.method == 'GET':
+#         email = request.args.get('email')
+#         user = User.query.filter_by(email=email).first()
+#         insta_username = user.insta_username
+#
+#         if insta_username is None:
+#             res = jsonify(res=None, insta_username=None)
+#             return res
+#         else:
+#             insta_pics = db.session.query(InstaMentions).filter((InstaMentions.mention_username == insta_username)).all()
+#
+#             result_list = []
+#             for insta_pic in insta_pics:
+#                 insta_serial = InstaMentionSchema().dump(insta_pic)
+#                 result_list.append(insta_serial)
+#
+#             res = jsonify(res=result_list, insta_username=insta_username)
+#
+#             return res
 
 
 @app.route("/api/save_insta_username", methods=['POST'])
