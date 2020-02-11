@@ -7,7 +7,7 @@ def cat_clean_transform(cats, db, ImagesSkinny, data):
     if data['transform_key'] == transform_key:
 
         img_hashes = db.session.query(
-            ImagesSkinny
+            ImagesSkinny.img_hash
         ).order_by(func.random()).all()
 
         total_count = len(img_hashes)
