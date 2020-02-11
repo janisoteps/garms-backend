@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e278cb1b-8ddb-4f62-ac67-13ef3bcb0fa6" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/db_deals.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/db_deals.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/db_recommend.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/db_recommend.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/db_search.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/db_search.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/application.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/application.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/transformation/cat_transform.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/transformation/cat_transform.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/application.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="220">
-              <caret line="655" lean-forward="true" selection-start-line="655" selection-end-line="655" />
+            <state relative-caret-position="578">
+              <caret line="730" lean-forward="true" selection-start-line="730" selection-end-line="730" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -29,34 +27,34 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/db_search.py">
+        <entry file="file://$PROJECT_DIR$/server/transformation/cat_transform.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="1" column="107" selection-start-line="1" selection-start-column="87" selection-end-line="1" selection-end-column="107" />
+            <state relative-caret-position="45">
+              <caret line="3" selection-start-line="3" selection-end-line="3" />
               <folding>
-                <element signature="e#31752#31770#0" />
+                <element signature="e#0#9#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/db_deals.py">
+        <entry file="file://$PROJECT_DIR$/server/db_search.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="13" selection-start-line="5" selection-start-column="4" selection-end-line="5" selection-end-column="13" />
+            <state relative-caret-position="-3756">
+              <caret line="676" selection-start-line="676" selection-end-line="676" />
               <folding>
-                <element signature="e#0#38#0" expanded="true" />
+                <element signature="e#0#44#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/server/endpoints.py">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/data/cats.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+            <state relative-caret-position="-437">
+              <caret line="396" column="17" lean-forward="true" selection-start-line="396" selection-start-column="17" selection-end-line="396" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -66,18 +64,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="165">
               <caret line="11" selection-start-line="11" selection-end-line="11" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/server/db_recommend.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="624">
-              <caret line="73" column="19" lean-forward="true" selection-start-line="73" selection-start-column="19" selection-end-line="73" selection-end-column="19" />
-              <folding>
-                <element signature="e#0#44#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -95,6 +81,18 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/server/db_recommend.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1695">
+              <caret line="119" column="25" selection-start-line="119" selection-start-column="4" selection-end-line="119" selection-end-column="25" />
+              <folding>
+                <element signature="e#0#44#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/config.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="180">
@@ -106,8 +104,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6795">
-              <caret line="457" column="22" selection-start-line="457" selection-start-column="22" selection-end-line="457" selection-end-column="22" />
+            <state relative-caret-position="662">
+              <caret line="161" column="26" selection-start-line="155" selection-start-column="17" selection-end-line="161" selection-end-column="26" />
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
               </folding>
@@ -138,36 +136,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>req_encoding_arr</find>
-      <find>conditions_brand</find>
-      <find>dresses</find>
-      <find>tops</find>
-      <find>all_search_cats</find>
-      <find>tank</find>
-      <find>img_fea</find>
-      <find>get_features_v2</find>
-      <find>search_similar_images</find>
-      <find>ProductsSchema</find>
       <find>encoding_matrix</find>
       <find>db_test_search</find>
       <find>velvet</find>
       <find>lower</find>
       <find>any</find>
-      <find>recomm</find>
       <find>img_url</find>
       <find>in_stock</find>
       <find>image_commit</find>
       <find>product_commit</find>
       <find>count</find>
       <find>look</find>
-      <find>db_text_search</find>
-      <find>query_conditions_all</find>
       <find>simila</find>
       <find>recommend_similar_tags</find>
       <find>skinny_transformation</find>
       <find>ProductsV2</find>
+      <find>db_text_search</find>
+      <find>puffer</find>
+      <find>query_conditions_all</find>
+      <find>get_products</find>
       <find>get_image</find>
       <find>get_deals</find>
+      <find>recomm</find>
+      <find>add_outfit</find>
+      <find>get_looks</find>
+      <find>db_add_outfit</find>
+      <find>recommend_from_random</find>
+      <find>text_sea</find>
+      <find>Zala</find>
+      <find>Zalando</find>
+      <find>cat_transform</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -184,16 +182,18 @@
         <option value="$PROJECT_DIR$/server/get_features.py" />
         <option value="$PROJECT_DIR$/server/models.py" />
         <option value="$PROJECT_DIR$/server/marshmallow_schema.py" />
-        <option value="$PROJECT_DIR$/server/data/cats.py" />
         <option value="$PROJECT_DIR$/server/transformation/preserve_favs_transform.py" />
         <option value="$PROJECT_DIR$/server/db_commit.py" />
-        <option value="$PROJECT_DIR$/server/db_wardrobe.py" />
-        <option value="$PROJECT_DIR$/server/application.py" />
         <option value="$PROJECT_DIR$/server/transformation/preserve_faves_transform.py" />
-        <option value="$PROJECT_DIR$/server/db_search.py" />
-        <option value="$PROJECT_DIR$/server/db_deals.py" />
+        <option value="$PROJECT_DIR$/server/data/cats.py" />
         <option value="$PROJECT_DIR$/server/db_recommend.py" />
+        <option value="$PROJECT_DIR$/server/db_deals.py" />
+        <option value="$PROJECT_DIR$/server/db_wardrobe.py" />
+        <option value="$PROJECT_DIR$/server/db_search.py" />
         <option value="$PROJECT_DIR$/server/endpoints.py" />
+        <option value="$PROJECT_DIR$/server/transformation/cat_clean_transform.py" />
+        <option value="$PROJECT_DIR$/server/application.py" />
+        <option value="$PROJECT_DIR$/server/transformation/cat_transform.py" />
       </list>
     </option>
   </component>
@@ -208,6 +208,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -240,7 +241,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -338,26 +338,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/data/cats.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="14" selection-start-line="17" selection-start-column="14" selection-end-line="17" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/marshmallow_schema.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1815">
           <caret line="121" column="26" selection-start-line="121" selection-start-column="6" selection-end-line="121" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/transformation/cat_transform.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -378,6 +362,23 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server/db_deals.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="780">
+          <caret line="54" column="42" selection-start-line="54" selection-start-column="42" selection-end-line="54" selection-end-column="42" />
+          <folding>
+            <element signature="e#0#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Dockerfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server/db_wardrobe.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1215">
@@ -388,20 +389,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/server/db_recommend.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1695">
+          <caret line="119" column="25" selection-start-line="119" selection-start-column="4" selection-end-line="119" selection-end-column="25" />
+          <folding>
+            <element signature="e#0#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server/config.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
           <caret line="12" selection-start-line="12" selection-end-line="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6795">
-          <caret line="457" column="22" selection-start-line="457" selection-start-column="22" selection-end-line="457" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#26#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -415,57 +416,64 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Dockerfile">
+    <entry file="file://$PROJECT_DIR$/server/endpoints.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" selection-start-line="11" selection-end-line="11" />
+        <state relative-caret-position="120">
+          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/transformation/cat_clean_transform.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="9" lean-forward="true" selection-start-column="9" selection-end-column="9" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/server/db_search.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" column="107" selection-start-line="1" selection-start-column="87" selection-end-line="1" selection-end-column="107" />
-          <folding>
-            <element signature="e#31752#31770#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/db_deals.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="13" selection-start-line="5" selection-start-column="4" selection-end-line="5" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#38#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/application.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="655" lean-forward="true" selection-start-line="655" selection-end-line="655" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server/db_recommend.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="624">
-          <caret line="73" column="19" lean-forward="true" selection-start-line="73" selection-start-column="19" selection-end-line="73" selection-end-column="19" />
+        <state relative-caret-position="-3756">
+          <caret line="676" selection-start-line="676" selection-end-line="676" />
           <folding>
             <element signature="e#0#44#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/endpoints.py">
+    <entry file="file://$PROJECT_DIR$/server/data/cats.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+        <state relative-caret-position="-437">
+          <caret line="396" column="17" lean-forward="true" selection-start-line="396" selection-start-column="17" selection-end-line="396" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="662">
+          <caret line="161" column="26" selection-start-line="155" selection-start-column="17" selection-end-line="161" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/transformation/cat_transform.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" selection-start-line="3" selection-end-line="3" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/application.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="578">
+          <caret line="730" lean-forward="true" selection-start-line="730" selection-end-line="730" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
