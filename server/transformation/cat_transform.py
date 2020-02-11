@@ -2,7 +2,104 @@ import os
 from sqlalchemy import func
 
 
-# Iterate through all rows in Image db and recalculate kind, filter and all_cats columns
+def cat_clean_transform(cats, db, ImagesSkinny, data):
+    transform_key = os.environ['TRANSFORM_KEY']
+    if data['transform_key'] == transform_key:
+
+        img_hashes = db.session.query(
+            ImagesSkinny
+        ).order_by(func.random()).all()
+
+        total_count = len(img_hashes)
+        counter = 0
+        for img_hash in img_hashes:
+            counter += 1
+            print(f'row : {counter}')
+            print(f'from : {total_count}')
+            query_result = ImagesSkinny.query.filter_by(img_hash=img_hash).first()
+
+            brand = query_result.brand
+            print(f'BRAND: {brand}')
+            brand_word_list = brand.lower().split(' ')
+            brand_word_list = [word.replace('*', '') for word in brand_word_list]
+
+            name = query_result.name
+            print(f'NAME: {name}')
+            name_word_list = name.lower().split(' ')
+            name_word_list = [word.replace('*', '') for word in name_word_list]
+
+            brand_cat_list = []
+            for cat in cats.all_cats:
+                for word in brand_word_list:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        brand_cat_list.append(cat)
+
+            name_cat_list = []
+            name_cat_counts = {}
+            for cat in cats.all_cats:
+                for word in name_word_list:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        if cat not in name_cat_list:
+                            name_cat_list.append(cat)
+                            name_cat_counts[cat] = 1
+                        else:
+                            name_cat_counts[cat] += 1
+
+            removable_cats = []
+            for name_cat in name_cat_list:
+                if name_cat in brand_cat_list and name_cat_counts[name_cat] == 1:
+                    removable_cats.append(name_cat)
+                    print(f'REMOVING cat: {name_cat}')
+
+            if len(removable_cats) > 0:
+                query_kind_cats = query_result.kind_cats
+                query_pattern_cats = query_result.pattern_cats
+                query_color_cats = query_result.color_cats
+                query_style_cats = query_result.style_cats
+                query_material_cats = query_result.material_cats
+                query_attribute_cats = query_result.attribute_cats
+                query_length_cats = query_result.length_cats
+                query_filter_cats = query_result.filter_cats
+                query_all_cats = query_result.all_cats
+
+                for removable_cat in removable_cats:
+                    if removable_cat in query_kind_cats:
+                        query_kind_cats.remove(removable_cat)
+                    if removable_cat in query_pattern_cats:
+                        query_pattern_cats.remove(removable_cat)
+                    if removable_cat in query_color_cats:
+                        query_color_cats.remove(removable_cat)
+                    if removable_cat in query_style_cats:
+                        query_style_cats.remove(removable_cat)
+                    if removable_cat in query_material_cats:
+                        query_material_cats.remove(removable_cat)
+                    if removable_cat in query_attribute_cats:
+                        query_attribute_cats.remove(removable_cat)
+                    if removable_cat in query_length_cats:
+                        query_length_cats.remove(removable_cat)
+                    if removable_cat in query_filter_cats:
+                        query_filter_cats.remove(removable_cat)
+                    if removable_cat in query_all_cats:
+                        query_all_cats.remove(removable_cat)
+
+                query_result.kind_cats = query_kind_cats
+                query_result.pattern_cats = query_pattern_cats
+                query_result.color_cats = query_color_cats
+                query_result.style_cats = query_style_cats
+                query_result.material_cats = query_material_cats
+                query_result.attribute_cats = query_attribute_cats
+                query_result.length_cats = query_length_cats
+                query_result.filter_cats = query_filter_cats
+                query_result.all_cats = query_all_cats
+
+                db.session.commit()
+                print('-------------------------------------------------')
+
+        return True
+    else:
+        return False
+
+
 class CatTransform:
     def cat_transform(self, cats, db, ImagesV2, data):
         key_string = os.environ['TRANSFORM_KEY']

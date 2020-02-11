@@ -6,7 +6,7 @@ from config import Config
 from flask_migrate import Migrate
 from flask import render_template, request, jsonify
 import string
-from sqlalchemy import func, any_, or_
+from sqlalchemy import func, or_
 import aiohttp
 from get_features import get_features
 from marshmallow_schema import ProductSchemaV2, ImageSchemaV2, LoadingContentSchema, ImagesFullWomenASchema, ProductsWomenASchema
@@ -718,6 +718,16 @@ def cat_transform():
         data = request.get_json(force=True)
 
         req_response = cat_transformation.CatTransform().cat_transform(cats, db, ImagesV2, data)
+
+        return json.dumps(req_response)
+
+
+@app.route("/api/cat_cleanse_transform", methods=['POST'])
+def cat_cleanse_transform():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = cat_transformation.cat_clean_transform(cats, db, ImagesSkinnyWomenA, data)
 
         return json.dumps(req_response)
 
