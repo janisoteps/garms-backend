@@ -3,6 +3,14 @@ from sqlalchemy import func
 
 
 def cat_clean_transform(cats, db, ImagesSkinny, data):
+    exceptions = [
+        'maternity',
+        'tall',
+        'curve',
+        'plus',
+        'petite',
+        'mamalicious'
+    ]
     transform_key = os.environ['TRANSFORM_KEY']
     if data['transform_key'] == transform_key:
 
@@ -49,9 +57,9 @@ def cat_clean_transform(cats, db, ImagesSkinny, data):
 
             removable_cats = []
             for name_cat in name_cat_list:
-                if name_cat in brand_cat_list and name_cat_counts[name_cat] == 1:
+                if name_cat in brand_cat_list and name_cat_counts[name_cat] == 1 and name_cat not in exceptions:
                     removable_cats.append(name_cat)
-                    print(f'REMOVING cat: {name_cat}')
+                    print(f'REMOVING: {name_cat}')
 
             if len(removable_cats) > 0:
                 query_kind_cats = query_result.kind_cats
@@ -95,7 +103,7 @@ def cat_clean_transform(cats, db, ImagesSkinny, data):
                 query_result.all_cats = query_all_cats
 
                 db.session.commit()
-                print('-------------------------------------------------')
+            print('-------------------------------------------------')
 
         return True
     else:
