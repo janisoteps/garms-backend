@@ -1016,7 +1016,7 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
 
     print(f'RESULT LENGTH: {len(query_results)}')
 
-    if len(query_results) < 50:
+    if len(query_results) < 20:
         relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
         ).filter(
