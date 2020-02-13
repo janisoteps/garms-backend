@@ -4,10 +4,9 @@ import scipy.spatial as spatial
 import numpy as np
 from operator import itemgetter
 import json
-# from color_text import color_check
 from flask import jsonify
-# from data import cats
 import data.cats as cats
+import data.colors as colors
 
 
 def search_similar_images(request, db, Images, ImagesSkinny, Products):
@@ -263,7 +262,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 or_(*conditions_filter_cats),
                 or_(*conditions_brand)
             )
-        ).limit(500 - len(img_table_query_results)).all())
+        ).limit(1000 - len(img_table_query_results)).all())
         print(f'{len(query_results_relaxed)} RELAXED RESULTS ADDED')
         img_table_query_results += query_results_relaxed
 
@@ -278,11 +277,11 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 or_(*query_conditions_all),
                 or_(*conditions_filter_cats),
             )
-        ).limit(200 - len(img_table_query_results)).all())
+        ).limit(1000 - len(img_table_query_results)).all())
         print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
         img_table_query_results += query_results_relaxed_2
 
-    if len(img_table_query_results) < 200:
+    if len(img_table_query_results) < 100:
         print('ADDING EVEN MORE RELAXED RESULTS')
         query_results_relaxed_3 = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
@@ -291,7 +290,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 and_(*conditions_base),
                 or_(*conditions_kind_cats)
             )
-        ).limit(200 - len(img_table_query_results)).all())
+        ).limit(1000 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed_3)} MORE RELAXED RESULTS ADDED')
 
@@ -333,7 +332,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
                 distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
 
-                distance_color = 2 * (distance_color_1 + distance_color_2 + distance_color_3)
+                distance_color = 10 * distance_color_1 + 3 * distance_color_2 + distance_color_3
 
                 distance_color_euc_1 = int(
                     spatial.distance.euclidean(np.array(req_color_1, dtype=int),
@@ -348,11 +347,11 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                                                np.array(query_result.color_3, dtype=int),
                                                w=None))
 
-                distance_color_euc = (1 / 500) * (2 * min([
+                distance_color_euc = (1 / 500) * min([
                     distance_color_euc_1,
                     distance_color_euc_2,
                     distance_color_euc_3
-                ]))
+                ])
 
                 color_query_result = {
                     'query_result': query_result,
@@ -775,67 +774,6 @@ def search_from_upload(request, db, Images, ImagesSkinny, Products):
                     result_list.append(result_dict)
 
         return result_list
-        # result_list = []
-        # prod_check = set()
-        # for closest_n_color_result in final_top_color_list:
-        #     result_img_hash = closest_n_color_result['img_hash']
-        #
-        #     img_search = db.session.query(
-        #         Images.name,
-        #         Images.img_hash,
-        #         Images.prod_id,
-        #         Images.color_1,
-        #         Images.color_1_hex,
-        #         Images.color_2,
-        #         Images.color_2_hex,
-        #         Images.color_3,
-        #         Images.color_3_hex,
-        #         Images.encoding_crop,
-        #         Images.encoding_vgg16,
-        #         Images.all_arr,
-        #         Images.all_cats,
-        #         Images.size_stock,
-        #         Images.img_url,
-        #         Images.price,
-        #         Images.sale,
-        #         Images.saleprice,
-        #         Images.in_stock,
-        #         Images.shop,
-        #         Images.prod_url
-        #     ).filter(Images.img_hash == result_img_hash).first()
-        #     prod_hash = img_search.prod_id
-        #     if prod_hash not in prod_check:
-        #         prod_check.add(prod_hash)
-        #         img_serial = ImageSchemaV2().dump(img_search)
-        #         prod_search = db.session.query(
-        #             Products.prod_id,
-        #             Products.name,
-        #             Products.prod_url,
-        #             Products.brand,
-        #             Products.category,
-        #             Products.color_string,
-        #             Products.currency,
-        #             Products.date,
-        #             Products.description,
-        #             Products.image_hash,
-        #             Products.image_urls,
-        #             Products.price,
-        #             Products.sale,
-        #             Products.saleprice,
-        #             Products.sex,
-        #             Products.shop,
-        #             Products.size_stock,
-        #         ).filter(Products.prod_id == prod_hash).first()
-        #         prod_serial = ProductSchemaV2().dump(prod_search)
-        #
-        #         result_dict = {
-        #             'prod_serial': prod_serial[0],
-        #             'image_data': img_serial[0]
-        #         }
-        #         result_list.append(result_dict)
-        # print('Results obtained from DB')
-        #
-        # return result_list
 
 
 #######################################################################################################################
@@ -853,6 +791,21 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
     string_list_clean = [e for e in string_list if e not in linking_words]
     print('Cleaned string list', str(string_list_clean))
     search_string_clean = ' '.join(string_list_clean)
+
+    color_rgb_dict = colors.Colors().color_rgb
+    search_color = None
+    for word in string_list_clean:
+        if word in color_rgb_dict:
+            search_color = color_rgb_dict[word]
+
+    if search_color is not None:
+        search_limit = 2000
+        relaxed_threshold = 300
+        relaxed_limit = 1000
+    else:
+        search_limit = 80
+        relaxed_threshold = 30
+        relaxed_limit = 50
 
     maternity = False
     tag_list = cats.Cats()
@@ -1002,21 +955,17 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
         func.lower(ImagesSkinny.name).op('%%')(search_string_clean)
     )
 
+    # ========= MAIN QUERY ===========
     query_results = (db.session.query(ImagesSkinny, Images).filter(
         ImagesSkinny.img_hash == Images.img_hash
     ).filter(
         and_(*query_conditions)
-    ).limit(100).all())
+    ).limit(search_limit).all())
 
-    # query = db.session.query(ImagesSkinny).filter(
-    #     and_(*query_conditions)
-    # )
-    #
-    # query_results = query.order_by(func.random()).limit(100).all()
+    print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
 
-    print(f'RESULT LENGTH: {len(query_results)}')
-
-    if len(query_results) < 50:
+    if len(query_results) < relaxed_threshold:
+        # RELAXED QUERY
         relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
         ).filter(
@@ -1024,32 +973,108 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
                 and_(*query_conditions_kind),
                 or_(*query_conditions_all)
             )
-        ).limit(100).all())
+        ).limit(relaxed_limit).all())
         query_results += relaxed_query_results
 
-    result_list = []
-    prod_check = set()
-    print('Obtaining result data')
-    for query_result in query_results:
-        img_table_query_result = query_result[1]
-        result_prod_id = img_table_query_result.prod_id
+    print(f'TOTAL RESULT LENGTH: {len(query_results)}')
 
-        if result_prod_id not in prod_check:
-            prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-            if prod_search is not None:
-                if req_sex == 'women':
-                    prod_serial = ProductsWomenASchema().dump(prod_search)
-                    img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
-                else:
-                    prod_serial = ProductSchemaV2().dump(prod_search)
-                    img_serial = ImageSchemaV2().dump(img_table_query_result)
-                prod_check.add(result_prod_id)
+    if search_color is not None:
+        print('SORTING BY COLOR')
+        color_list = []
+        for img_table_query_result in query_results:
+            query_result = img_table_query_result[0]
+            req_color_norm_1 = np.array(search_color, dtype=int) / np.sum(np.array(search_color, dtype=int))
 
-                result_dict = {
-                    'prod_serial': prod_serial[0],
-                    'image_data': img_serial[0]
-                }
-                result_list.append(result_dict)
+            query_color_1_norm = np.array(query_result.color_1, dtype=int) / np.sum(
+                np.array(query_result.color_1, dtype=int))
+            query_color_2_norm = np.array(query_result.color_2, dtype=int) / np.sum(
+                np.array(query_result.color_2, dtype=int))
+            query_color_3_norm = np.array(query_result.color_3, dtype=int) / np.sum(
+                np.array(query_result.color_3, dtype=int))
+
+            # compute the chi-squared distances
+            distance_color_1 = calc_chi_distance(req_color_norm_1, query_color_1_norm)
+            distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
+            distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
+
+            distance_color = 10 * distance_color_1 + 3 * distance_color_2 + distance_color_3
+
+            distance_color_euc_1 = int(
+                spatial.distance.euclidean(np.array(search_color, dtype=int),
+                                           np.array(query_result.color_1, dtype=int),
+                                           w=None))
+            distance_color_euc_2 = int(
+                spatial.distance.euclidean(np.array(search_color, dtype=int),
+                                           np.array(query_result.color_2, dtype=int),
+                                           w=None))
+            distance_color_euc_3 = int(
+                spatial.distance.euclidean(np.array(search_color, dtype=int),
+                                           np.array(query_result.color_3, dtype=int),
+                                           w=None))
+
+            distance_color_euc = (1 / 500) * min([
+                distance_color_euc_1,
+                distance_color_euc_2,
+                distance_color_euc_3
+            ])
+
+            color_query_result = {
+                'img_hash': query_result.img_hash,
+                'color_dist': distance_color + distance_color_euc,
+                'prod_id': query_result.prod_id,
+                'query_result': img_table_query_result
+            }
+            color_list.append(color_query_result)
+
+        sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
+        top_color_list = sorted_color_list[0:80]
+        result_list = []
+        prod_check = set()
+        print('Obtaining result data')
+        for color_dict in top_color_list:
+            img_table_query_result = color_dict['query_result'][1]
+            result_prod_id = color_dict['prod_id']
+            if result_prod_id not in prod_check:
+                prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
+                if prod_search is not None:
+                    if req_sex == 'women':
+                        prod_serial = ProductsWomenASchema().dump(prod_search)
+                        img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
+                    else:
+                        prod_serial = ProductSchemaV2().dump(prod_search)
+                        img_serial = ImageSchemaV2().dump(img_table_query_result)
+                    prod_check.add(result_prod_id)
+
+                    result_dict = {
+                        'prod_serial': prod_serial[0],
+                        'image_data': img_serial[0]
+                    }
+                    result_list.append(result_dict)
+
+    else:
+        result_list = []
+        prod_check = set()
+        print('Obtaining result data')
+        for query_result in query_results:
+            img_table_query_result = query_result[1]
+            result_prod_id = img_table_query_result.prod_id
+
+            if result_prod_id not in prod_check:
+                prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
+                if prod_search is not None:
+                    if req_sex == 'women':
+                        prod_serial = ProductsWomenASchema().dump(prod_search)
+                        img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
+                    else:
+                        prod_serial = ProductSchemaV2().dump(prod_search)
+                        img_serial = ImageSchemaV2().dump(img_table_query_result)
+                    prod_check.add(result_prod_id)
+
+                    result_dict = {
+                        'prod_serial': prod_serial[0],
+                        'image_data': img_serial[0]
+                    }
+                    result_list.append(result_dict)
 
     res = jsonify(res=result_list, tags=all_cats_search)
     return res
