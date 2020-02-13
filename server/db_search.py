@@ -262,7 +262,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 or_(*conditions_filter_cats),
                 or_(*conditions_brand)
             )
-        ).limit(500 - len(img_table_query_results)).all())
+        ).limit(1000 - len(img_table_query_results)).all())
         print(f'{len(query_results_relaxed)} RELAXED RESULTS ADDED')
         img_table_query_results += query_results_relaxed
 
@@ -277,11 +277,11 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 or_(*query_conditions_all),
                 or_(*conditions_filter_cats),
             )
-        ).limit(200 - len(img_table_query_results)).all())
+        ).limit(1000 - len(img_table_query_results)).all())
         print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
         img_table_query_results += query_results_relaxed_2
 
-    if len(img_table_query_results) < 200:
+    if len(img_table_query_results) < 100:
         print('ADDING EVEN MORE RELAXED RESULTS')
         query_results_relaxed_3 = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
@@ -290,7 +290,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 and_(*conditions_base),
                 or_(*conditions_kind_cats)
             )
-        ).limit(200 - len(img_table_query_results)).all())
+        ).limit(1000 - len(img_table_query_results)).all())
 
         print(f'{len(query_results_relaxed_3)} MORE RELAXED RESULTS ADDED')
 
@@ -800,7 +800,7 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
 
     if search_color is not None:
         search_limit = 2000
-        relaxed_threshold = 1000
+        relaxed_threshold = 300
         relaxed_limit = 1000
     else:
         search_limit = 80
