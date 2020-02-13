@@ -742,6 +742,16 @@ def cat_fix_liu():
         return json.dumps(req_response)
 
 
+@app.route("/api/cat_transform_boohoo", methods=['POST'])
+def cat_transform_boohoo():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = cat_transformation.cat_fix_boohoo(db, ImagesSkinnyWomenA, data, cats)
+
+        return json.dumps(req_response)
+
+
 @app.route("/api/enc_transform", methods=['POST'])
 def enc_transform():
     if request.method == 'POST':

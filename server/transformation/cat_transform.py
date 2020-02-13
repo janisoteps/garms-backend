@@ -152,6 +152,107 @@ def cat_fix_liu(db, ImagesSkinny, data):
         return False
 
 
+def cat_fix_boohoo(db, ImagesSkinny, data, cats):
+    cat_list = cats.Cats()
+    kind_cats = cat_list.kind_cats
+    pattern_cats = cat_list.pattern_cats
+    color_cats = cat_list.color_cats
+    style_cats = cat_list.style_cats
+    material_cats = cat_list.material_cats
+    attribute_cats = cat_list.attribute_cats
+    length_cats = cat_list.length_cats
+    filter_cats = cat_list.filter_cats
+
+    transform_key = os.environ['TRANSFORM_KEY']
+    if data['transform_key'] == transform_key:
+        img_hashes = db.session.query(
+            ImagesSkinny.img_hash
+        ).filter(
+            ImagesSkinny.shop == 'Boohoo'
+        ).order_by(func.random()).all()
+
+        total_count = len(img_hashes)
+        counter = 0
+        for img_hash in img_hashes:
+            query_result = ImagesSkinny.query.filter_by(img_hash=img_hash).first()
+            query_name = query_result.name
+            name_arr = query_name.lower().split(' ')
+            cat_name_arr = [word.replace('*', '') for word in name_arr]
+
+            new_kind_cats = []
+            new_pattern_cats = []
+            new_color_cats = []
+            new_style_cats = []
+            new_material_cats = []
+            new_attribute_cats = []
+            new_length_cats = []
+            new_filter_cats = []
+            new_all_cats = []
+
+            for cat in kind_cats:
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_kind_cats.append(cat)
+                        new_all_cats.append(cat)
+            for cat in pattern_cats:
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_pattern_cats.append(cat)
+                        new_all_cats.append(cat)
+            for cat in color_cats:
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_color_cats.append(cat)
+                        new_all_cats.append(cat)
+            for cat in style_cats:
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_style_cats.append(cat)
+                        new_all_cats.append(cat)
+            for cat in material_cats:
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_material_cats.append(cat)
+                        new_all_cats.append(cat)
+            for cat in attribute_cats:
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_attribute_cats.append(cat)
+                        new_all_cats.append(cat)
+            for cat in length_cats:
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_length_cats.append(cat)
+                        new_all_cats.append(cat)
+            for cat in filter_cats:
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_filter_cats.append(cat)
+                        new_all_cats.append(cat)
+
+            query_result.kind_cats = new_kind_cats
+            query_result.pattern_cats = new_pattern_cats
+            query_result.color_cats = new_color_cats
+            query_result.style_cats = new_style_cats
+            query_result.material_cats = new_material_cats
+            query_result.attribute_cats = new_attribute_cats
+            query_result.length_cats = new_length_cats
+            query_result.filter_cats = new_filter_cats
+            query_result.all_cats = new_all_cats
+
+            db.session.commit()
+            counter += 1
+            print(f'count : {counter}')
+            print(f'from: {total_count}')
+            print(f'shop: {query_result.shop}')
+            print(f'UPDATED: {query_name}')
+            print('-------------------------------------------------\n')
+
+        return True
+    else:
+        return False
+
+
 class CatTransform:
     def cat_transform(self, cats, db, ImagesV2, data):
         key_string = os.environ['TRANSFORM_KEY']
