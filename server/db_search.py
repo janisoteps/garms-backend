@@ -276,6 +276,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
                 and_(*conditions_kind_cats),
                 or_(*query_conditions_all),
                 or_(*conditions_filter_cats),
+                or_(*conditions_brand)
             )
         ).limit(1000 - len(img_table_query_results)).all())
         print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
@@ -288,7 +289,8 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
         ).filter(
             and_(
                 and_(*conditions_base),
-                or_(*conditions_kind_cats)
+                or_(*conditions_kind_cats),
+                or_(*conditions_brand)
             )
         ).limit(1000 - len(img_table_query_results)).all())
 
