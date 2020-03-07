@@ -856,7 +856,7 @@ class ProductsMenA(db.Model):
 #     )
 #
 #     id = db.Column(db.Integer, primary_key=True)
-#     img_hash = db.Column(db.String(40), db.ForeignKey("images_v2_skinny.img_hash"), index=True, unique=True)
+#     img_hash = db.Column(db.String(40), index=True, unique=True)
 #     img_url = db.Column(db.String)
 #     prod_id = db.Column(db.String)
 #     prod_url = db.Column(db.String)
@@ -976,8 +976,8 @@ class ProductsMenA(db.Model):
 #
 #     def return_name(self):
 #         return self.name
-
-
+#
+#
 # class ImagesV2Skinny(db.Model):
 #     __tablename__ = 'images_v2_skinny'
 #
@@ -987,7 +987,7 @@ class ProductsMenA(db.Model):
 #     )
 #
 #     id = db.Column(db.Integer)
-#     img_hash = db.Column(db.String(40), db.ForeignKey("images_v2.img_hash"), index=True, unique=True, primary_key=True)
+#     img_hash = db.Column(db.String(40), index=True, unique=True, primary_key=True)
 #     img_url = db.Column(db.String)
 #     prod_id = db.Column(db.String)
 #     prod_url = db.Column(db.String)
