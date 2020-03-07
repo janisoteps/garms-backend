@@ -10,7 +10,7 @@ from sqlalchemy import func, or_
 import aiohttp
 from get_features import get_features
 from marshmallow_schema import LoadingContentSchema, ImagesFullWomenASchema, ImagesFullMenASchema, ProductsWomenASchema, ProductsMenASchema
-from db_commit import image_commit, product_commit, insta_mention_commit, image_commit_v2, product_commit_v2, image_commit_v2_skinny
+from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look
 from db_recommend import recommend_similar_tags, recommend_from_random
