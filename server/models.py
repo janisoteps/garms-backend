@@ -106,7 +106,110 @@ class ImagesSkinnyWomenA(db.Model):
     )
 
     id = db.Column(db.Integer)
-    # img_hash = db.Column(db.String(40), db.ForeignKey("images_full_women_a.img_hash"), index=True, unique=True, primary_key=True)
+    img_hash = db.Column(db.String(40), index=True, unique=True, primary_key=True)
+    img_url = db.Column(db.String)
+    prod_id = db.Column(db.String)
+    prod_url = db.Column(db.String)
+    brand = db.Column(db.Text)
+    color_string = db.Column(db.String)
+    date = db.Column(db.Integer)
+    name = db.Column('img_skinny_name', db.Text, index=True)
+    price = db.Column(db.Float)
+    sale = db.Column(db.Boolean)
+    saleprice = db.Column(db.Float)
+    discount_rate = db.Column(db.Float)
+    sex = db.Column(db.String)
+    shop = db.Column(db.String)
+    kind_cats = db.Column(ARRAY(db.String), index=True)
+    pattern_cats = db.Column(ARRAY(db.String))  # new
+    color_cats = db.Column(ARRAY(db.String))  # new
+    style_cats = db.Column(ARRAY(db.String))
+    material_cats = db.Column(ARRAY(db.String))
+    attribute_cats = db.Column(ARRAY(db.String))
+    length_cats = db.Column(ARRAY(db.String))  # new
+    filter_cats = db.Column(ARRAY(db.String))
+    all_cats = db.Column(ARRAY(db.String), index=True)
+    size_stock = db.Column(MutableList.as_mutable(JSONB))
+    in_stock = db.Column(db.Boolean)
+    color_1 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
+    color_2 = db.Column(ARRAY(db.Integer))
+    color_3 = db.Column(ARRAY(db.Integer))
+
+    def __init__(self,
+                 img_hash,
+                 img_url,
+                 prod_id,
+                 prod_url,
+                 brand,
+                 color_string,
+                 date,
+                 name,
+                 price,
+                 sale,
+                 saleprice,
+                 discount_rate,
+                 sex,
+                 shop,
+                 kind_cats,
+                 pattern_cats,
+                 color_cats,
+                 style_cats,
+                 material_cats,
+                 attribute_cats,
+                 length_cats,
+                 filter_cats,
+                 all_cats,
+                 size_stock,
+                 in_stock,
+                 color_1,
+                 color_2,
+                 color_3):
+
+        self.img_hash = img_hash
+        self.img_url = img_url
+        self.prod_id = prod_id
+        self.prod_url = prod_url
+        self.brand = brand
+        self.color_string = color_string
+        self.date = date
+        self.name = name
+        self.price = price
+        self.sale = sale
+        self.saleprice = saleprice
+        self.discount_rate = discount_rate
+        self.sex = sex
+        self.shop = shop
+        self.kind_cats = kind_cats
+        self.pattern_cats = pattern_cats
+        self.color_cats = color_cats
+        self.style_cats = style_cats
+        self.material_cats = material_cats
+        self.attribute_cats = attribute_cats
+        self.length_cats = length_cats
+        self.filter_cats = filter_cats
+        self.all_cats = all_cats
+        self.size_stock = size_stock
+        self.in_stock = in_stock
+        self.color_1 = color_1
+        self.color_2 = color_2
+        self.color_3 = color_3
+
+    def __repr__(self):
+        return '<id={}>'.format(self.id)
+
+    def return_name(self):
+        return self.name
+
+
+class ImagesSkinnyMenA(db.Model):
+    __tablename__ = 'images_skinny_men_a'
+
+    __table_args__ = (
+        db.Index('images_skinny_men_a_name_idx', 'img_skinny_name', postgresql_ops={'img_skinny_name': "gin_trgm_ops"},
+                 postgresql_using='gin'),
+    )
+
+    id = db.Column(db.Integer)
     img_hash = db.Column(db.String(40), index=True, unique=True, primary_key=True)
     img_url = db.Column(db.String)
     prod_id = db.Column(db.String)
@@ -319,6 +422,122 @@ class ImagesFullWomenA(db.Model):
         return self.name
 
 
+class ImagesFullMenA(db.Model):
+    __tablename__ = 'images_full_men_a'
+
+    __table_args__ = (
+        db.Index('images_full_men_a_name_idx', 'img_full_name', postgresql_ops={'img_full_name': "gin_trgm_ops"},
+                 postgresql_using='gin'),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    img_hash = db.Column(db.String(40), db.ForeignKey("images_skinny_men_a.img_hash"), index=True, unique=True)
+    img_url = db.Column(db.String)
+    prod_id = db.Column(db.String)
+    prod_url = db.Column(db.String)
+    brand = db.Column(db.Text)
+    color_string = db.Column(db.String)
+    date = db.Column(db.Integer)
+    name = db.Column('img_full_name', db.Text, index=True)
+    price = db.Column(db.Float)
+    sale = db.Column(db.Boolean)
+    saleprice = db.Column(db.Float)
+    discount_rate = db.Column(db.Float)
+    sex = db.Column(db.String)
+    shop = db.Column(db.String)
+    kind_cats = db.Column(ARRAY(db.String), index=True)
+    pattern_cats = db.Column(ARRAY(db.String))
+    color_cats = db.Column(ARRAY(db.String))
+    style_cats = db.Column(ARRAY(db.String))
+    material_cats = db.Column(ARRAY(db.String))
+    attribute_cats = db.Column(ARRAY(db.String))
+    length_cats = db.Column(ARRAY(db.String))
+    filter_cats = db.Column(ARRAY(db.String))
+    all_cats = db.Column(ARRAY(db.String), index=True)
+    color_1 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
+    color_1_hex = db.Column(db.String)
+    color_2 = db.Column(ARRAY(db.Integer))
+    color_2_hex = db.Column(db.String)
+    color_3 = db.Column(ARRAY(db.Integer))
+    color_3_hex = db.Column(db.String)
+    size_stock = db.Column(MutableList.as_mutable(JSONB))
+    in_stock = db.Column(db.Boolean)
+    encoding_vgg16 = db.Column(ARRAY(db.Integer))
+
+    def __init__(self,
+                 img_hash,
+                 img_url,
+                 prod_id,
+                 prod_url,
+                 brand,
+                 color_string,
+                 date,
+                 name,
+                 price,
+                 sale,
+                 saleprice,
+                 discount_rate,
+                 sex,
+                 shop,
+                 kind_cats,
+                 pattern_cats,
+                 color_cats,
+                 style_cats,
+                 material_cats,
+                 attribute_cats,
+                 length_cats,
+                 filter_cats,
+                 all_cats,
+                 color_1,
+                 color_1_hex,
+                 color_2,
+                 color_2_hex,
+                 color_3,
+                 color_3_hex,
+                 size_stock,
+                 in_stock,
+                 encoding_vgg16):
+
+        self.img_hash = img_hash
+        self.img_url = img_url
+        self.prod_id = prod_id
+        self.prod_url = prod_url
+        self.brand = brand
+        self.color_string = color_string
+        self.date = date
+        self.name = name
+        self.price = price
+        self.sale = sale
+        self.saleprice = saleprice
+        self.discount_rate = discount_rate
+        self.sex = sex
+        self.shop = shop
+        self.kind_cats = kind_cats
+        self.pattern_cats = pattern_cats
+        self.color_cats = color_cats
+        self.style_cats = style_cats
+        self.material_cats = material_cats
+        self.attribute_cats = attribute_cats
+        self.length_cats = length_cats
+        self.filter_cats = filter_cats
+        self.all_cats = all_cats
+        self.color_1 = color_1
+        self.color_1_hex = color_1_hex
+        self.color_2 = color_2
+        self.color_2_hex = color_2_hex
+        self.color_3 = color_3
+        self.color_3_hex = color_3_hex
+        self.size_stock = size_stock
+        self.in_stock = in_stock
+        self.encoding_vgg16 = encoding_vgg16
+
+    def __repr__(self):
+        return '<id={}>'.format(self.id)
+
+    def return_name(self):
+        return self.name
+
+
 class ProductsWomenA(db.Model):
     __tablename__ = 'prods_women_a'
     id = db.Column(db.Integer, primary_key=True)
@@ -419,8 +638,8 @@ class ProductsWomenA(db.Model):
         return self.name
 
 
-class ProductsV2(db.Model):
-    __tablename__ = 'products'
+class ProductsMenA(db.Model):
+    __tablename__ = 'prods_men_a'
     id = db.Column(db.Integer, primary_key=True)
     prod_id = db.Column(db.String(40), index=True, unique=True)
     name = db.Column(db.Text, index=True)
@@ -436,23 +655,20 @@ class ProductsV2(db.Model):
     price = db.Column(db.Float)
     sale = db.Column(db.Boolean)
     saleprice = db.Column(db.Float)
+    discount_rate = db.Column(db.Float)
     sex = db.Column(db.String)
     shop = db.Column(db.Text)
-    size_stock = db.Column(MutableList.as_mutable(JSONB))
     kind_cats = db.Column(ARRAY(db.String), index=True)
-    color_pattern_cats = db.Column(ARRAY(db.String))
+    pattern_cats = db.Column(ARRAY(db.String))
+    color_cats = db.Column(ARRAY(db.String))
     style_cats = db.Column(ARRAY(db.String))
     material_cats = db.Column(ARRAY(db.String))
     attribute_cats = db.Column(ARRAY(db.String))
+    length_cats = db.Column(ARRAY(db.String))
     filter_cats = db.Column(ARRAY(db.String))
     all_cats = db.Column(ARRAY(db.String))
-    kind_arr = db.Column(ARRAY(db.Integer))
-    col_pat_arr = db.Column(ARRAY(db.Integer))
-    style_arr = db.Column(ARRAY(db.Integer))
-    material_arr = db.Column(ARRAY(db.Integer))
-    attr_arr = db.Column(ARRAY(db.Integer))
-    filter_arr = db.Column(ARRAY(db.Integer))
-    all_arr = db.Column(ARRAY(db.Integer))
+    size_stock = db.Column(MutableList.as_mutable(JSONB))
+    in_stock = db.Column(db.Boolean)
     is_fav = db.Column(db.Boolean)
 
     def __init__(self,
@@ -470,23 +686,20 @@ class ProductsV2(db.Model):
                  price,
                  sale,
                  saleprice,
+                 discount_rate,
                  sex,
                  shop,
-                 size_stock,
                  kind_cats,
-                 color_pattern_cats,
+                 pattern_cats,
+                 color_cats,
                  style_cats,
                  material_cats,
                  attribute_cats,
+                 length_cats,
                  filter_cats,
                  all_cats,
-                 kind_arr,
-                 col_pat_arr,
-                 style_arr,
-                 material_arr,
-                 attr_arr,
-                 filter_arr,
-                 all_arr,
+                 size_stock,
+                 in_stock,
                  is_fav):
         self.prod_id = prod_id
         self.name = name
@@ -502,23 +715,20 @@ class ProductsV2(db.Model):
         self.price = price
         self.sale = sale
         self.saleprice = saleprice
+        self.discount_rate = discount_rate
         self.sex = sex
         self.shop = shop
-        self.size_stock = size_stock
         self.kind_cats = kind_cats
-        self.color_pattern_cats = color_pattern_cats
+        self.pattern_cats = pattern_cats
+        self.color_cats = color_cats
         self.style_cats = style_cats
         self.material_cats = material_cats
         self.attribute_cats = attribute_cats
+        self.length_cats = length_cats
         self.filter_cats = filter_cats
         self.all_cats = all_cats
-        self.kind_arr = kind_arr
-        self.col_pat_arr = col_pat_arr
-        self.style_arr = style_arr
-        self.material_arr = material_arr
-        self.attr_arr = attr_arr
-        self.filter_arr = filter_arr
-        self.all_arr = all_arr
+        self.size_stock = size_stock
+        self.in_stock = in_stock
         self.is_fav = is_fav
 
     def __repr__(self):
@@ -528,224 +738,333 @@ class ProductsV2(db.Model):
         return self.name
 
 
-class ImagesV2(db.Model):
-    __tablename__ = 'images_v2'
-
-    __table_args__ = (
-        db.Index('name_idx_v2', 'img_name', postgresql_ops={'img_name': "gin_trgm_ops"},
-                 postgresql_using='gin'),
-    )
-
-    id = db.Column(db.Integer, primary_key=True)
-    img_hash = db.Column(db.String(40), db.ForeignKey("images_v2_skinny.img_hash"), index=True, unique=True)
-    img_url = db.Column(db.String)
-    prod_id = db.Column(db.String)
-    prod_url = db.Column(db.String)
-    brand = db.Column(db.Text)
-    color_string = db.Column(db.String)
-    date = db.Column(db.Integer)
-    name = db.Column('img_name', db.Text, index=True)
-    price = db.Column(db.Float)
-    sale = db.Column(db.Boolean)
-    saleprice = db.Column(db.Float)
-    sex = db.Column(db.String)
-    shop = db.Column(db.String)
-    kind_cats = db.Column(ARRAY(db.String), index=True)
-    color_pattern_cats = db.Column(ARRAY(db.String))
-    style_cats = db.Column(ARRAY(db.String))
-    material_cats = db.Column(ARRAY(db.String))
-    attribute_cats = db.Column(ARRAY(db.String))
-    filter_cats = db.Column(ARRAY(db.String))
-    all_cats = db.Column(ARRAY(db.String), index=True)
-    kind_arr = db.Column(ARRAY(db.Integer))
-    col_pat_arr = db.Column(ARRAY(db.Integer))
-    style_arr = db.Column(ARRAY(db.Integer))
-    material_arr = db.Column(ARRAY(db.Integer))
-    attr_arr = db.Column(ARRAY(db.Integer))
-    filter_arr = db.Column(ARRAY(db.Integer))
-    all_arr = db.Column(ARRAY(db.Integer))
-    color_1 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
-    color_1_hex = db.Column(db.String)
-    color_2 = db.Column(ARRAY(db.Integer))
-    color_2_hex = db.Column(db.String)
-    color_3 = db.Column(ARRAY(db.Integer))
-    color_3_hex = db.Column(db.String)
-    encoding_crop = db.Column(ARRAY(db.Integer))
-    size_stock = db.Column(MutableList.as_mutable(JSONB))
-    in_stock = db.Column(db.Boolean)
-    encoding_vgg16 = db.Column(ARRAY(db.Integer))
-
-    def __init__(self,
-                 img_hash,
-                 img_url,
-                 prod_id,
-                 prod_url,
-                 brand,
-                 color_string,
-                 date,
-                 name,
-                 price,
-                 sale,
-                 saleprice,
-                 sex,
-                 shop,
-                 kind_cats,
-                 color_pattern_cats,
-                 style_cats,
-                 material_cats,
-                 attribute_cats,
-                 filter_cats,
-                 all_cats,
-                 kind_arr,
-                 col_pat_arr,
-                 style_arr,
-                 material_arr,
-                 attr_arr,
-                 filter_arr,
-                 all_arr,
-                 color_1,
-                 color_1_hex,
-                 color_2,
-                 color_2_hex,
-                 color_3,
-                 color_3_hex,
-                 encoding_crop,
-                 size_stock,
-                 in_stock,
-                 encoding_vgg16):
-
-        self.img_hash = img_hash
-        self.img_url = img_url
-        self.prod_id = prod_id
-        self.prod_url = prod_url
-        self.brand = brand
-        self.color_string = color_string
-        self.date = date
-        self.name = name
-        self.price = price
-        self.sale = sale
-        self.saleprice = saleprice
-        self.sex = sex
-        self.shop = shop
-        self.kind_cats = kind_cats
-        self.color_pattern_cats = color_pattern_cats
-        self.style_cats = style_cats
-        self.material_cats = material_cats
-        self.attribute_cats = attribute_cats
-        self.filter_cats = filter_cats
-        self.all_cats = all_cats
-        self.kind_arr = kind_arr
-        self.col_pat_arr = col_pat_arr
-        self.style_arr = style_arr
-        self.material_arr = material_arr
-        self.attr_arr = attr_arr
-        self.filter_arr = filter_arr
-        self.all_arr = all_arr
-        self.color_1 = color_1
-        self.color_1_hex = color_1_hex
-        self.color_2 = color_2
-        self.color_2_hex = color_2_hex
-        self.color_3 = color_3
-        self.color_3_hex = color_3_hex
-        self.encoding_crop = encoding_crop
-        self.size_stock = size_stock
-        self.in_stock = in_stock
-        self.encoding_vgg16 = encoding_vgg16
-
-    def __repr__(self):
-        return '<id={}>'.format(self.id)
-
-    def return_name(self):
-        return self.name
+# class ProductsV2(db.Model):
+#     __tablename__ = 'products'
+#     id = db.Column(db.Integer, primary_key=True)
+#     prod_id = db.Column(db.String(40), index=True, unique=True)
+#     name = db.Column(db.Text, index=True)
+#     prod_url = db.Column(db.String)
+#     brand = db.Column(db.Text)
+#     category = db.Column(db.Text)
+#     color_string = db.Column(db.Text)
+#     currency = db.Column(db.String)
+#     date = db.Column(db.Integer)
+#     description = db.Column(db.Text)
+#     image_hash = db.Column(ARRAY(db.String), index=True)
+#     image_urls = db.Column(ARRAY(db.String))
+#     price = db.Column(db.Float)
+#     sale = db.Column(db.Boolean)
+#     saleprice = db.Column(db.Float)
+#     sex = db.Column(db.String)
+#     shop = db.Column(db.Text)
+#     size_stock = db.Column(MutableList.as_mutable(JSONB))
+#     kind_cats = db.Column(ARRAY(db.String), index=True)
+#     color_pattern_cats = db.Column(ARRAY(db.String))
+#     style_cats = db.Column(ARRAY(db.String))
+#     material_cats = db.Column(ARRAY(db.String))
+#     attribute_cats = db.Column(ARRAY(db.String))
+#     filter_cats = db.Column(ARRAY(db.String))
+#     all_cats = db.Column(ARRAY(db.String))
+#     kind_arr = db.Column(ARRAY(db.Integer))
+#     col_pat_arr = db.Column(ARRAY(db.Integer))
+#     style_arr = db.Column(ARRAY(db.Integer))
+#     material_arr = db.Column(ARRAY(db.Integer))
+#     attr_arr = db.Column(ARRAY(db.Integer))
+#     filter_arr = db.Column(ARRAY(db.Integer))
+#     all_arr = db.Column(ARRAY(db.Integer))
+#     is_fav = db.Column(db.Boolean)
+#
+#     def __init__(self,
+#                  prod_id,
+#                  name,
+#                  prod_url,
+#                  brand,
+#                  category,
+#                  color_string,
+#                  currency,
+#                  date,
+#                  description,
+#                  image_hash,
+#                  image_urls,
+#                  price,
+#                  sale,
+#                  saleprice,
+#                  sex,
+#                  shop,
+#                  size_stock,
+#                  kind_cats,
+#                  color_pattern_cats,
+#                  style_cats,
+#                  material_cats,
+#                  attribute_cats,
+#                  filter_cats,
+#                  all_cats,
+#                  kind_arr,
+#                  col_pat_arr,
+#                  style_arr,
+#                  material_arr,
+#                  attr_arr,
+#                  filter_arr,
+#                  all_arr,
+#                  is_fav):
+#         self.prod_id = prod_id
+#         self.name = name
+#         self.prod_url = prod_url
+#         self.brand = brand
+#         self.category = category
+#         self.color_string = color_string
+#         self.currency = currency
+#         self.date = date
+#         self.description = description
+#         self.image_hash = image_hash
+#         self.image_urls = image_urls
+#         self.price = price
+#         self.sale = sale
+#         self.saleprice = saleprice
+#         self.sex = sex
+#         self.shop = shop
+#         self.size_stock = size_stock
+#         self.kind_cats = kind_cats
+#         self.color_pattern_cats = color_pattern_cats
+#         self.style_cats = style_cats
+#         self.material_cats = material_cats
+#         self.attribute_cats = attribute_cats
+#         self.filter_cats = filter_cats
+#         self.all_cats = all_cats
+#         self.kind_arr = kind_arr
+#         self.col_pat_arr = col_pat_arr
+#         self.style_arr = style_arr
+#         self.material_arr = material_arr
+#         self.attr_arr = attr_arr
+#         self.filter_arr = filter_arr
+#         self.all_arr = all_arr
+#         self.is_fav = is_fav
+#
+#     def __repr__(self):
+#         return '<id={}>'.format(self.id)
+#
+#     def return_name(self):
+#         return self.name
 
 
-class ImagesV2Skinny(db.Model):
-    __tablename__ = 'images_v2_skinny'
+# class ImagesV2(db.Model):
+#     __tablename__ = 'images_v2'
+#
+#     __table_args__ = (
+#         db.Index('name_idx_v2', 'img_name', postgresql_ops={'img_name': "gin_trgm_ops"},
+#                  postgresql_using='gin'),
+#     )
+#
+#     id = db.Column(db.Integer, primary_key=True)
+#     img_hash = db.Column(db.String(40), db.ForeignKey("images_v2_skinny.img_hash"), index=True, unique=True)
+#     img_url = db.Column(db.String)
+#     prod_id = db.Column(db.String)
+#     prod_url = db.Column(db.String)
+#     brand = db.Column(db.Text)
+#     color_string = db.Column(db.String)
+#     date = db.Column(db.Integer)
+#     name = db.Column('img_name', db.Text, index=True)
+#     price = db.Column(db.Float)
+#     sale = db.Column(db.Boolean)
+#     saleprice = db.Column(db.Float)
+#     sex = db.Column(db.String)
+#     shop = db.Column(db.String)
+#     kind_cats = db.Column(ARRAY(db.String), index=True)
+#     color_pattern_cats = db.Column(ARRAY(db.String))
+#     style_cats = db.Column(ARRAY(db.String))
+#     material_cats = db.Column(ARRAY(db.String))
+#     attribute_cats = db.Column(ARRAY(db.String))
+#     filter_cats = db.Column(ARRAY(db.String))
+#     all_cats = db.Column(ARRAY(db.String), index=True)
+#     kind_arr = db.Column(ARRAY(db.Integer))
+#     col_pat_arr = db.Column(ARRAY(db.Integer))
+#     style_arr = db.Column(ARRAY(db.Integer))
+#     material_arr = db.Column(ARRAY(db.Integer))
+#     attr_arr = db.Column(ARRAY(db.Integer))
+#     filter_arr = db.Column(ARRAY(db.Integer))
+#     all_arr = db.Column(ARRAY(db.Integer))
+#     color_1 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
+#     color_1_hex = db.Column(db.String)
+#     color_2 = db.Column(ARRAY(db.Integer))
+#     color_2_hex = db.Column(db.String)
+#     color_3 = db.Column(ARRAY(db.Integer))
+#     color_3_hex = db.Column(db.String)
+#     encoding_crop = db.Column(ARRAY(db.Integer))
+#     size_stock = db.Column(MutableList.as_mutable(JSONB))
+#     in_stock = db.Column(db.Boolean)
+#     encoding_vgg16 = db.Column(ARRAY(db.Integer))
+#
+#     def __init__(self,
+#                  img_hash,
+#                  img_url,
+#                  prod_id,
+#                  prod_url,
+#                  brand,
+#                  color_string,
+#                  date,
+#                  name,
+#                  price,
+#                  sale,
+#                  saleprice,
+#                  sex,
+#                  shop,
+#                  kind_cats,
+#                  color_pattern_cats,
+#                  style_cats,
+#                  material_cats,
+#                  attribute_cats,
+#                  filter_cats,
+#                  all_cats,
+#                  kind_arr,
+#                  col_pat_arr,
+#                  style_arr,
+#                  material_arr,
+#                  attr_arr,
+#                  filter_arr,
+#                  all_arr,
+#                  color_1,
+#                  color_1_hex,
+#                  color_2,
+#                  color_2_hex,
+#                  color_3,
+#                  color_3_hex,
+#                  encoding_crop,
+#                  size_stock,
+#                  in_stock,
+#                  encoding_vgg16):
+#
+#         self.img_hash = img_hash
+#         self.img_url = img_url
+#         self.prod_id = prod_id
+#         self.prod_url = prod_url
+#         self.brand = brand
+#         self.color_string = color_string
+#         self.date = date
+#         self.name = name
+#         self.price = price
+#         self.sale = sale
+#         self.saleprice = saleprice
+#         self.sex = sex
+#         self.shop = shop
+#         self.kind_cats = kind_cats
+#         self.color_pattern_cats = color_pattern_cats
+#         self.style_cats = style_cats
+#         self.material_cats = material_cats
+#         self.attribute_cats = attribute_cats
+#         self.filter_cats = filter_cats
+#         self.all_cats = all_cats
+#         self.kind_arr = kind_arr
+#         self.col_pat_arr = col_pat_arr
+#         self.style_arr = style_arr
+#         self.material_arr = material_arr
+#         self.attr_arr = attr_arr
+#         self.filter_arr = filter_arr
+#         self.all_arr = all_arr
+#         self.color_1 = color_1
+#         self.color_1_hex = color_1_hex
+#         self.color_2 = color_2
+#         self.color_2_hex = color_2_hex
+#         self.color_3 = color_3
+#         self.color_3_hex = color_3_hex
+#         self.encoding_crop = encoding_crop
+#         self.size_stock = size_stock
+#         self.in_stock = in_stock
+#         self.encoding_vgg16 = encoding_vgg16
+#
+#     def __repr__(self):
+#         return '<id={}>'.format(self.id)
+#
+#     def return_name(self):
+#         return self.name
 
-    __table_args__ = (
-        db.Index('name_idx_v2_skinny', 'img_name', postgresql_ops={'img_name': "gin_trgm_ops"},
-                 postgresql_using='gin'),
-    )
 
-    id = db.Column(db.Integer)
-    img_hash = db.Column(db.String(40), db.ForeignKey("images_v2.img_hash"), index=True, unique=True, primary_key=True)
-    img_url = db.Column(db.String)
-    prod_id = db.Column(db.String)
-    prod_url = db.Column(db.String)
-    brand = db.Column(db.Text)
-    color_string = db.Column(db.String)
-    date = db.Column(db.Integer)
-    name = db.Column('img_name', db.Text, index=True)
-    price = db.Column(db.Float)
-    sale = db.Column(db.Boolean)
-    saleprice = db.Column(db.Float)
-    discount_rate = db.Column(db.Float)
-    sex = db.Column(db.String)
-    shop = db.Column(db.String)
-    kind_cats = db.Column(ARRAY(db.String), index=True)
-    color_pattern_cats = db.Column(ARRAY(db.String))
-    style_cats = db.Column(ARRAY(db.String))
-    material_cats = db.Column(ARRAY(db.String))
-    attribute_cats = db.Column(ARRAY(db.String))
-    filter_cats = db.Column(ARRAY(db.String))
-    all_cats = db.Column(ARRAY(db.String), index=True)
-    size_stock = db.Column(MutableList.as_mutable(JSONB))
-    in_stock = db.Column(db.Boolean)
-
-    def __init__(self,
-                 img_hash,
-                 img_url,
-                 prod_id,
-                 prod_url,
-                 brand,
-                 color_string,
-                 date,
-                 name,
-                 price,
-                 sale,
-                 saleprice,
-                 discount_rate,
-                 sex,
-                 shop,
-                 kind_cats,
-                 color_pattern_cats,
-                 style_cats,
-                 material_cats,
-                 attribute_cats,
-                 filter_cats,
-                 all_cats,
-                 size_stock,
-                 in_stock):
-
-        self.img_hash = img_hash
-        self.img_url = img_url
-        self.prod_id = prod_id
-        self.prod_url = prod_url
-        self.brand = brand
-        self.color_string = color_string
-        self.date = date
-        self.name = name
-        self.price = price
-        self.sale = sale
-        self.saleprice = saleprice
-        self.discount_rate = discount_rate
-        self.sex = sex
-        self.shop = shop
-        self.kind_cats = kind_cats
-        self.color_pattern_cats = color_pattern_cats
-        self.style_cats = style_cats
-        self.material_cats = material_cats
-        self.attribute_cats = attribute_cats
-        self.filter_cats = filter_cats
-        self.all_cats = all_cats
-        self.size_stock = size_stock
-        self.in_stock = in_stock
-
-    def __repr__(self):
-        return '<id={}>'.format(self.id)
-
-    def return_name(self):
-        return self.name
+# class ImagesV2Skinny(db.Model):
+#     __tablename__ = 'images_v2_skinny'
+#
+#     __table_args__ = (
+#         db.Index('name_idx_v2_skinny', 'img_name', postgresql_ops={'img_name': "gin_trgm_ops"},
+#                  postgresql_using='gin'),
+#     )
+#
+#     id = db.Column(db.Integer)
+#     img_hash = db.Column(db.String(40), db.ForeignKey("images_v2.img_hash"), index=True, unique=True, primary_key=True)
+#     img_url = db.Column(db.String)
+#     prod_id = db.Column(db.String)
+#     prod_url = db.Column(db.String)
+#     brand = db.Column(db.Text)
+#     color_string = db.Column(db.String)
+#     date = db.Column(db.Integer)
+#     name = db.Column('img_name', db.Text, index=True)
+#     price = db.Column(db.Float)
+#     sale = db.Column(db.Boolean)
+#     saleprice = db.Column(db.Float)
+#     discount_rate = db.Column(db.Float)
+#     sex = db.Column(db.String)
+#     shop = db.Column(db.String)
+#     kind_cats = db.Column(ARRAY(db.String), index=True)
+#     color_pattern_cats = db.Column(ARRAY(db.String))
+#     style_cats = db.Column(ARRAY(db.String))
+#     material_cats = db.Column(ARRAY(db.String))
+#     attribute_cats = db.Column(ARRAY(db.String))
+#     filter_cats = db.Column(ARRAY(db.String))
+#     all_cats = db.Column(ARRAY(db.String), index=True)
+#     size_stock = db.Column(MutableList.as_mutable(JSONB))
+#     in_stock = db.Column(db.Boolean)
+#
+#     def __init__(self,
+#                  img_hash,
+#                  img_url,
+#                  prod_id,
+#                  prod_url,
+#                  brand,
+#                  color_string,
+#                  date,
+#                  name,
+#                  price,
+#                  sale,
+#                  saleprice,
+#                  discount_rate,
+#                  sex,
+#                  shop,
+#                  kind_cats,
+#                  color_pattern_cats,
+#                  style_cats,
+#                  material_cats,
+#                  attribute_cats,
+#                  filter_cats,
+#                  all_cats,
+#                  size_stock,
+#                  in_stock):
+#
+#         self.img_hash = img_hash
+#         self.img_url = img_url
+#         self.prod_id = prod_id
+#         self.prod_url = prod_url
+#         self.brand = brand
+#         self.color_string = color_string
+#         self.date = date
+#         self.name = name
+#         self.price = price
+#         self.sale = sale
+#         self.saleprice = saleprice
+#         self.discount_rate = discount_rate
+#         self.sex = sex
+#         self.shop = shop
+#         self.kind_cats = kind_cats
+#         self.color_pattern_cats = color_pattern_cats
+#         self.style_cats = style_cats
+#         self.material_cats = material_cats
+#         self.attribute_cats = attribute_cats
+#         self.filter_cats = filter_cats
+#         self.all_cats = all_cats
+#         self.size_stock = size_stock
+#         self.in_stock = in_stock
+#
+#     def __repr__(self):
+#         return '<id={}>'.format(self.id)
+#
+#     def return_name(self):
+#         return self.name
 
 
 class LoadingContent(db.Model):

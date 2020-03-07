@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ProductSchemaV2, ProductsWomenASchema
+from marshmallow_schema import ProductsWomenASchema, ProductsMenASchema
 import json
 import data.cats as cats
 from random import shuffle
@@ -106,7 +106,7 @@ def recommend_similar_tags(db, User, Products, data):
                 if req_sex == 'women':
                     prod_serial = ProductsWomenASchema().dump(query_result)
                 else:
-                    prod_serial = ProductSchemaV2().dump(query_result)
+                    prod_serial = ProductsMenASchema().dump(query_result)
                 prod_results.append(prod_serial)
         suggestions.append({
             'look_name': 'All',
@@ -135,7 +135,7 @@ def recommend_from_random(db, Products, data):
             if req_sex == 'women':
                 prod_serial = ProductsWomenASchema().dump(query_result)
             else:
-                prod_serial = ProductSchemaV2().dump(query_result)
+                prod_serial = ProductsMenASchema().dump(query_result)
             prod_results.append(prod_serial)
 
     suggestions = [
