@@ -87,7 +87,6 @@ class Cats:
         'swimwear',
         't-shirt',
         't-shirts',
-        'tee',
         'thong',
         'tights',
         'top',
@@ -335,6 +334,7 @@ class Cats:
     ]
     material_cats = [
         'beaded',
+        'borg',
         'cashmere',
         'chiffon',
         'chino',

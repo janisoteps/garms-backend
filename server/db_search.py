@@ -806,8 +806,8 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
         relaxed_limit = 1000
     else:
         search_limit = 80
-        relaxed_threshold = 30
-        relaxed_limit = 50
+        relaxed_threshold = 80
+        relaxed_limit = 80
 
     maternity = False
     tag_list = cats.Cats()
@@ -954,14 +954,20 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
     )
 
     query_conditions_all.append(
-        func.lower(ImagesSkinny.name).op('%%')(search_string_clean)
+        func.lower(ImagesSkinny.name).op('@@')(func.plainto_tsquery(search_string_clean))
     )
 
     # ========= MAIN QUERY ===========
+    # query_results = (db.session.query(ImagesSkinny, Images).filter(
+    #     ImagesSkinny.img_hash == Images.img_hash
+    # ).filter(
+    #     and_(*query_conditions)
+    # ).limit(search_limit).all())
+
     query_results = (db.session.query(ImagesSkinny, Images).filter(
         ImagesSkinny.img_hash == Images.img_hash
     ).filter(
-        and_(*query_conditions)
+        and_(*query_conditions_all)
     ).limit(search_limit).all())
 
     print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
@@ -971,11 +977,9 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
         relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
         ).filter(
-            and_(
-                and_(*query_conditions_kind),
-                or_(*query_conditions_all)
-            )
+            and_(*query_conditions)
         ).limit(relaxed_limit).all())
+
         query_results += relaxed_query_results
 
     print(f'TOTAL RESULT LENGTH: {len(query_results)}')
