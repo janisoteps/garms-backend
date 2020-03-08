@@ -967,7 +967,10 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
     query_results = (db.session.query(ImagesSkinny, Images).filter(
         ImagesSkinny.img_hash == Images.img_hash
     ).filter(
-        and_(*query_conditions_all)
+        and_(
+            and_(*query_conditions_all),
+            and_(*query_conditions)
+        )
     ).limit(search_limit).all())
 
     print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
@@ -977,7 +980,10 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
         relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
         ).filter(
-            and_(*query_conditions)
+            and_(
+                and_(*query_conditions_kind),
+                and_(*query_conditions_all)
+            )
         ).limit(relaxed_limit).all())
 
         query_results += relaxed_query_results
