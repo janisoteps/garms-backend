@@ -628,7 +628,7 @@ def get_products():
             )
             query_results = query.all()
             for query_result in query_results:
-                prod_serial = ProductSchemaV2().dump(query_result)
+                prod_serial = ProductsMenASchema().dump(query_result)
                 prod_results.append(prod_serial)
 
         return json.dumps(prod_results)
@@ -705,7 +705,7 @@ def get_image():
         else:
             query = db.session.query(ImagesFullMenA).filter(ImagesFullMenA.img_hash == img_hash)
             query_result = query.first()
-            img_serial = ImageSchemaV2().dump(query_result)
+            img_serial = ImagesFullMenASchema().dump(query_result)
 
         return json.dumps(img_serial)
 
@@ -746,6 +746,16 @@ def cat_transform_boohoo():
         data = request.get_json(force=True)
 
         req_response = cat_transformation.cat_fix_boohoo(db, ImagesSkinnyWomenA, data, cats)
+
+        return json.dumps(req_response)
+
+
+@app.route("/api/cat_transform_borg", methods=['POST'])
+def cat_transform_borg():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response = cat_transformation.add_borg_cat(db, ImagesSkinnyMenA, data)
 
         return json.dumps(req_response)
 
