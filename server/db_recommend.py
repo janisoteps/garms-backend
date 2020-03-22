@@ -77,7 +77,9 @@ def recommend_similar_tags(db, User, Products, data):
                 and_(
                     or_(*kind_conditions),
                     (Products.sex == req_sex),
-                    Products.prod_id.isnot(None)
+                    Products.prod_id.isnot(None),
+                    Products.price > 40,
+                    Products.price < 100
                 )
             )
 
@@ -120,15 +122,30 @@ def recommend_similar_tags(db, User, Products, data):
 def recommend_from_random(db, Products, data):
     req_sex = data['sex']
     print(f'req_sex = {req_sex}')
-    if req_sex is not '':
-        if req_sex == 'both':
-            query = db.session.query(Products).filter(Products.prod_id.isnot(None))
-        else:
-            query = db.session.query(Products).filter(Products.sex == req_sex).filter(Products.prod_id.isnot(None))
-    else:
-        query = db.session.query(Products).filter(Products.prod_id.isnot(None))
+    rand_conds = []
+    rand_conds.append(
+        and_(
+            (Products.price > 40),
+            (Products.price < 100)
+        )
+    )
+    rand_conds.append(
+        (Products.prod_id.isnot(None))
+    )
 
-    query_results = query.filter(Products.shop != "Farfetch").order_by(func.random()).limit(40).all()
+    query = db.session.query(Products).filter(
+        and_(*rand_conds)
+    )
+
+    # if req_sex is not '':
+    #     if req_sex == 'both':
+    #         query = db.session.query(Products).filter(Products.prod_id.isnot(None))
+    #     else:
+    #         query = db.session.query(Products).filter(Products.sex == req_sex).filter(Products.prod_id.isnot(None))
+    # else:
+    #     query = db.session.query(Products).filter(Products.prod_id.isnot(None))
+
+    query_results = query.order_by(func.random()).limit(40).all()
     prod_results = []
     for query_result in query_results:
         if len(query_result.image_urls) > 0:
