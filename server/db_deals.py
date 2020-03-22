@@ -35,10 +35,11 @@ def get_deals(db, ImagesSkinny, Products, data):
             and_(*sex_conditions),
             and_(*cat_conditions),
             or_(*shop_conditions),
-            or_(*brand_conditions)
+            or_(*brand_conditions),
+            (ImagesSkinny.discount_rate > 0.5)
         )
     )
-    query_results = query.order_by(ImagesSkinny.discount_rate.desc()).limit(100).all()
+    query_results = query.order_by(func.random()).limit(100).all()
 
     prod_results = []
     prod_check = set()
