@@ -57,22 +57,12 @@ def recommend_similar_tags(db, User, Products, data):
             print(f'top cats: {top_cats_rand}')
 
             for top_cat in top_cats_rand:
-                # kind_conditions.append(
-                #     func.lower(ProductsV2.name).ilike('%{}%'.format(top_cat[0]))
-                # )
                 kind_conditions.append(
                     (Products.kind_cats.any(top_cat[0]))
                 )
 
             print('querying for recommended prods')
-            # query = db.session.query(Products).filter(
-            #     and_(
-            #         or_(*kind_conditions),
-            #         (Products.sex == req_sex),
-            #         Products.prod_id.isnot(None),
-            #         (Products.shop != "Farfetch")
-            #     )
-            # )
+
             query = db.session.query(Products).filter(
                 and_(
                     or_(*kind_conditions),
@@ -136,14 +126,6 @@ def recommend_from_random(db, Products, data):
     query = db.session.query(Products).filter(
         and_(*rand_conds)
     )
-
-    # if req_sex is not '':
-    #     if req_sex == 'both':
-    #         query = db.session.query(Products).filter(Products.prod_id.isnot(None))
-    #     else:
-    #         query = db.session.query(Products).filter(Products.sex == req_sex).filter(Products.prod_id.isnot(None))
-    # else:
-    #     query = db.session.query(Products).filter(Products.prod_id.isnot(None))
 
     query_results = query.order_by(func.random()).limit(40).all()
     prod_results = []
