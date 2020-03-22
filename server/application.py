@@ -347,35 +347,22 @@ def commit_product():
             return upload_response
 
 
-# # Upload new product image to database
-# @app.route("/api/commit_image_v2", methods=['post'])
-# def commit_image_v2():
+# @app.route("/api/transform_skinny", methods=['post'])
+# def transform_skinny():
 #     if request.method == 'POST':
 #         data = request.get_json(force=True)
 #         # print(str(data))
+#         #     SkinnyTransform
 #
-#         upload_response = image_commit_v2(db, ImagesV2, data)
+#         req_response = skinny_transformation.SkinnyTransform().img_skinny_transform(
+#             db,
+#             ImagesFullWomenA,
+#             ImagesSkinnyWomenA,
+#             image_commit_v2_skinny,
+#             data
+#         )
 #
-#         return upload_response
-
-
-# Upload new product image to database
-@app.route("/api/transform_skinny", methods=['post'])
-def transform_skinny():
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-        # print(str(data))
-        #     SkinnyTransform
-
-        req_response = skinny_transformation.SkinnyTransform().img_skinny_transform(
-            db,
-            ImagesFullWomenA,
-            ImagesSkinnyWomenA,
-            image_commit_v2_skinny,
-            data
-        )
-
-        return req_response
+#         return req_response
 
 
 # # Upload new product image to database
@@ -668,7 +655,7 @@ def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
         req_sex = data['sex']
-        if req_sex == 'women':
+        if req_sex == 'women' or req_sex == 'both':
             print('suggesting from women table')
             suggestions = recommend_from_random(db, ProductsWomenA, data)
         else:
