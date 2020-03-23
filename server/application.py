@@ -15,7 +15,7 @@ from db_search import search_similar_images, search_from_upload, db_text_search,
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look
 from db_recommend import recommend_similar_tags, recommend_from_random
 from db_deals import get_deals
-from send_email import password_reset_email
+from send_email import password_reset_email, registration_email
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
@@ -108,26 +108,40 @@ def register():
 
         # If no such email exists in DB create a new user submission
         if user is None:
-            reg_submission = User(
-                username=username,
-                email=email,
-                sex=sex,
-                password=pwd,
-                fb_id=fb_id,
-                favorites_ids='',
-                insta_username=None,
-                first_login=first_login,
-                wardrobe=None,
-                looks=None,
-                pw_reset_token=None
-            )
-            db.session.add(reg_submission)
-            db.session.commit()
+            reg_email_response = registration_email(data)
+            if reg_email_response == 202:
+                reg_submission = User(
+                    username=username,
+                    email=email,
+                    sex=sex,
+                    password=pwd,
+                    fb_id=fb_id,
+                    favorites_ids='',
+                    insta_username=None,
+                    first_login=first_login,
+                    wardrobe=None,
+                    looks=None,
+                    pw_reset_token=None
+                )
+                db.session.add(reg_submission)
+                db.session.commit()
 
-            return json.dumps(True)
+                return json.dumps({
+                    'status': True,
+                    'response': 'Registration successful'
+                })
+            else:
+                return json.dumps({
+                    'status': False,
+                    'response': 'Invalid email'
+                })
 
         else:
-            return json.dumps(False)
+            print('User already exists')
+            return json.dumps({
+                'status': False,
+                'response': 'User already exists'
+            })
 
 
 @app.route('/api/login', methods=['POST'])
@@ -407,36 +421,6 @@ def submit_instagram():
         insta_submit_response = insta_mention_commit(db, InstaMentions, data)
 
         return insta_submit_response
-
-
-# # Delete product
-# @app.route("/api/delete", methods=['get'])
-# def delete():
-#     if request.method == 'GET':
-#         img_hash = request.args.get('img_hash')
-#         shop = request.args.get('shop')
-#
-#         if len(img_hash) > 0:
-#             try:
-#                 existing_product = Product.query.filter_by(img_hash=img_hash).first()
-#             except:
-#                 existing_product = None
-#             if existing_product is not None:
-#                 db.session.delete(existing_product)
-#                 db.session.commit()
-#                 return json.dumps(True)
-#             else:
-#                 return json.dumps(False)
-#
-#         if len(shop) > 0:
-#             try:
-#                 shop_products = db.session.query(Product).filter(Product.shop == 'Zalando').order_by(
-#                     func.random()).all()
-#                 db.session.delete(shop_products)
-#                 db.session.commit()
-#                 return json.dumps(True)
-#             except:
-#                 return json.dumps(False)
 
 
 # Trigram search for products with a search string
