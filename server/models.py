@@ -134,6 +134,9 @@ class ImagesSkinnyWomenA(db.Model):
     color_1 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
     color_2 = db.Column(ARRAY(db.Integer))
     color_3 = db.Column(ARRAY(db.Integer))
+    color_4 = db.Column(ARRAY(db.Integer))
+    color_5 = db.Column(ARRAY(db.Integer))
+    color_6 = db.Column(ARRAY(db.Integer))
 
     def __init__(self,
                  img_hash,
@@ -163,7 +166,10 @@ class ImagesSkinnyWomenA(db.Model):
                  in_stock,
                  color_1,
                  color_2,
-                 color_3):
+                 color_3,
+                 color_4,
+                 color_5,
+                 color_6):
 
         self.img_hash = img_hash
         self.img_url = img_url
@@ -193,6 +199,9 @@ class ImagesSkinnyWomenA(db.Model):
         self.color_1 = color_1
         self.color_2 = color_2
         self.color_3 = color_3
+        self.color_4 = color_4
+        self.color_5 = color_5
+        self.color_6 = color_6
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -238,6 +247,9 @@ class ImagesSkinnyMenA(db.Model):
     color_1 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
     color_2 = db.Column(ARRAY(db.Integer))
     color_3 = db.Column(ARRAY(db.Integer))
+    color_4 = db.Column(ARRAY(db.Integer))
+    color_5 = db.Column(ARRAY(db.Integer))
+    color_6 = db.Column(ARRAY(db.Integer))
 
     def __init__(self,
                  img_hash,
@@ -267,7 +279,10 @@ class ImagesSkinnyMenA(db.Model):
                  in_stock,
                  color_1,
                  color_2,
-                 color_3):
+                 color_3,
+                 color_4,
+                 color_5,
+                 color_6):
 
         self.img_hash = img_hash
         self.img_url = img_url
@@ -297,6 +312,9 @@ class ImagesSkinnyMenA(db.Model):
         self.color_1 = color_1
         self.color_2 = color_2
         self.color_3 = color_3
+        self.color_4 = color_4
+        self.color_5 = color_5
+        self.color_6 = color_6
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -344,6 +362,12 @@ class ImagesFullWomenA(db.Model):
     color_2_hex = db.Column(db.String)
     color_3 = db.Column(ARRAY(db.Integer))
     color_3_hex = db.Column(db.String)
+    color_4 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
+    color_4_hex = db.Column(db.String)
+    color_5 = db.Column(ARRAY(db.Integer))
+    color_5_hex = db.Column(db.String)
+    color_6 = db.Column(ARRAY(db.Integer))
+    color_6_hex = db.Column(db.String)
     size_stock = db.Column(MutableList.as_mutable(JSONB))
     in_stock = db.Column(db.Boolean)
     encoding_vgg16 = db.Column(ARRAY(db.Integer))
@@ -378,6 +402,12 @@ class ImagesFullWomenA(db.Model):
                  color_2_hex,
                  color_3,
                  color_3_hex,
+                 color_4,
+                 color_4_hex,
+                 color_5,
+                 color_5_hex,
+                 color_6,
+                 color_6_hex,
                  size_stock,
                  in_stock,
                  encoding_vgg16):
@@ -411,6 +441,12 @@ class ImagesFullWomenA(db.Model):
         self.color_2_hex = color_2_hex
         self.color_3 = color_3
         self.color_3_hex = color_3_hex
+        self.color_4 = color_4
+        self.color_4_hex = color_4_hex
+        self.color_5 = color_5
+        self.color_5_hex = color_5_hex
+        self.color_6 = color_6
+        self.color_6_hex = color_6_hex
         self.size_stock = size_stock
         self.in_stock = in_stock
         self.encoding_vgg16 = encoding_vgg16
@@ -460,6 +496,12 @@ class ImagesFullMenA(db.Model):
     color_2_hex = db.Column(db.String)
     color_3 = db.Column(ARRAY(db.Integer))
     color_3_hex = db.Column(db.String)
+    color_4 = db.Column(ARRAY(db.Integer))  # Array of 3 integers from 0 to 255 representing 1 RGB value
+    color_4_hex = db.Column(db.String)
+    color_5 = db.Column(ARRAY(db.Integer))
+    color_5_hex = db.Column(db.String)
+    color_6 = db.Column(ARRAY(db.Integer))
+    color_6_hex = db.Column(db.String)
     size_stock = db.Column(MutableList.as_mutable(JSONB))
     in_stock = db.Column(db.Boolean)
     encoding_vgg16 = db.Column(ARRAY(db.Integer))
@@ -494,6 +536,12 @@ class ImagesFullMenA(db.Model):
                  color_2_hex,
                  color_3,
                  color_3_hex,
+                 color_4,
+                 color_4_hex,
+                 color_5,
+                 color_5_hex,
+                 color_6,
+                 color_6_hex,
                  size_stock,
                  in_stock,
                  encoding_vgg16):
@@ -527,6 +575,12 @@ class ImagesFullMenA(db.Model):
         self.color_2_hex = color_2_hex
         self.color_3 = color_3
         self.color_3_hex = color_3_hex
+        self.color_4 = color_4
+        self.color_4_hex = color_4_hex
+        self.color_5 = color_5
+        self.color_5_hex = color_5_hex
+        self.color_6 = color_6
+        self.color_6_hex = color_6_hex
         self.size_stock = size_stock
         self.in_stock = in_stock
         self.encoding_vgg16 = encoding_vgg16
