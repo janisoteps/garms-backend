@@ -80,6 +80,7 @@ class Cats:
         'sundress',
         'sunglasses',
         'sweater',
+        'sweatpants',
         'sweatshirt',
         'swim',
         'swimming',
