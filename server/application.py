@@ -731,6 +731,20 @@ def cat_transform_borg():
         return json.dumps(req_response)
 
 
+@app.route("/api/cat_transform_sweatpant", methods=['POST'])
+def cat_transform_sweatpant():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+
+        req_response_women = cat_transformation.add_sweatpant_cat(db, ImagesSkinnyWomenA, data)
+        req_response_men = cat_transformation.add_sweatpant_cat(db, ImagesSkinnyMenA, data)
+
+        return json.dumps({
+            'women_res': req_response_women,
+            'men_res': req_response_men
+        })
+
+
 @app.route("/api/enc_transform", methods=['POST'])
 def enc_transform():
     if request.method == 'POST':

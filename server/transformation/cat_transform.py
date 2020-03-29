@@ -291,6 +291,44 @@ def add_borg_cat(db, ImagesSkinny, data):
                 print(f'LINES OUT: {counter_out}')
 
 
+def add_sweatpant_cat(db, ImagesSkinny, data):
+    transform_key = os.environ['TRANSFORM_KEY']
+    cat = 'sweatpant'
+    if data['transform_key'] == transform_key:
+        img_hashes = db.session.query(
+            ImagesSkinny.img_hash
+        ).order_by(func.random()).all()
+
+        counter_in = 0
+        counter_out = 0
+        for img_hash in img_hashes:
+            counter_in += 1
+            print(f'LINES IN: {counter_in}')
+            query_result = ImagesSkinny.query.filter_by(img_hash=img_hash).first()
+            query_name = query_result.name
+
+            if 'sweatpant' in query_name:
+                name_arr = query_name.lower().split(' ')
+                cat_name_arr = [word.replace('*', '') for word in name_arr]
+
+                query_kind_cats = query_result.kind_cats
+                query_all_cats = query_result.all_cats
+                new_kind_cats = query_kind_cats
+                new_all_cats = query_all_cats
+
+                for word in cat_name_arr:
+                    if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                        new_kind_cats.append(cat)
+                        new_all_cats.append(cat)
+
+                query_result.kind_cats = new_kind_cats
+                query_result.all_cats = new_all_cats
+
+                db.session.commit()
+                counter_out += 1
+                print(f'LINES OUT: {counter_out}')
+
+
 class CatTransform:
     def cat_transform(self, cats, db, ImagesV2, data):
         key_string = os.environ['TRANSFORM_KEY']
