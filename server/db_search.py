@@ -119,6 +119,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
 
     conditions_brand = []
     query_conditions_all = []
+    query_conditions_no_results = []
 
     maternity = False
     for tag in req_tags_positive:
@@ -227,6 +228,9 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
     query_conditions_all.append(
         (func.lower(ImagesSkinny.name).op('%%')(search_string_clean))
     )
+    query_conditions_no_results.append(
+        func.lower(ImagesSkinny.name).op('@@')(func.plainto_tsquery(search_string_clean))
+    )
 
     # ====== MAIN QUERY ======
     img_table_query_results = (db.session.query(ImagesSkinny, Images).filter(
@@ -298,6 +302,17 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
 
         img_table_query_results += query_results_relaxed_3
 
+    if len(img_table_query_results) < 100:
+        query_results_relaxed_4 = (db.session.query(ImagesSkinny, Images).filter(
+            ImagesSkinny.img_hash == Images.img_hash
+        ).filter(
+            and_(*query_conditions_no_results)
+        ).limit(1000 - len(img_table_query_results)).all())
+
+        print(f'{len(query_results_relaxed_4)} LAST RESORT RESULTS ADDED')
+
+        img_table_query_results += query_results_relaxed_4
+    
     # req_encoding_crop = req_image_data.encoding_crop
     req_encoding_vgg16 = req_image_data.encoding_vgg16
 
