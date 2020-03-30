@@ -293,10 +293,12 @@ def add_borg_cat(db, ImagesSkinny, data):
 
 def add_sweatpant_cat(db, ImagesSkinny, data):
     transform_key = os.environ['TRANSFORM_KEY']
-    cat = 'sweatpant'
+    cat = 'sweatpants'
     if data['transform_key'] == transform_key:
         img_hashes = db.session.query(
             ImagesSkinny.img_hash
+        ).filter(
+            func.lower(ImagesSkinny.name).op('@@')(func.plainto_tsquery('sweatpants'))
         ).order_by(func.random()).all()
 
         counter_in = 0
@@ -307,7 +309,7 @@ def add_sweatpant_cat(db, ImagesSkinny, data):
             query_result = ImagesSkinny.query.filter_by(img_hash=img_hash).first()
             query_name = query_result.name
 
-            if 'sweatpant' in query_name:
+            if 'sweatpants' in query_name:
                 name_arr = query_name.lower().split(' ')
                 cat_name_arr = [word.replace('*', '') for word in name_arr]
 

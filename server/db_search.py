@@ -303,6 +303,9 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
 
     # Start with main RBG color distances to reduce the amount of the rest of the distances to calc
     print(f'TOTAL RESULT LENGTH: {len(img_table_query_results)}')
+    if len(img_table_query_results) == 0:
+        return False
+
     color_list = []
     for img_table_query_result in img_table_query_results:
         query_result = img_table_query_result[1]
@@ -982,6 +985,18 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
         ).filter(
             and_(
                 and_(*query_conditions_kind),
+                and_(*query_conditions_all)
+            )
+        ).limit(relaxed_limit).all())
+
+        query_results += relaxed_query_results
+
+    if len(query_results) < relaxed_threshold:
+        # RELAXED QUERY
+        relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
+            ImagesSkinny.img_hash == Images.img_hash
+        ).filter(
+            and_(
                 and_(*query_conditions_all)
             )
         ).limit(relaxed_limit).all())
