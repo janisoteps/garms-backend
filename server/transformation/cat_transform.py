@@ -297,15 +297,15 @@ def add_sweatpant_cat(db, ImagesSkinny, data):
     if data['transform_key'] == transform_key:
         img_hashes = db.session.query(
             ImagesSkinny.img_hash
-        ).filter(
-            func.lower(ImagesSkinny.name).op('@@')(func.plainto_tsquery('sweatpants'))
         ).order_by(func.random()).all()
 
         counter_in = 0
         counter_out = 0
         for img_hash in img_hashes:
             counter_in += 1
-            print(f'LINES IN: {counter_in}')
+            if counter_in % 100 == 0:
+                print(f'LINES IN: {counter_in}')
+                print(f'LINES OUT: {counter_out}')
             query_result = ImagesSkinny.query.filter_by(img_hash=img_hash).first()
             query_name = query_result.name
 
