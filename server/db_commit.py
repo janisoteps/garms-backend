@@ -134,27 +134,27 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
     else:
         print('Image ALREADY IN DB')
 
-        existing_img_full_row.img_hash = img_hash
-        existing_img_skinny_row.img_url = img_url
+        # existing_img_full_row.img_hash = img_hash
+        # existing_img_skinny_row.img_url = img_url
         existing_img_full_row.prod_id = prod_id
         existing_img_full_row.prod_url = prod_url
-        existing_img_skinny_row.brand = brand
+        existing_img_full_row.brand = brand
         existing_img_full_row.color_string = color_string
         existing_img_full_row.date = date
         existing_img_full_row.name = name
         existing_img_full_row.price = price
         existing_img_full_row.sale = sale
         existing_img_full_row.saleprice = saleprice
-        existing_img_skinny_row.discount_rate = discount_rate
-        existing_img_full_row.sex = sex
-        existing_img_full_row.shop = shop
+        existing_img_full_row.discount_rate = discount_rate
+        # existing_img_full_row.sex = sex
+        # existing_img_full_row.shop = shop
         existing_img_full_row.kind_cats = kind_cats
         existing_img_full_row.pattern_cats = pattern_cats
         existing_img_full_row.color_cats = color_cats
         existing_img_full_row.style_cats = style_cats
         existing_img_full_row.material_cats = material_cats
         existing_img_full_row.attribute_cats = attribute_cats
-        existing_img_skinny_row.length_cats = length_cats
+        existing_img_full_row.length_cats = length_cats
         existing_img_full_row.filter_cats = filter_cats
         existing_img_full_row.all_cats = all_cats
         existing_img_full_row.color_1 = color_1
@@ -171,10 +171,10 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         existing_img_full_row.color_6_hex = color_6_hex
         existing_img_full_row.size_stock = size_stock
         existing_img_full_row.in_stock = in_stock
-        existing_img_full_row.encoding_vgg16 = encoding_vgg16
+        # existing_img_full_row.encoding_vgg16 = encoding_vgg16
 
-        existing_img_skinny_row.img_hash = img_hash
-        existing_img_skinny_row.img_url = img_url
+        # existing_img_skinny_row.img_hash = img_hash
+        # existing_img_skinny_row.img_url = img_url
         existing_img_skinny_row.prod_id = prod_id
         existing_img_skinny_row.prod_url = prod_url
         existing_img_skinny_row.brand = brand
@@ -185,8 +185,8 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         existing_img_skinny_row.sale = sale
         existing_img_skinny_row.saleprice = saleprice
         existing_img_skinny_row.discount_rate = discount_rate
-        existing_img_skinny_row.sex = sex
-        existing_img_skinny_row.shop = shop
+        # existing_img_skinny_row.sex = sex
+        # existing_img_skinny_row.shop = shop
         existing_img_skinny_row.kind_cats = kind_cats
         existing_img_skinny_row.pattern_cats = pattern_cats
         existing_img_skinny_row.color_cats = color_cats
@@ -288,8 +288,8 @@ def product_commit(db, ProductModel, data):
         print('PRODUCT ALREADY EXISTS')
 
         existing_product.name = name
-        existing_product.prod_url = prod_url
-        existing_product.brand = brand
+        # existing_product.prod_url = prod_url
+        # existing_product.brand = brand
         existing_product.category = category
         existing_product.color_string = color_string
         existing_product.currency = currency
@@ -301,8 +301,8 @@ def product_commit(db, ProductModel, data):
         existing_product.sale = sale
         existing_product.saleprice = saleprice
         existing_product.discount_rate = discount_rate
-        existing_product.sex = sex
-        existing_product.shop = shop
+        # existing_product.sex = sex
+        # existing_product.shop = shop
         existing_product.size_stock = size_stock
         existing_product.kind_cats = kind_cats
         existing_product.pattern_cats = pattern_cats
