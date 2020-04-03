@@ -755,16 +755,24 @@ def old_data_purge():
         data = request.get_json(force=True)
         query_type = data['query_type']
         query_sex = data['sex']
-        query_db = ProductsWomenA if query_sex == 'women' else ProductsMenA
+        query_prod_db = ProductsWomenA if query_sex == 'women' else ProductsMenA
+        query_img_skinny_db = ImagesSkinnyWomenA if query_sex == 'women' else ImagesSkinnyMenA
+        query_img_full_db = ImagesFullWomenA if query_sex == 'women' else ImagesFullMenA
 
-        if query_type == 'count':
-            response = data_purge.count_faved_prods(db, query_db)
+        if query_type == 'faves':
+            response = data_purge.count_faved_prods(db, query_prod_db)
             return json.dumps(response)
 
         elif query_type == 'dates':
-            response = data_purge.count_prod_dates(db, query_db)
+            response = data_purge.count_prod_dates(db, query_prod_db)
             return json.dumps(response)
 
+        elif query_type == 'purge':
+            response = data_purge.old_data_purge(db, query_img_skinny_db, query_img_full_db, query_prod_db)
+            return json.dumps({
+                'response': response
+            })
+        
         else:
             return json.dumps(False)
 
