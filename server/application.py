@@ -19,8 +19,7 @@ from send_email import password_reset_email, registration_email
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
-import transformation.skinny_transform as skinny_transformation
-import transformation.preserve_faves_transform as preserve_transform
+import transformation.old_data_purge as data_purge
 import data.cats as cats
 from hashlib import sha256
 import random
@@ -359,57 +358,6 @@ def commit_product():
         else:
             upload_response = product_commit(db, ProductsMenA, data)
             return upload_response
-
-
-# @app.route("/api/transform_skinny", methods=['post'])
-# def transform_skinny():
-#     if request.method == 'POST':
-#         data = request.get_json(force=True)
-#         # print(str(data))
-#         #     SkinnyTransform
-#
-#         req_response = skinny_transformation.SkinnyTransform().img_skinny_transform(
-#             db,
-#             ImagesFullWomenA,
-#             ImagesSkinnyWomenA,
-#             image_commit_v2_skinny,
-#             data
-#         )
-#
-#         return req_response
-
-
-# # Upload new product image to database
-# @app.route("/api/transform_preserve_faves", methods=['post'])
-# def transform_preserve_faves():
-#     if request.method == 'POST':
-#         data = request.get_json(force=True)
-#
-#         req_response = preserve_transform.PreserveFaves().preserve_faves_transform(
-#             db,
-#             ImagesFullWomenA,
-#             ImagesV2,
-#             ImagesSkinnyWomenA,
-#             ImagesV2Skinny,
-#             ProductsWomenA,
-#             ProductsV2,
-#             User,
-#             data
-#         )
-#
-#         return req_response
-
-
-# # Upload new product object to database
-# @app.route("/api/commit_product_v2", methods=['post'])
-# def commit_product_v2():
-#     if request.method == 'POST':
-#         data = request.get_json(force=True)
-#
-#         # print(str(data))
-#         upload_response = product_commit_v2(db, ProductsV2, data)
-#
-#         return upload_response
 
 
 @app.route("/api/submit_instagram", methods=['post'])
@@ -799,6 +747,34 @@ def count_in_stock():
         return json.dumps({
             'response': stock_aggr
         })
+
+
+@app.route("/api/old_data_purge", methods=['POST'])
+def old_data_purge():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        query_type = data['query_type']
+        query_sex = data['sex']
+        query_prod_db = ProductsWomenA if query_sex == 'women' else ProductsMenA
+        query_img_skinny_db = ImagesSkinnyWomenA if query_sex == 'women' else ImagesSkinnyMenA
+        query_img_full_db = ImagesFullWomenA if query_sex == 'women' else ImagesFullMenA
+
+        if query_type == 'faves':
+            response = data_purge.count_faved_prods(db, query_prod_db)
+            return json.dumps(response)
+
+        elif query_type == 'dates':
+            response = data_purge.count_prod_dates(db, query_prod_db)
+            return json.dumps(response)
+
+        elif query_type == 'purge':
+            response = data_purge.old_data_purge(db, query_img_skinny_db, query_img_full_db, query_prod_db)
+            return json.dumps({
+                'response': response
+            })
+        
+        else:
+            return json.dumps(False)
 
 
 @app.route("/api/count_vgg16", methods=['GET'])

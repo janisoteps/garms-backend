@@ -137,6 +137,7 @@ class ImagesSkinnyWomenA(db.Model):
     color_4 = db.Column(ARRAY(db.Integer))
     color_5 = db.Column(ARRAY(db.Integer))
     color_6 = db.Column(ARRAY(db.Integer))
+    is_deleted = db.Column(db.Boolean)
 
     def __init__(self,
                  img_hash,
@@ -169,7 +170,8 @@ class ImagesSkinnyWomenA(db.Model):
                  color_3,
                  color_4,
                  color_5,
-                 color_6):
+                 color_6,
+                 is_deleted):
 
         self.img_hash = img_hash
         self.img_url = img_url
@@ -202,6 +204,7 @@ class ImagesSkinnyWomenA(db.Model):
         self.color_4 = color_4
         self.color_5 = color_5
         self.color_6 = color_6
+        self.is_deleted = is_deleted
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -250,6 +253,7 @@ class ImagesSkinnyMenA(db.Model):
     color_4 = db.Column(ARRAY(db.Integer))
     color_5 = db.Column(ARRAY(db.Integer))
     color_6 = db.Column(ARRAY(db.Integer))
+    is_deleted = db.Column(db.Boolean)
 
     def __init__(self,
                  img_hash,
@@ -282,7 +286,8 @@ class ImagesSkinnyMenA(db.Model):
                  color_3,
                  color_4,
                  color_5,
-                 color_6):
+                 color_6,
+                 is_deleted):
 
         self.img_hash = img_hash
         self.img_url = img_url
@@ -315,6 +320,7 @@ class ImagesSkinnyMenA(db.Model):
         self.color_4 = color_4
         self.color_5 = color_5
         self.color_6 = color_6
+        self.is_deleted = is_deleted
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -333,7 +339,6 @@ class ImagesFullWomenA(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     img_hash = db.Column(db.String(40), db.ForeignKey("images_skinny_women_a.img_hash"), index=True, unique=True)
-    # img_hash = db.Column(db.String(40), index=True, unique=True)
     img_url = db.Column(db.String)
     prod_id = db.Column(db.String)
     prod_url = db.Column(db.String)
@@ -371,6 +376,7 @@ class ImagesFullWomenA(db.Model):
     size_stock = db.Column(MutableList.as_mutable(JSONB))
     in_stock = db.Column(db.Boolean)
     encoding_vgg16 = db.Column(ARRAY(db.Integer))
+    is_deleted = db.Column(db.Boolean)
 
     def __init__(self,
                  img_hash,
@@ -410,7 +416,8 @@ class ImagesFullWomenA(db.Model):
                  color_6_hex,
                  size_stock,
                  in_stock,
-                 encoding_vgg16):
+                 encoding_vgg16,
+                 is_deleted):
 
         self.img_hash = img_hash
         self.img_url = img_url
@@ -450,6 +457,8 @@ class ImagesFullWomenA(db.Model):
         self.size_stock = size_stock
         self.in_stock = in_stock
         self.encoding_vgg16 = encoding_vgg16
+        self.is_deleted = is_deleted
+
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -505,6 +514,7 @@ class ImagesFullMenA(db.Model):
     size_stock = db.Column(MutableList.as_mutable(JSONB))
     in_stock = db.Column(db.Boolean)
     encoding_vgg16 = db.Column(ARRAY(db.Integer))
+    is_deleted = db.Column(db.Boolean)
 
     def __init__(self,
                  img_hash,
@@ -544,7 +554,8 @@ class ImagesFullMenA(db.Model):
                  color_6_hex,
                  size_stock,
                  in_stock,
-                 encoding_vgg16):
+                 encoding_vgg16,
+                 is_deleted):
 
         self.img_hash = img_hash
         self.img_url = img_url
@@ -584,6 +595,7 @@ class ImagesFullMenA(db.Model):
         self.size_stock = size_stock
         self.in_stock = in_stock
         self.encoding_vgg16 = encoding_vgg16
+        self.is_deleted = is_deleted
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -624,6 +636,7 @@ class ProductsWomenA(db.Model):
     size_stock = db.Column(MutableList.as_mutable(JSONB))
     in_stock = db.Column(db.Boolean)
     is_fav = db.Column(db.Boolean)
+    is_deleted = db.Column(db.Boolean)
 
     def __init__(self,
                  prod_id,
@@ -654,7 +667,8 @@ class ProductsWomenA(db.Model):
                  all_cats,
                  size_stock,
                  in_stock,
-                 is_fav):
+                 is_fav,
+                 is_deleted):
         self.prod_id = prod_id
         self.name = name
         self.prod_url = prod_url
@@ -684,6 +698,7 @@ class ProductsWomenA(db.Model):
         self.size_stock = size_stock
         self.in_stock = in_stock
         self.is_fav = is_fav
+        self.is_deleted = is_deleted
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -724,6 +739,7 @@ class ProductsMenA(db.Model):
     size_stock = db.Column(MutableList.as_mutable(JSONB))
     in_stock = db.Column(db.Boolean)
     is_fav = db.Column(db.Boolean)
+    is_deleted = db.Column(db.Boolean)
 
     def __init__(self,
                  prod_id,
@@ -754,7 +770,8 @@ class ProductsMenA(db.Model):
                  all_cats,
                  size_stock,
                  in_stock,
-                 is_fav):
+                 is_fav,
+                 is_deleted):
         self.prod_id = prod_id
         self.name = name
         self.prod_url = prod_url
@@ -784,6 +801,7 @@ class ProductsMenA(db.Model):
         self.size_stock = size_stock
         self.in_stock = in_stock
         self.is_fav = is_fav
+        self.is_deleted = is_deleted
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
