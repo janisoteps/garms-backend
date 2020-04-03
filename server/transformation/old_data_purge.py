@@ -30,19 +30,29 @@ def old_data_purge(db, ImagesSkinny, ImagesFull, Products):
         print(f'PRODS IN: {prod_counter_in}')
         year_month = f'{datetime.fromtimestamp(prod.date).year}-{datetime.fromtimestamp(prod.date).month}'
         if year_month in year_month_old:
-            prod_result = Products.query.filter_by(prod_id=prod.prod_id).first()
+            prod_result = Products.query(
+                Products.prod_id,
+                Products.is_fav,
+                Products.is_deleted
+            ).filter_by(prod_id=prod.prod_id).first()
             if prod_result.is_fav == False:
                 prod_result.is_deleted = True
                 db.session.commit()
                 prod_counter_deleted += 1
                 print(f'PRODS DELETED: {prod_counter_deleted}')
 
-                img_skinny_results = ImagesSkinny.query.filter_by(prod_id=prod.prod_id).all()
+                img_skinny_results = ImagesSkinny.query(
+                    ImagesSkinny.prod_id,
+                    ImagesSkinny.is_deleted
+                ).filter_by(prod_id=prod.prod_id).all()
                 for img_skinny_result in img_skinny_results:
                     img_skinny_result.is_deleted = True
                     db.session.commit()
 
-                img_full_results = ImagesFull.query.filter_by(prod_id=prod.prod_id).all()
+                img_full_results = ImagesFull.query(
+                    ImagesFull.prod_id,
+                    ImagesFull.is_deleted
+                ).filter_by(prod_id=prod.prod_id).all()
                 for img_full_result in img_full_results:
                     img_full_result.is_deleted = True
                     db.session.commit()
