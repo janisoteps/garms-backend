@@ -772,7 +772,7 @@ def old_data_purge():
             return json.dumps({
                 'response': response
             })
-        
+
         else:
             return json.dumps(False)
 
