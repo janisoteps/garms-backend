@@ -18,7 +18,10 @@ def old_data_purge(db, ImagesSkinny, ImagesFull, Products):
     ]
     all_prods = db.session.query(
         Products.prod_id,
-        Products.date
+        Products.date,
+        Products.is_deleted
+    ).filter(
+        (Products.is_deleted != True)
     ).all()
 
     prod_counter_in = 0
