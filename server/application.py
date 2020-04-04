@@ -773,6 +773,10 @@ def old_data_purge():
                 'response': response
             })
 
+        if query_type == 'deleted':
+            response = data_purge.count_deleted(db, query_prod_db)
+            return json.dumps(response)
+
         else:
             return json.dumps(False)
 
