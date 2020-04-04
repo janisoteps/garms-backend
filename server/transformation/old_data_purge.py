@@ -85,3 +85,15 @@ def count_prod_dates(db, Products):
 
     return count_dict
 
+
+def count_deleted(db, Products):
+    deleted_count_agg = db.session.query(
+        Products.is_deleted,
+        func.count(Products.is_deleted)
+    ).group_by(
+        Products.is_deleted
+    ).all()
+
+    return {
+        'response': deleted_count_agg
+    }
