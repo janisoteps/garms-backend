@@ -18,10 +18,7 @@ def old_data_purge(db, ImagesSkinny, ImagesFull, Products):
     ]
     all_prods = db.session.query(
         Products.prod_id,
-        Products.date,
-        Products.is_deleted
-    ).filter(
-        (Products.is_deleted != True)
+        Products.date
     ).all()
 
     prod_counter_in = 0
@@ -34,7 +31,7 @@ def old_data_purge(db, ImagesSkinny, ImagesFull, Products):
         year_month = f'{datetime.fromtimestamp(prod.date).year}-{datetime.fromtimestamp(prod.date).month}'
         if year_month in year_month_old:
             prod_result = Products.query.filter_by(prod_id=prod.prod_id).first()
-            if prod_result.is_fav == False:
+            if prod_result.is_fav == False and prod_result.is_deleted != True:
                 prod_result.is_deleted = True
                 db.session.commit()
                 prod_counter_deleted += 1
