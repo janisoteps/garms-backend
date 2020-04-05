@@ -23,7 +23,7 @@ def old_data_purge(db, ImagesSkinny, ImagesFull, Products):
     ).filter(
         Products.is_deleted == None
     ).all()
-
+    
     print(f'LENGTH: {len(all_prods)}')
     
     prod_counter_in = 0

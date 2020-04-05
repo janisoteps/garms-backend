@@ -11,7 +11,7 @@ import aiohttp
 from get_features import get_features
 from marshmallow_schema import LoadingContentSchema, ImagesFullWomenASchema, ImagesFullMenASchema, ProductsWomenASchema, ProductsMenASchema
 from db_commit import image_commit, product_commit, insta_mention_commit
-from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search
+from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look
 from db_recommend import recommend_similar_tags, recommend_from_random
 from db_deals import get_deals
@@ -382,6 +382,19 @@ def text_search():
         else:
             res = db_text_search(request, db, ProductsMenA, ImagesFullMenA, ImagesSkinnyMenA)
 
+        return res
+
+
+@app.route("/api/text_search_infinite", methods=['POST'])
+def text_search_infinite():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        sex = data['sex']
+        query_prod_db = ProductsWomenA if sex == 'women' else ProductsMenA
+        query_skinny_img_db = ImagesSkinnyWomenA if sex == 'women' else ImagesSkinnyMenA
+        query_full_img_db = ImagesFullWomenA if sex == 'women' else ImagesFullMenA
+
+        res = db_text_search_infinite(data, db, query_prod_db, query_full_img_db, query_skinny_img_db)
         return res
 
 
