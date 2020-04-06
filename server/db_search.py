@@ -1228,17 +1228,14 @@ def db_text_search_infinite(data, db, Products, Images, ImagesSkinny):
     query_conditions_kind = []
     query_conditions_all = []
 
-    query_conditions.append(
-        ImagesSkinny.is_deleted is not True
-    )
     query_conditions_all.append(
         ImagesSkinny.is_deleted is not True
     )
+    # query_conditions_all.append(
+    #     ~ImagesSkinny.prod_id.contains(any_(prev_prod_ids))
+    # )
 
     for prev_prod_id in prev_prod_ids:
-        query_conditions.append(
-            ImagesSkinny.prod_id != prev_prod_id
-        )
         query_conditions_all.append(
             ImagesSkinny.prod_id != prev_prod_id
         )
@@ -1330,30 +1327,30 @@ def db_text_search_infinite(data, db, Products, Images, ImagesSkinny):
 
     print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
 
-    if len(query_results) < relaxed_threshold:
-        # RELAXED QUERY
-        relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
-            ImagesSkinny.img_hash == Images.img_hash
-        ).filter(
-            and_(
-                and_(*query_conditions_kind),
-                and_(*query_conditions_all)
-            )
-        ).limit(relaxed_limit).all())
-
-        query_results += relaxed_query_results
-
-    if len(query_results) < relaxed_threshold:
-        # RELAXED QUERY
-        relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
-            ImagesSkinny.img_hash == Images.img_hash
-        ).filter(
-            and_(
-                and_(*query_conditions_all)
-            )
-        ).limit(relaxed_limit).all())
-
-        query_results += relaxed_query_results
+    # if len(query_results) < relaxed_threshold:
+    #     # RELAXED QUERY
+    #     relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
+    #         ImagesSkinny.img_hash == Images.img_hash
+    #     ).filter(
+    #         and_(
+    #             and_(*query_conditions_kind),
+    #             and_(*query_conditions_all)
+    #         )
+    #     ).limit(relaxed_limit).all())
+    #
+    #     query_results += relaxed_query_results
+    #
+    # if len(query_results) < relaxed_threshold:
+    #     # RELAXED QUERY
+    #     relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
+    #         ImagesSkinny.img_hash == Images.img_hash
+    #     ).filter(
+    #         and_(
+    #             and_(*query_conditions_all)
+    #         )
+    #     ).limit(relaxed_limit).all())
+    #
+    #     query_results += relaxed_query_results
 
     print(f'TOTAL RESULT LENGTH: {len(query_results)}')
 
@@ -1457,6 +1454,76 @@ def db_text_search_infinite(data, db, Products, Images, ImagesSkinny):
 
     res = jsonify(res=result_list, tags=all_cats_search)
     return res
+
+
+def db_text_search_infinite_v2(data, db, Products, Images, ImagesSkinny):
+    search_string = data['search_string']
+    req_sex = data['sex']
+    prev_prod_ids = data['prev_prod_ids']
+    search_limit = 100
+    tag_list = cats.Cats()
+    query_conditions = []
+    all_cats = tag_list.all_cats
+    all_cats_search = []
+    string_list = search_string.strip().lower().split()
+    search_string_clean = ' '.join(string_list)
+
+    print(f'search_string: {search_string_clean}')
+    for word in string_list:
+        for cat in all_cats:
+            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                all_cats_search.append(cat)
+
+    for clean_string in string_list:
+        query_conditions.append(
+            ImagesSkinny.name.ilike('%{}%'.format(clean_string))
+        )
+    query_conditions.append(
+        ImagesSkinny.is_deleted is not True
+    )
+    for prev_prod_id in prev_prod_ids:
+        query_conditions.append(
+            ImagesSkinny.prod_id != prev_prod_id
+        )
+
+    query_results = db.session.query(ImagesSkinny, Images).filter(
+                ImagesSkinny.img_hash == Images.img_hash
+            ).filter(
+                and_(*query_conditions)
+            ).limit(search_limit).all()
+
+    print(f'QUERY RESULT LENGTH: {len(query_results)}')
+
+    result_list = []
+    prod_check = set()
+    for query_result in query_results:
+        img_table_query_result = query_result[1]
+        result_prod_id = img_table_query_result.prod_id
+        # prod_id = query_result.prod_id
+        if result_prod_id not in prod_check:
+            # img_result = db.session.query(Images).filter(Images.prod_id == prod_id).first()
+            prod_result = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
+            if req_sex == 'women':
+                # prod_serial = ProductsWomenASchema().dump(query_result)
+                # img_serial = ImagesFullWomenASchema().dump(img_result)
+                prod_serial = ProductsWomenASchema().dump(prod_result)
+                img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
+            else:
+                # prod_serial = ProductsMenASchema().dump(query_result)
+                # img_serial = ImagesFullMenASchema().dump(img_result)
+                prod_serial = ProductsMenASchema().dump(prod_result)
+                img_serial = ImagesFullMenASchema().dump(img_table_query_result)
+
+            result_dict = {
+                'prod_serial': prod_serial[0],
+                'image_data': img_serial[0]
+            }
+            result_list.append(result_dict)
+            prod_check.add(result_prod_id)
+
+    res = jsonify(res=result_list, tags=all_cats_search)
+    return res
+
 
 
 def db_test_search(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
