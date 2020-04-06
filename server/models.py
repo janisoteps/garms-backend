@@ -606,15 +606,9 @@ class ImagesFullMenA(db.Model):
 
 class ProductsWomenA(db.Model):
     __tablename__ = 'prods_women_a'
-
-    __table_args__ = (
-        db.Index('prods_women_a_name_idx', 'prod_name_women', postgresql_ops={'prod_name_women': "gin_trgm_ops"},
-                 postgresql_using='gin'),
-    )
-
     id = db.Column(db.Integer, primary_key=True)
     prod_id = db.Column(db.String(40), index=True, unique=True)
-    name = db.Column('prod_name_women', db.Text, index=True)
+    name = db.Column(db.Text, index=True)
     prod_url = db.Column(db.String)
     brand = db.Column(db.Text)
     category = db.Column(db.Text)
@@ -715,15 +709,9 @@ class ProductsWomenA(db.Model):
 
 class ProductsMenA(db.Model):
     __tablename__ = 'prods_men_a'
-
-    __table_args__ = (
-        db.Index('prods_men_a_name_idx', 'prod_name_men', postgresql_ops={'prod_name_men': "gin_trgm_ops"},
-                 postgresql_using='gin'),
-    )
-
     id = db.Column(db.Integer, primary_key=True)
     prod_id = db.Column(db.String(40), index=True, unique=True)
-    name = db.Column('prod_name_men', db.Text, index=True)
+    name = db.Column(db.Text, index=True)
     prod_url = db.Column(db.String)
     brand = db.Column(db.Text)
     category = db.Column(db.Text)
