@@ -11,7 +11,7 @@ import aiohttp
 from get_features import get_features
 from marshmallow_schema import LoadingContentSchema, ImagesFullWomenASchema, ImagesFullMenASchema, ProductsWomenASchema, ProductsMenASchema
 from db_commit import image_commit, product_commit, insta_mention_commit
-from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite, db_text_search_infinite_v2
+from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite_v2, infinite_similar_images
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look
 from db_recommend import recommend_similar_tags, recommend_from_random
 from db_deals import get_deals
@@ -445,6 +445,25 @@ def search_similar():
             res = jsonify(res=search_results)
         else:
             search_results = search_similar_images(request, db, ImagesFullMenA, ImagesSkinnyMenA, ProductsMenA)
+            res = jsonify(res=search_results)
+
+        return res
+
+
+# Search for similar products based on selected product
+@app.route("/api/search_similar_infinite", methods=['POST'])
+def search_similar_infinite():
+    print('Search similar requested, request method', str(request.method))
+    if request.method == 'POST':
+        print('Calling search_similar_images')
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        req_sex = data['sex']
+        if req_sex == 'women':
+            search_results = infinite_similar_images(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
+            res = jsonify(res=search_results)
+        else:
+            search_results = infinite_similar_images(request, db, ImagesFullMenA, ImagesSkinnyMenA, ProductsMenA)
             res = jsonify(res=search_results)
 
         return res
