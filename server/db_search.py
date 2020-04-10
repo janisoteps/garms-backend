@@ -1307,10 +1307,11 @@ def db_text_search_infinite_v2(data, db, Products, Images, ImagesSkinny):
     query_conditions.append(
         ImagesSkinny.is_deleted is not True
     )
-    for prev_prod_id in prev_prod_ids:
-        query_conditions.append(
-            ImagesSkinny.prod_id != prev_prod_id
-        )
+    if prev_prod_ids is not None:
+        for prev_prod_id in prev_prod_ids:
+            query_conditions.append(
+                ImagesSkinny.prod_id != prev_prod_id
+            )
 
     query_results = db.session.query(ImagesSkinny, Images).filter(
                 ImagesSkinny.img_hash == Images.img_hash
