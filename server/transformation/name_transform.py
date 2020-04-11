@@ -1,4 +1,5 @@
 import os
+from sqlalchemy import func
 
 
 class NameTransform:
@@ -8,8 +9,9 @@ class NameTransform:
             prod_ids = db.session.query(
                 Products.prod_id
             ).filter(
-                Products.name is None
-            ).all()
+                Products.name == None,
+                Products.is_deleted is not True
+            ).order_by(func.random()).all()
 
             total_prods = len(prod_ids)
             print(f'total len: {total_prods}')
