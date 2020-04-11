@@ -12,6 +12,7 @@ class NameTransform:
             ).all()
 
             total_prods = len(prod_ids)
+            print(f'total len: {total_prods}')
             counter = 0
             failed_counter = 0
             for prod_id in prod_ids:
