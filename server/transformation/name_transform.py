@@ -11,15 +11,22 @@ class NameTransform:
 
             total_prods = len(prod_ids)
             counter = 0
+            failed_counter = 0
             for prod_id in prod_ids:
                 img_result = ImagesSkinny.query.filter_by(prod_id=prod_id).first()
-                img_name = img_result.name
-
-                if img_name is not None:
-                    db.session.query(Products).filter(Products.prod_id == prod_id).update({'name': img_name})
-                    db.session.commit()
-                    counter += 1
+                if img_result is not None:
+                    img_name = img_result.name
+                    if img_name is not None:
+                        db.session.query(Products).filter(Products.prod_id == prod_id).update({'name': img_name})
+                        db.session.commit()
+                        counter += 1
+                        print(f'PRODS UPDATED: {counter}')
+                        print(f'FAILED: {failed_counter}')
+                        print(f'TOTAL: {total_prods}')
+                else:
+                    failed_counter += 1
                     print(f'PRODS UPDATED: {counter}')
+                    print(f'FAILED: {failed_counter}')
                     print(f'TOTAL: {total_prods}')
 
         return True
