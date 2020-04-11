@@ -757,7 +757,7 @@ def name_transform():
         request_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
         request_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
 
-        req_response = name_transformation.NameTransform().prod_name_fix(db, data, request_img_skinny_db, request_prod_db)
+        req_response = name_transformation.NameTransform().prod_name_fix(data, db, request_img_skinny_db, request_prod_db)
 
         return json.dumps(req_response)
 
