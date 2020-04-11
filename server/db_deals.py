@@ -8,11 +8,16 @@ def get_deals(db, ImagesSkinny, Products, data):
     req_cats = data['cats']
     req_shops = data['shops']
     req_brands = data['brands']
+    try:
+        prev_prod_ids = data['prev_prod_ids']
+    except:
+        prev_prod_ids = None
 
     sex_conditions = []
     cat_conditions = []
     shop_conditions = []
     brand_conditions = []
+    prev_prod_conds = []
 
     sex_conditions.append(
         (ImagesSkinny.sex == req_sex)
@@ -29,6 +34,11 @@ def get_deals(db, ImagesSkinny, Products, data):
         brand_conditions.append(
             (func.lower(ImagesSkinny.brand).op('%%')(req_brand.lower()))
         )
+    if prev_prod_ids is not None:
+        for prev_prod_id in prev_prod_ids:
+            prev_prod_conds.append(
+                ImagesSkinny.prod_id != prev_prod_id
+            )
 
     query = db.session.query(ImagesSkinny).filter(
         and_(
@@ -36,7 +46,8 @@ def get_deals(db, ImagesSkinny, Products, data):
             and_(*cat_conditions),
             or_(*shop_conditions),
             or_(*brand_conditions),
-            (ImagesSkinny.discount_rate > 0.5)
+            (ImagesSkinny.discount_rate > 0.5),
+            and_(*prev_prod_conds)
         )
     )
     query_results = query.order_by(func.random()).limit(100).all()

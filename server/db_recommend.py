@@ -1,9 +1,7 @@
 from sqlalchemy import func, any_, and_, or_
 from marshmallow_schema import ProductsWomenASchema, ProductsMenASchema
 import json
-import data.cats as cats
 from random import shuffle
-from operator import add
 import random
 
 
@@ -11,12 +9,23 @@ def recommend_similar_tags(db, User, Products, data):
     req_email = data['email']
     req_sex = data['sex']
     req_look_name = data['req_looks']
+    try:
+        prev_prod_ids = data['prev_prod_ids']
+    except:
+        prev_prod_ids = None
     user_data = User.query.filter_by(email=req_email).first()
     if user_data is None:
         return 'Invalid user email'
     user_wardrobe = user_data.wardrobe
     user_looks = user_data.looks
     suggestions = []
+    base_conds = []
+
+    if prev_prod_ids is not None:
+        for prev_prod_id in prev_prod_ids:
+            base_conds.append(
+                Products.prod_id != prev_prod_id
+            )
 
     if user_looks is not None and user_wardrobe is not None:
         outfits = []
@@ -66,8 +75,10 @@ def recommend_similar_tags(db, User, Products, data):
             query = db.session.query(Products).filter(
                 and_(
                     or_(*kind_conditions),
+                    and_(*base_conds),
                     (Products.sex == req_sex),
                     Products.prod_id.isnot(None),
+                    Products.is_deleted.isnot(True),
                     Products.price > 40,
                     Products.price < 100
                 )
@@ -89,6 +100,7 @@ def recommend_similar_tags(db, User, Products, data):
     else:
         query = db.session.query(Products).filter(Products.prod_id.isnot(None)).filter(and_(
             Products.sex == req_sex,
+            and_(*base_conds),
             (Products.shop != "Farfetch")
         ))
         query_results = query.order_by(func.random()).limit(40).all()
@@ -111,6 +123,10 @@ def recommend_similar_tags(db, User, Products, data):
 
 def recommend_from_random(db, Products, data):
     req_sex = data['sex']
+    try:
+        prev_prod_ids = data['prev_prod_ids']
+    except:
+        prev_prod_ids = None
     print(f'req_sex = {req_sex}')
     rand_conds = []
     rand_conds.append(
@@ -122,6 +138,14 @@ def recommend_from_random(db, Products, data):
     rand_conds.append(
         (Products.prod_id.isnot(None))
     )
+    rand_conds.append(
+        Products.is_deleted.isnot(True)
+    )
+    if prev_prod_ids is not None:
+        for prev_prod_id in prev_prod_ids:
+            rand_conds.append(
+                Products.prod_id != prev_prod_id
+            )
 
     query = db.session.query(Products).filter(
         and_(*rand_conds)
