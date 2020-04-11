@@ -7,6 +7,8 @@ class NameTransform:
         if data['transform_key'] == key_string:
             prod_ids = db.session.query(
                 Products.prod_id
+            ).filter(
+                Products.name is None
             ).all()
 
             total_prods = len(prod_ids)
@@ -24,6 +26,8 @@ class NameTransform:
                         print(f'FAILED: {failed_counter}')
                         print(f'TOTAL: {total_prods}')
                 else:
+                    db.session.query(Products).filter(Products.prod_id == prod_id).update({'is_deleted': True})
+                    db.session.commit()
                     failed_counter += 1
                     print(f'PRODS UPDATED: {counter}')
                     print(f'FAILED: {failed_counter}')
