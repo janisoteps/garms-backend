@@ -1330,23 +1330,24 @@ def db_text_search_infinite_v2(data, db, Products, Images, ImagesSkinny):
         if result_prod_id not in prod_check:
             # img_result = db.session.query(Images).filter(Images.prod_id == prod_id).first()
             prod_result = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-            if req_sex == 'women':
-                # prod_serial = ProductsWomenASchema().dump(query_result)
-                # img_serial = ImagesFullWomenASchema().dump(img_result)
-                prod_serial = ProductsWomenASchema().dump(prod_result)
-                img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
-            else:
-                # prod_serial = ProductsMenASchema().dump(query_result)
-                # img_serial = ImagesFullMenASchema().dump(img_result)
-                prod_serial = ProductsMenASchema().dump(prod_result)
-                img_serial = ImagesFullMenASchema().dump(img_table_query_result)
+            if prod_result is not None:
+                if req_sex == 'women':
+                    # prod_serial = ProductsWomenASchema().dump(query_result)
+                    # img_serial = ImagesFullWomenASchema().dump(img_result)
+                    prod_serial = ProductsWomenASchema().dump(prod_result)
+                    img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
+                else:
+                    # prod_serial = ProductsMenASchema().dump(query_result)
+                    # img_serial = ImagesFullMenASchema().dump(img_result)
+                    prod_serial = ProductsMenASchema().dump(prod_result)
+                    img_serial = ImagesFullMenASchema().dump(img_table_query_result)
 
-            result_dict = {
-                'prod_serial': prod_serial[0],
-                'image_data': img_serial[0]
-            }
-            result_list.append(result_dict)
-            prod_check.add(result_prod_id)
+                result_dict = {
+                    'prod_serial': prod_serial[0],
+                    'image_data': img_serial[0]
+                }
+                result_list.append(result_dict)
+                prod_check.add(result_prod_id)
 
     res = jsonify(res=result_list, tags=all_cats_search)
     return res
