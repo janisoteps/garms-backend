@@ -12,7 +12,7 @@ def get_deals(db, ImagesSkinny, Products, data):
         prev_prod_ids = data['prev_prod_ids']
     except:
         prev_prod_ids = None
-
+    print(f'LEN PREV PROD IDS: {len(prev_prod_ids)}')
     sex_conditions = []
     cat_conditions = []
     shop_conditions = []
