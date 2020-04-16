@@ -13,6 +13,7 @@ def get_deals(db, ImagesSkinny, Products, data):
     except:
         prev_prod_ids = None
     print(f'LEN PREV PROD IDS: {len(prev_prod_ids)}')
+    min_discount_rate = data['min_discount_rate']
     sex_conditions = []
     cat_conditions = []
     shop_conditions = []
@@ -46,11 +47,11 @@ def get_deals(db, ImagesSkinny, Products, data):
             and_(*cat_conditions),
             or_(*shop_conditions),
             or_(*brand_conditions),
-            (ImagesSkinny.discount_rate > 0.5),
+            (ImagesSkinny.discount_rate > min_discount_rate),
             and_(*prev_prod_conds)
         )
     )
-    query_results = query.order_by(func.random()).limit(100).all()
+    query_results = query.order_by(func.random()).limit(50).all()
 
     prod_results = []
     prod_check = set()

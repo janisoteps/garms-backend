@@ -525,93 +525,96 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
         query_results += relaxed_query_results
     print(f'TOTAL QUERY RESULT LENGTH: {len(query_results)}')
 
-    color_1_list = []
-    color_2_list = []
-    color_3_list = []
-    vgg16_enc_list = []
+    if len(query_results) == 0:
+        return []
+    else:
+        color_1_list = []
+        color_2_list = []
+        color_3_list = []
+        vgg16_enc_list = []
 
-    for query_result in query_results:
-        color_1_list.append(query_result[1].color_1)
-        color_2_list.append(query_result[1].color_2)
-        color_3_list.append(query_result[1].color_3)
+        for query_result in query_results:
+            color_1_list.append(query_result[1].color_1)
+            color_2_list.append(query_result[1].color_2)
+            color_3_list.append(query_result[1].color_3)
 
-    color_1_matrix = np.array(color_1_list)
-    color_2_matrix = np.array(color_2_list)
-    color_3_matrix = np.array(color_3_list)
+        color_1_matrix = np.array(color_1_list)
+        color_2_matrix = np.array(color_2_list)
+        color_3_matrix = np.array(color_3_list)
 
-    target_color_matrix = np.broadcast_to(np.array(req_color_1), color_1_matrix.shape)
-    target_encoding_arr = np.asarray(req_vgg16_enc)
+        target_color_matrix = np.broadcast_to(np.array(req_color_1), color_1_matrix.shape)
+        target_encoding_arr = np.asarray(req_vgg16_enc)
 
-    color_distances_1 = 1 - np.dot(color_1_matrix / norm(color_1_matrix, axis=1, keepdims=True),
-                                   (target_color_matrix / norm(target_color_matrix, axis=1, keepdims=True)).T)
-    color_distances_2 = 1 - np.dot(color_2_matrix / norm(color_2_matrix, axis=1, keepdims=True),
-                                   (target_color_matrix / norm(target_color_matrix, axis=1, keepdims=True)).T)
-    color_distances_3 = 1 - np.dot(color_3_matrix / norm(color_3_matrix, axis=1, keepdims=True),
-                                   (target_color_matrix / norm(target_color_matrix, axis=1, keepdims=True)).T)
+        color_distances_1 = 1 - np.dot(color_1_matrix / norm(color_1_matrix, axis=1, keepdims=True),
+                                       (target_color_matrix / norm(target_color_matrix, axis=1, keepdims=True)).T)
+        color_distances_2 = 1 - np.dot(color_2_matrix / norm(color_2_matrix, axis=1, keepdims=True),
+                                       (target_color_matrix / norm(target_color_matrix, axis=1, keepdims=True)).T)
+        color_distances_3 = 1 - np.dot(color_3_matrix / norm(color_3_matrix, axis=1, keepdims=True),
+                                       (target_color_matrix / norm(target_color_matrix, axis=1, keepdims=True)).T)
 
-    color_distances_1_mean = np.mean(color_distances_1, axis=1)
-    color_distances_2_mean = np.mean(color_distances_2, axis=1)
-    color_distances_3_mean = np.mean(color_distances_3, axis=1)
+        color_distances_1_mean = np.mean(color_distances_1, axis=1)
+        color_distances_2_mean = np.mean(color_distances_2, axis=1)
+        color_distances_3_mean = np.mean(color_distances_3, axis=1)
 
-    color_dist_intm = np.add(color_distances_1_mean, color_distances_2_mean * 0.7)
-    color_dist_total = np.add(color_dist_intm, color_distances_3_mean * 0.4)
-    closest_color_idx = color_dist_total.argsort()[0:int(len(query_results) / 2)]
-    closest_n_results_color = [{
-        'query_result': query_results[idx][1],
-        'color_dist': color_dist_total[idx]
-    } for idx in closest_color_idx]
-    print(f'Closest colors calculated, length: {len(closest_n_results_color)}')
+        color_dist_intm = np.add(color_distances_1_mean, color_distances_2_mean * 0.7)
+        color_dist_total = np.add(color_dist_intm, color_distances_3_mean * 0.4)
+        closest_color_idx = color_dist_total.argsort()[0:int(len(query_results) / 2)]
+        closest_n_results_color = [{
+            'query_result': query_results[idx][1],
+            'color_dist': color_dist_total[idx]
+        } for idx in closest_color_idx]
+        print(f'Closest colors calculated, length: {len(closest_n_results_color)}')
 
-    for query_result_dict in closest_n_results_color:
-        vgg16_enc_list.append(query_result_dict['query_result'].encoding_vgg16)
-    vgg16_enc_matrix = np.array(vgg16_enc_list)
+        for query_result_dict in closest_n_results_color:
+            vgg16_enc_list.append(query_result_dict['query_result'].encoding_vgg16)
+        vgg16_enc_matrix = np.array(vgg16_enc_list)
 
-    dist_encoding_arr = np.linalg.norm(vgg16_enc_matrix - target_encoding_arr, axis=1)
-    closest_n_enc_ind = dist_encoding_arr.argsort()[0:int(len(query_results) / 3)]
-    closest_n_results_enc = [closest_n_results_color[x] for x in closest_n_enc_ind]
-    print(f'Closest encodings calculated, length: {len(closest_n_results_enc)}')
+        dist_encoding_arr = np.linalg.norm(vgg16_enc_matrix - target_encoding_arr, axis=1)
+        closest_n_enc_ind = dist_encoding_arr.argsort()[0:int(len(query_results) / 3)]
+        closest_n_results_enc = [closest_n_results_color[x] for x in closest_n_enc_ind]
+        print(f'Closest encodings calculated, length: {len(closest_n_results_enc)}')
 
-    top_encoding_list = sorted(closest_n_results_enc, key=itemgetter('color_dist'))
-    top_encoding_list = top_encoding_list[0:80]
+        top_encoding_list = sorted(closest_n_results_enc, key=itemgetter('color_dist'))
+        top_encoding_list = top_encoding_list[0:80]
 
 
-    if len(prev_prod_ids) > 0:
-        # Make sure we return the original request image back on top
-        if not any(d['query_result'].img_hash == req_img_hash for d in closest_n_results_enc):
-            print('Product not in list, need to add')
-            closest_n_results_enc.insert(0, req_image_data)
-        else:
-            print('Product already in list, need to make sure its on top')
-            request_prod_idx = next((index for (index, d) in enumerate(closest_n_results_enc) if d['query_result'].img_hash == req_img_hash), None)
-            del closest_n_results_enc[request_prod_idx]
-            closest_n_results_enc.insert(0, req_image_data)
+        if len(prev_prod_ids) > 0:
+            # Make sure we return the original request image back on top
+            if not any(d['query_result'].img_hash == req_img_hash for d in closest_n_results_enc):
+                print('Product not in list, need to add')
+                closest_n_results_enc.insert(0, req_image_data)
+            else:
+                print('Product already in list, need to make sure its on top')
+                request_prod_idx = next((index for (index, d) in enumerate(closest_n_results_enc) if d['query_result'].img_hash == req_img_hash), None)
+                del closest_n_results_enc[request_prod_idx]
+                closest_n_results_enc.insert(0, req_image_data)
 
-    # Serialize the results and return as array
-    result_list = []
-    prod_check = set()
-    print('Obtaining result data')
-    for result_dict in top_encoding_list:
-        img_query_result = result_dict['query_result']
-        result_prod_id = img_query_result.prod_id
-        prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-        if prod_search is not None:
-            prod_hash = prod_search.prod_id
-            if prod_hash not in prod_check:
-                if req_sex == 'women':
-                    prod_serial = ProductsWomenASchema().dump(prod_search)
-                    prod_check.add(prod_hash)
-                    img_serial = ImagesFullWomenASchema().dump(img_query_result)
-                else:
-                    prod_serial = ProductsMenASchema().dump(prod_search)
-                    prod_check.add(prod_hash)
-                    img_serial = ImagesFullMenASchema().dump(img_query_result)
-                result_dict = {
-                    'prod_serial': prod_serial[0],
-                    'image_data': img_serial[0]
-                }
-                result_list.append(result_dict)
+        # Serialize the results and return as array
+        result_list = []
+        prod_check = set()
+        print('Obtaining result data')
+        for result_dict in top_encoding_list:
+            img_query_result = result_dict['query_result']
+            result_prod_id = img_query_result.prod_id
+            prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
+            if prod_search is not None:
+                prod_hash = prod_search.prod_id
+                if prod_hash not in prod_check:
+                    if req_sex == 'women':
+                        prod_serial = ProductsWomenASchema().dump(prod_search)
+                        prod_check.add(prod_hash)
+                        img_serial = ImagesFullWomenASchema().dump(img_query_result)
+                    else:
+                        prod_serial = ProductsMenASchema().dump(prod_search)
+                        prod_check.add(prod_hash)
+                        img_serial = ImagesFullMenASchema().dump(img_query_result)
+                    result_dict = {
+                        'prod_serial': prod_serial[0],
+                        'image_data': img_serial[0]
+                    }
+                    result_list.append(result_dict)
 
-    return result_list
+        return result_list
 
 
 #######################################################################################################################
