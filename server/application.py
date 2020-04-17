@@ -13,7 +13,7 @@ from marshmallow_schema import LoadingContentSchema, ImagesFullWomenASchema, Ima
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite_v2, infinite_similar_images
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look
-from db_recommend import recommend_similar_tags, recommend_from_random
+from db_recommend import recommend_similar_tags, recommend_from_random, onboarding_recommend
 from db_deals import get_deals
 from send_email import password_reset_email, registration_email
 import transformation.cat_transform as cat_transformation
@@ -640,6 +640,18 @@ def recommend_deals():
             suggestions = get_deals(db, ImagesSkinnyWomenA, ProductsWomenA, data)
         else:
             suggestions = get_deals(db, ImagesSkinnyMenA, ProductsMenA, data)
+
+        return suggestions
+
+
+@app.route("/api/recommend_onboarding", methods=['POST'])
+def recommend_onboarding():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        sex = data['sex']
+        req_prod_db = ProductsWomenA if sex == 'women' else ProductsMenA
+
+        suggestions = onboarding_recommend(db, req_prod_db, data)
 
         return suggestions
 

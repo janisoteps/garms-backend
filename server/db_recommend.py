@@ -217,3 +217,33 @@ def recommend_from_random(db, Products, data):
     ]
 
     return json.dumps(suggestions)
+
+
+def onboarding_recommend(db, Products, data):
+    req_sex = data['sex']
+    rand_conds = []
+    rand_conds.append(
+        (Products.prod_id.isnot(None))
+    )
+    rand_conds.append(
+        Products.is_deleted.isnot(True)
+    )
+    query = db.session.query(Products).filter(
+        and_(*rand_conds)
+    )
+    query_results = query.order_by(func.random()).limit(6).all()
+    prod_results = []
+
+    for query_result in query_results:
+        if req_sex == 'women':
+            prod_serial = ProductsWomenASchema().dump(query_result)
+        else:
+            prod_serial = ProductsMenASchema().dump(query_result)
+        prod_results.append(prod_serial)
+
+    suggestions = {
+            'look_name': None,
+            'prod_suggestions': prod_results
+        }
+
+    return json.dumps(suggestions)
