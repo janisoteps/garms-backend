@@ -121,6 +121,48 @@ def db_add_outfit(db, User, Products, data):
         return 'Invalid look'
 
 
+def db_add_multiple_outfits(db, User, Products, data):
+    email = data['email']
+    look_name = data['look_name']
+    prod_ids = data['prod_ids']
+
+    user_data = User.query.filter_by(email=email).first()
+    if user_data is None:
+        return 'Invalid user email'
+
+    user_outfits = user_data.wardrobe
+    if any(d['look_name'] == look_name for d in user_data.looks):
+        if user_outfits is None:
+            user_outfits = [{
+                'prod_id': prod_id,
+                'outfit_date': int(time.time()),
+                'look_name': look_name
+            } for prod_id in prod_ids]
+            user_data.wardrobe = user_outfits
+            db.session.commit()
+        else:
+            for prod_id in prod_ids:
+                user_outfits.append({
+                    'prod_id': prod_id,
+                    'outfit_date': int(time.time()),
+                    'look_name': look_name
+                })
+            user_data.wardrobe = user_outfits
+            db.session.commit()
+
+        for prod_id in prod_ids:
+            added_prod = Products.query.filter_by(prod_id=prod_id).first()
+            added_prod.is_fav = True
+            db.session.commit()
+
+        return json.dumps({
+            'looks': user_data.looks,
+            'wardrobe': user_data.wardrobe
+        })
+    else:
+        return 'Invalid look'
+
+
 def db_remove_outfit(db, User, data):
     email = data['email']
     look_name = data['look_name']
