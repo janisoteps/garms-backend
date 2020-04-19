@@ -12,8 +12,8 @@ from get_features import get_features
 from marshmallow_schema import LoadingContentSchema, ImagesFullWomenASchema, ImagesFullMenASchema, ProductsWomenASchema, ProductsMenASchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite_v2, infinite_similar_images
-from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look
-from db_recommend import recommend_similar_tags, recommend_from_random
+from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look, db_add_multiple_outfits
+from db_recommend import recommend_similar_tags, recommend_from_random, onboarding_recommend, recommend_from_onboarding_faves
 from db_deals import get_deals
 from send_email import password_reset_email, registration_email
 import transformation.cat_transform as cat_transformation
@@ -538,6 +538,17 @@ def add_outfit():
         return add_outfit_response
 
 
+@app.route("/api/add_multiple_outfits", methods=['POST'])
+def add_multiple_outfits():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        data = json.loads(data)
+        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        add_outfit_response = db_add_multiple_outfits(db, User, req_prod_db, data)
+
+        return add_outfit_response
+
+
 @app.route("/api/remove_outfit", methods=['POST'])
 def remove_outfit():
     if request.method == 'POST':
@@ -620,12 +631,18 @@ def recommend_tags():
 def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        req_sex = data['sex']
-        if req_sex == 'women' or req_sex == 'both':
-            print('suggesting from women table')
-            suggestions = recommend_from_random(db, ProductsWomenA, data)
-        else:
-            suggestions = recommend_from_random(db, ProductsMenA, data)
+        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        suggestions = recommend_from_random(db, req_prod_db, data)
+
+        return suggestions
+
+
+@app.route("/api/recommend_from_onboarding", methods=['POST'])
+def recommend_from_onboarding():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        suggestions = recommend_from_onboarding_faves(db, req_prod_db, data)
 
         return suggestions
 
@@ -640,6 +657,18 @@ def recommend_deals():
             suggestions = get_deals(db, ImagesSkinnyWomenA, ProductsWomenA, data)
         else:
             suggestions = get_deals(db, ImagesSkinnyMenA, ProductsMenA, data)
+
+        return suggestions
+
+
+@app.route("/api/recommend_onboarding", methods=['POST'])
+def recommend_onboarding():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        sex = data['sex']
+        req_prod_db = ProductsWomenA if sex == 'women' else ProductsMenA
+
+        suggestions = onboarding_recommend(db, req_prod_db, data)
 
         return suggestions
 
