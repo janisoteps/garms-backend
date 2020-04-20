@@ -62,7 +62,7 @@ def delete_img_skinny_from_prods(db, ImagesSkinny, Products):
         Products.prod_id,
         Products.is_deleted
     ).filter(
-        Products.is_deleted is True
+        Products.is_deleted == True
     ).order_by(func.random()).all()
 
     print(f'Total deleted prods: {len(all_prods)}')
@@ -72,6 +72,7 @@ def delete_img_skinny_from_prods(db, ImagesSkinny, Products):
         counter_prods += 1
         print(f'Prods processed: {counter_prods}')
         if prod.is_deleted is True:
+            print('is true')
             img_results = db.session.query(ImagesSkinny).filter(
                 ImagesSkinny.prod_id == prod.prod_id
             ).all()
