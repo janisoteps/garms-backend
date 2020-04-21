@@ -16,6 +16,7 @@ from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random, onboarding_recommend, recommend_from_onboarding_faves
 from db_deals import get_deals
 from send_email import password_reset_email, registration_email
+from db_image_search import db_search_from_image
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
@@ -473,13 +474,29 @@ def search_similar_infinite():
         print('Calling search_similar_images')
         data = request.get_json(force=True)
         data = json.loads(data)
-        req_sex = data['sex']
-        if req_sex == 'women':
-            search_results = infinite_similar_images(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
-            res = jsonify(res=search_results)
-        else:
-            search_results = infinite_similar_images(request, db, ImagesFullMenA, ImagesSkinnyMenA, ProductsMenA)
-            res = jsonify(res=search_results)
+        req_img_full_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
+        req_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
+        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+
+        search_results = infinite_similar_images(request, db, req_img_full_db, req_img_skinny_db, req_prod_db)
+        res = jsonify(res=search_results)
+
+        return res
+
+
+@app.route("/api/image_search_infinite", methods=['POST'])
+def image_search_infinite():
+    print('Search similar requested, request method', str(request.method))
+    if request.method == 'POST':
+        print('Calling image_search_infinite')
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+        req_img_full_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
+        req_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
+        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+
+        search_results = db_search_from_image(request, db, req_img_full_db, req_img_skinny_db, req_prod_db)
+        res = jsonify(res=search_results)
 
         return res
 
