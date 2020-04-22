@@ -446,46 +446,69 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
     req_sex = data['sex']
     max_price = int(data['max_price'])
     req_brands = data['brands']
+    initial_req = data['initial_req']
     try:
         prev_prod_ids = data['prev_prod_ids']
     except:
         prev_prod_ids = []
     search_limit = 2000
 
+    print(f'req_tags_positive: {req_tags_positive}')
+
     req_image_data = ImagesFull.query.filter_by(img_hash=req_img_hash).first()
     if len(req_tags_positive) == 0:
         req_tags_positive = req_image_data.all_cats
+
     req_vgg16_enc = req_image_data.encoding_vgg16
     tag_list = cats.Cats()
     kind_cats = tag_list.kind_cats
+    all_cats = tag_list.all_cats
     kind_cats_search = []
+    all_cats_search = []
 
-    for word in req_tags_positive:
-        for cat in kind_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
-                kind_cats_search.append(cat)
+    if initial_req:
+        kind_cats_search = [req_tag for req_tag in req_tags_positive if req_tag in kind_cats]
+        all_cats_search = [cat for cat in req_image_data.all_cats if cat not in kind_cats]
+    else:
+        for word in req_tags_positive:
+            for cat in kind_cats:
+                if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                    kind_cats_search.append(cat)
+            for cat in all_cats:
+                if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word:
+                    all_cats_search.append(cat)
 
     print('kind cats')
     print(kind_cats_search)
     print('all cats')
-    print(req_tags_positive)
+    print(all_cats_search)
     query_conditions = []
     query_conds_cats_all = []
     query_conds_cats_kind = []
 
-    for req_tag_positive in req_tags_positive:
+    maternity_tags = ['mom', 'mum', 'mamalicious', 'maternity']
+    is_maternity = False
+
+    for req_tag_positive in all_cats_search:
         query_conds_cats_all.append(
             ImagesSkinny.name.ilike('%{}%'.format(req_tag_positive))
         )
+        if req_tag_positive in maternity_tags:
+            is_maternity = True
+
     for kind_search_cat in kind_cats_search:
         query_conds_cats_kind.append(
             (ImagesSkinny.kind_cats.any(kind_search_cat))
         )
     for tag in req_tags_negative:
-        print(f'negative tag: {tag}')
         query_conditions.append(
-            (~ImagesSkinny.all_cats.any(tag))
+            (~ImagesSkinny.name.ilike('%{}%'.format(tag)))
         )
+    if is_maternity is False:
+        for maternity_tag in maternity_tags:
+            query_conditions.append(
+                (~ImagesSkinny.name.ilike('%{}%'.format(maternity_tag)))
+            )
     query_conditions.append(
         (ImagesSkinny.in_stock == True)
     )
@@ -494,8 +517,9 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
     )
     if len(req_brands) > 0:
         for req_brand in req_brands:
+            req_brand_lower = req_brand.lower()
             query_conditions.append(
-                (ImagesSkinny.brand == req_brand)
+                (func.lower(ImagesSkinny.brand).ilike('%{0}%'.format(req_brand_lower)))
             )
     if max_price < 1000000:
         query_conditions.append(
@@ -517,19 +541,20 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
         and_(
             and_(*query_conditions),
             and_(*query_conds_cats_kind),
-            or_(*query_conds_cats_all)
+            and_(*query_conds_cats_all)
         )
     ).limit(search_limit).all()
     print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
-    if len(query_results) < 300:
+    if len(query_results) < 100:
         relaxed_query_results = db.session.query(ImagesSkinny, ImagesFull).filter(
             ImagesSkinny.img_hash == ImagesFull.img_hash
         ).filter(
             and_(
                 and_(*query_conditions),
-                and_(*query_conds_cats_kind)
+                and_(*query_conds_cats_kind),
+                or_(*query_conds_cats_all)
             )
-        ).limit(search_limit).all()
+        ).limit(300).all()
         query_results += relaxed_query_results
     print(f'TOTAL QUERY RESULT LENGTH: {len(query_results)}')
 
@@ -553,6 +578,7 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
         target_color_matrix = np.broadcast_to(np.array(req_color_1), color_1_matrix.shape)
         target_color_arr = np.asarray(req_color_1)
         target_encoding_arr = np.asarray(req_vgg16_enc)
+        euclidean_factor = 5000 if np.sum(target_color_arr) > 250 else 2000
 
         color_distances_1 = 1 - np.dot(color_1_matrix / norm(color_1_matrix, axis=1, keepdims=True),
                                        (target_color_matrix / norm(target_color_matrix, axis=1, keepdims=True)).T)
@@ -575,9 +601,9 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
         # print(np.max((color_dist_1_euc / 5000)))
         # print(np.median((color_dist_1_euc / 5000)))
 
-        color_distances_1_combined = color_distances_1_mean + (color_dist_1_euc / 5000)
-        color_distances_2_combined = color_distances_2_mean + (color_dist_2_euc / 5000)
-        color_distances_3_combined = color_distances_3_mean + (color_dist_3_euc / 5000)
+        color_distances_1_combined = color_distances_1_mean + (color_dist_1_euc / euclidean_factor)
+        color_distances_2_combined = color_distances_2_mean + (color_dist_2_euc / euclidean_factor)
+        color_distances_3_combined = color_distances_3_mean + (color_dist_3_euc / euclidean_factor)
 
         color_dist_intm = np.add(color_distances_1_combined, color_distances_2_combined * 0.7)
         color_dist_total = np.add(color_dist_intm, color_distances_3_combined * 0.4)
@@ -642,7 +668,7 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
                     }
                     result_list.append(result_dict)
 
-        return result_list
+        return result_list, kind_cats_search + all_cats_search
 
 
 #######################################################################################################################

@@ -478,8 +478,8 @@ def search_similar_infinite():
         req_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
         req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
 
-        search_results = infinite_similar_images(request, db, req_img_full_db, req_img_skinny_db, req_prod_db)
-        res = jsonify(res=search_results)
+        search_results, search_cats = infinite_similar_images(request, db, req_img_full_db, req_img_skinny_db, req_prod_db)
+        res = jsonify(res=search_results, cats=search_cats)
 
         return res
 

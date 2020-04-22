@@ -45,12 +45,14 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
     print(kind_cats_search)
     print('max price')
     print(max_price)
+    print('color')
+    print(req_color_1)
 
     base_conditions = []
     kind_cat_conditions = []
     cat_conditions = []
 
-    maternity_tags = ['mom', 'mamalicious', 'maternity']
+    maternity_tags = ['mom', 'mum', 'mamalicious', 'maternity']
     is_maternity = False
     for req_tag in req_pos_tags:
         if req_tag in kind_cats_search:
@@ -128,6 +130,8 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
         target_color_matrix = np.broadcast_to(np.array(req_color_1), color_1_matrix.shape)
         target_color_arr = np.asarray(req_color_1)
         target_encoding_arr = np.asarray(req_vgg16_encoding)
+        euclidean_factor = 5000 if np.sum(target_color_arr) > 250 else 2000
+        print(f'euclidean_factor: {euclidean_factor}')
 
         color_distances_1 = 1 - np.dot(color_1_matrix / norm(color_1_matrix, axis=1, keepdims=True),
                                        (target_color_matrix / norm(target_color_matrix, axis=1, keepdims=True)).T)
@@ -144,9 +148,9 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
         color_dist_2_euc = np.linalg.norm(color_2_matrix - target_color_arr, axis=1)
         color_dist_3_euc = np.linalg.norm(color_3_matrix - target_color_arr, axis=1)
 
-        color_distances_1_combined = color_distances_1_mean + (color_dist_1_euc / 5000)
-        color_distances_2_combined = color_distances_2_mean + (color_dist_2_euc / 5000)
-        color_distances_3_combined = color_distances_3_mean + (color_dist_3_euc / 5000)
+        color_distances_1_combined = color_distances_1_mean + (color_dist_1_euc / euclidean_factor)
+        color_distances_2_combined = color_distances_2_mean + (color_dist_2_euc / euclidean_factor)
+        color_distances_3_combined = color_distances_3_mean + (color_dist_3_euc / euclidean_factor)
 
         color_dist_intm = np.add(color_distances_1_combined, color_distances_2_combined * 0.7)
         color_dist_total = np.add(color_dist_intm, color_distances_3_combined * 0.4)
