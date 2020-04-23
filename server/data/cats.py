@@ -44,7 +44,6 @@ class Cats:
         'jacket',
         'jean',
         'jeggings',
-        'jersey',
         'jewellery',
         'jogger',
         'jumper',
