@@ -8,7 +8,7 @@ from flask import render_template, request, jsonify
 import string
 from sqlalchemy import func, or_
 import aiohttp
-from get_features import get_features
+from get_features import get_features, get_features_light
 from marshmallow_schema import LoadingContentSchema, ImagesFullWomenASchema, ImagesFullMenASchema, ProductsWomenASchema, ProductsMenASchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite_v2, infinite_similar_images
@@ -16,6 +16,7 @@ from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit
 from db_recommend import recommend_similar_tags, recommend_from_random, onboarding_recommend, recommend_from_onboarding_faves
 from db_deals import get_deals
 from send_email import password_reset_email, registration_email
+from db_image_search import db_search_from_image
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
@@ -415,6 +416,20 @@ def img_features():
             return res
 
 
+@app.route("/api/img_features_light", methods=['POST'])
+def img_features_light():
+    if request.method == 'POST':
+        if request.files.get("image"):
+            post_image = request.files["image"].read()
+            # Obtain features from all AI servers
+            features = get_features_light(post_image)
+
+            # Make it HTTP friendly
+            res = jsonify(res=features)
+
+            return res
+
+
 # Return color, encoding and category predictions from uploaded image
 @app.route("/api/search_from_image", methods=['POST'])
 def search_from_image():
@@ -459,13 +474,29 @@ def search_similar_infinite():
         print('Calling search_similar_images')
         data = request.get_json(force=True)
         data = json.loads(data)
-        req_sex = data['sex']
-        if req_sex == 'women':
-            search_results = infinite_similar_images(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
-            res = jsonify(res=search_results)
-        else:
-            search_results = infinite_similar_images(request, db, ImagesFullMenA, ImagesSkinnyMenA, ProductsMenA)
-            res = jsonify(res=search_results)
+        req_img_full_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
+        req_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
+        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+
+        search_results, search_cats, req_color, req_img_hash = infinite_similar_images(request, db, req_img_full_db, req_img_skinny_db, req_prod_db)
+        res = jsonify(res=search_results, cats=search_cats, color=req_color, img_hash=req_img_hash)
+
+        return res
+
+
+@app.route("/api/image_search_infinite", methods=['POST'])
+def image_search_infinite():
+    print('Search similar requested, request method', str(request.method))
+    if request.method == 'POST':
+        print('Calling image_search_infinite')
+        data = request.get_json(force=True)
+        # data = json.loads(data)
+        req_img_full_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
+        req_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
+        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+
+        search_results = db_search_from_image(request, db, req_img_full_db, req_img_skinny_db, req_prod_db)
+        res = jsonify(res=search_results)
 
         return res
 
@@ -850,6 +881,10 @@ def old_data_purge():
 
         if query_type == 'deleted':
             response = data_purge.count_deleted(db, query_prod_db)
+            return json.dumps(response)
+
+        if query_type == 'img_delete':
+            response = data_purge.delete_img_skinny_from_prods(db, query_img_skinny_db, query_prod_db)
             return json.dumps(response)
 
         else:

@@ -1,4 +1,4 @@
-# import os
+from sqlalchemy import func, any_, and_, or_
 from sqlalchemy import func
 from datetime import datetime
 
@@ -53,6 +53,34 @@ def old_data_purge(db, ImagesSkinny, ImagesFull, Products):
                     db.session.commit()
                     img_counter_deleted += 1
                     print(f'IMAGES DELETED: {img_counter_deleted}')
+
+    return True
+
+
+def delete_img_skinny_from_prods(db, ImagesSkinny, Products):
+    all_prods = db.session.query(
+        Products.prod_id,
+        Products.is_deleted
+    ).filter(
+        Products.is_deleted == True
+    ).order_by(func.random()).all()
+
+    print(f'Total deleted prods: {len(all_prods)}')
+    counter_prods = 0
+    counter_img_deleted = 0
+    for prod in all_prods:
+        counter_prods += 1
+        print(f'Prods processed: {counter_prods}')
+        if prod.is_deleted is True:
+            print('is true')
+            img_results = db.session.query(ImagesSkinny).filter(
+                ImagesSkinny.prod_id == prod.prod_id
+            ).all()
+            for img_result in img_results:
+                img_result.is_deleted = True
+                db.session.commit()
+                counter_img_deleted += 1
+                print(f'Images deleted: {counter_img_deleted}')
 
     return True
 
