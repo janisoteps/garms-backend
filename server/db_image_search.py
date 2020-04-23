@@ -130,7 +130,7 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
         target_color_matrix = np.broadcast_to(np.array(req_color_1), color_1_matrix.shape)
         target_color_arr = np.asarray(req_color_1)
         target_encoding_arr = np.asarray(req_vgg16_encoding)
-        euclidean_factor = 5000 if np.sum(target_color_arr) > 250 else 2000
+        euclidean_factor = 5000 if np.sum(target_color_arr) > 250 else 800
         print(f'euclidean_factor: {euclidean_factor}')
 
         color_distances_1 = 1 - np.dot(color_1_matrix / norm(color_1_matrix, axis=1, keepdims=True),

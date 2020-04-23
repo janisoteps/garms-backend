@@ -459,8 +459,9 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
     if len(req_tags_positive) == 0:
         req_tags_positive = req_image_data.all_cats
     if len(req_color_1) == 0:
-        req_img_color_arr = np.array([req_image_data.color_1, req_image_data.color_2, req_image_data.color_3])
-        req_color_1 = np.median(req_img_color_arr, axis=0)
+        color_list = [req_image_data.color_1, req_image_data.color_2, req_image_data.color_3]
+        color_sums = [sum(color) for color in color_list]
+        req_color_1 = color_list[color_sums.index(np.median(color_sums))]
 
     req_vgg16_enc = req_image_data.encoding_vgg16
     tag_list = cats.Cats()
@@ -519,6 +520,7 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
             if word not in kind_cats_search and word not in length_cats_search and word not in pattern_cats_search and word not in material_cats_search and word not in style_cats_search:
                 rest_cats_search.append(word)
 
+    kind_cats_search = kind_cats_search[:3]
     print('kind cats')
     print(kind_cats_search)
     print('length cats')
@@ -582,7 +584,7 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
         (ImagesSkinny.in_stock == True)
     )
     query_conditions.append(
-        (ImagesSkinny.is_deleted.isnot(True))
+        (ImagesSkinny.is_deleted is not True)
     )
     if len(req_brands) > 0:
         for req_brand in req_brands:
@@ -614,7 +616,6 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
             and_(*query_conds_cats_pattern),
             and_(*query_conds_cats_material),
             and_(*query_conds_cats_style),
-            # or_(*query_conds_cats_rest)
         )
     ).limit(search_limit).all()
     print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
@@ -632,10 +633,23 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
             )
         ).limit(300).all()
         query_results += relaxed_query_results
+    print(f'NEXT QUERY RESULT LENGTH: {len(query_results)}')
+    if len(query_results) < 100:
+        relaxed_query_results = db.session.query(ImagesSkinny, ImagesFull).filter(
+            ImagesSkinny.img_hash == ImagesFull.img_hash
+        ).filter(
+            and_(
+                and_(*query_conditions),
+                and_(*query_conds_cats_kind),
+                and_(*query_conds_cats_length),
+                or_(*query_conds_cats_pattern),
+            )
+        ).limit(300).all()
+        query_results += relaxed_query_results
     print(f'TOTAL QUERY RESULT LENGTH: {len(query_results)}')
 
     if len(query_results) == 0:
-        return [], response_cats, list(req_color_1)
+        return [], response_cats, list(req_color_1), req_img_hash
     else:
         color_1_list = []
         color_2_list = []
@@ -744,7 +758,7 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
                     }
                     result_list.append(result_dict)
 
-        return result_list, response_cats, list(req_color_1)
+        return result_list, response_cats, list(req_color_1), req_img_hash
 
 
 #######################################################################################################################
@@ -1438,7 +1452,7 @@ def db_text_search_infinite_v2(data, db, Products, Images, ImagesSkinny):
             ImagesSkinny.name.ilike('%{}%'.format(clean_string))
         )
     query_conditions.append(
-        ImagesSkinny.is_deleted != True
+        ImagesSkinny.is_deleted is not True
     )
     if prev_prod_ids is not None:
         for prev_prod_id in prev_prod_ids:
@@ -1447,10 +1461,10 @@ def db_text_search_infinite_v2(data, db, Products, Images, ImagesSkinny):
             )
 
     query_results = db.session.query(ImagesSkinny, Images).filter(
-                ImagesSkinny.img_hash == Images.img_hash
-            ).filter(
-                and_(*query_conditions)
-            ).limit(search_limit).all()
+        ImagesSkinny.img_hash == Images.img_hash
+    ).filter(
+        and_(*query_conditions)
+    ).limit(search_limit).all()
 
     print(f'QUERY RESULT LENGTH: {len(query_results)}')
 
