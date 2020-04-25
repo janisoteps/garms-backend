@@ -113,6 +113,7 @@ class ImagesSkinnyWomenA(db.Model):
     brand = db.Column(db.Text)
     color_string = db.Column(db.String)
     date = db.Column(db.Integer)
+    date_updated = db.Column(db.Integer)
     name = db.Column('img_skinny_name', db.Text, index=True)
     price = db.Column(db.Float)
     sale = db.Column(db.Boolean)
@@ -147,6 +148,7 @@ class ImagesSkinnyWomenA(db.Model):
                  brand,
                  color_string,
                  date,
+                 date_updated,
                  name,
                  price,
                  sale,
@@ -180,6 +182,7 @@ class ImagesSkinnyWomenA(db.Model):
         self.brand = brand
         self.color_string = color_string
         self.date = date
+        self.date_updated = date_updated
         self.name = name
         self.price = price
         self.sale = sale
@@ -229,6 +232,7 @@ class ImagesSkinnyMenA(db.Model):
     brand = db.Column(db.Text)
     color_string = db.Column(db.String)
     date = db.Column(db.Integer)
+    date_updated = db.Column(db.Integer)
     name = db.Column('img_skinny_name', db.Text, index=True)
     price = db.Column(db.Float)
     sale = db.Column(db.Boolean)
@@ -263,6 +267,7 @@ class ImagesSkinnyMenA(db.Model):
                  brand,
                  color_string,
                  date,
+                 date_updated,
                  name,
                  price,
                  sale,
@@ -296,6 +301,7 @@ class ImagesSkinnyMenA(db.Model):
         self.brand = brand
         self.color_string = color_string
         self.date = date
+        self.date_updated = date_updated
         self.name = name
         self.price = price
         self.sale = sale
@@ -345,6 +351,7 @@ class ImagesFullWomenA(db.Model):
     brand = db.Column(db.Text)
     color_string = db.Column(db.String)
     date = db.Column(db.Integer)
+    date_updated = db.Column(db.Integer)
     name = db.Column('img_full_name', db.Text, index=True)
     price = db.Column(db.Float)
     sale = db.Column(db.Boolean)
@@ -386,6 +393,7 @@ class ImagesFullWomenA(db.Model):
                  brand,
                  color_string,
                  date,
+                 date_updated,
                  name,
                  price,
                  sale,
@@ -426,6 +434,7 @@ class ImagesFullWomenA(db.Model):
         self.brand = brand
         self.color_string = color_string
         self.date = date
+        self.date_updated = date_updated
         self.name = name
         self.price = price
         self.sale = sale
@@ -483,6 +492,7 @@ class ImagesFullMenA(db.Model):
     brand = db.Column(db.Text)
     color_string = db.Column(db.String)
     date = db.Column(db.Integer)
+    date_updated = db.Column(db.Integer)
     name = db.Column('img_full_name', db.Text, index=True)
     price = db.Column(db.Float)
     sale = db.Column(db.Boolean)
@@ -524,6 +534,7 @@ class ImagesFullMenA(db.Model):
                  brand,
                  color_string,
                  date,
+                 date_updated,
                  name,
                  price,
                  sale,
@@ -564,6 +575,7 @@ class ImagesFullMenA(db.Model):
         self.brand = brand
         self.color_string = color_string
         self.date = date
+        self.date_updated = date_updated
         self.name = name
         self.price = price
         self.sale = sale
@@ -615,6 +627,7 @@ class ProductsWomenA(db.Model):
     color_string = db.Column(db.Text)
     currency = db.Column(db.String)
     date = db.Column(db.Integer)
+    date_updated = db.Column(db.Integer)
     description = db.Column(db.Text)
     image_hash = db.Column(ARRAY(db.String), index=True)
     image_urls = db.Column(ARRAY(db.String))
@@ -647,6 +660,7 @@ class ProductsWomenA(db.Model):
                  color_string,
                  currency,
                  date,
+                 date_updated,
                  description,
                  image_hash,
                  image_urls,
@@ -677,6 +691,7 @@ class ProductsWomenA(db.Model):
         self.color_string = color_string
         self.currency = currency
         self.date = date
+        self.date_updated = date_updated
         self.description = description
         self.image_hash = image_hash
         self.image_urls = image_urls
@@ -718,6 +733,7 @@ class ProductsMenA(db.Model):
     color_string = db.Column(db.Text)
     currency = db.Column(db.String)
     date = db.Column(db.Integer)
+    date_updated = db.Column(db.Integer)
     description = db.Column(db.Text)
     image_hash = db.Column(ARRAY(db.String), index=True)
     image_urls = db.Column(ARRAY(db.String))
@@ -750,6 +766,7 @@ class ProductsMenA(db.Model):
                  color_string,
                  currency,
                  date,
+                 date_updated,
                  description,
                  image_hash,
                  image_urls,
@@ -780,6 +797,7 @@ class ProductsMenA(db.Model):
         self.color_string = color_string
         self.currency = currency
         self.date = date
+        self.date_updated = date_updated
         self.description = description
         self.image_hash = image_hash
         self.image_urls = image_urls
