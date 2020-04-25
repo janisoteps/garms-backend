@@ -46,6 +46,7 @@ class InstaMentions(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    user_hash = db.Column(db.String(64), unique=True)
     username = db.Column(db.String(64), index=True, unique=False)
     email = db.Column(db.String, index=True, unique=True)
     password_hash = db.Column(db.String(128))
@@ -60,6 +61,7 @@ class User(UserMixin, db.Model):
 
     def __init__(
             self,
+            user_hash,
             username,
             email,
             sex,
@@ -73,6 +75,7 @@ class User(UserMixin, db.Model):
             pw_reset_token
     ):
         self.password_hash = self.set_password(password)
+        self.user_hash = user_hash
         self.username = username
         self.email = email
         self.sex = sex

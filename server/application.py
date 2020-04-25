@@ -22,6 +22,7 @@ import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
 import transformation.name_transform as name_transformation
 import transformation.old_data_purge as data_purge
+import transformation.user_transform as user_transformation
 import data.cats as cats
 from hashlib import sha256
 import random
@@ -111,7 +112,11 @@ def register():
         if user is None:
             reg_email_response = registration_email(data)
             if reg_email_response == 202:
+                hash_object = sha256(email.encode('utf8'))
+                user_id = hash_object.hexdigest()
+
                 reg_submission = User(
+                    user_hash=user_id,
                     username=username,
                     email=email,
                     sex=sex,
@@ -160,16 +165,16 @@ def login():
 
         else:
             user_id = user.id
+            user_hash = user.user_hash
             username = user.username
             favorites = user.favorites_ids
             sex = user.sex
             user_email = user.email
             first_login = user.first_login
 
-
-            # print(username)
             user_dict = {
                 'user_id': user_id,
+                'user_hash': user_hash,
                 'username': username,
                 'favorites': favorites,
                 'sex': sex,
@@ -900,6 +905,18 @@ def old_data_purge():
 
         else:
             return json.dumps(False)
+
+
+# user_transformation
+@app.route("/api/user_transform", methods=['POST'])
+def user_transform():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        query_type = data['query_type']
+
+        if query_type == 'add_hashes':
+            response = user_transformation.add_user_hash(db, User)
+            return json.dumps(response)
 
 
 @app.route("/api/count_vgg16", methods=['GET'])
