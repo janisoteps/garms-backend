@@ -130,3 +130,70 @@ def count_deleted(db, Products):
     return {
         'response': deleted_count_agg
     }
+
+
+def count_prod_dates_by_shop(data, db, Products):
+    all_dates = db.session.query(
+        Products.date,
+        Products.shop
+    ).filter(
+        Products.shop == data['shop']
+    ).all()
+
+    datetime_list = []
+    for all_date in all_dates:
+        datetime_list.append(all_date.date)
+
+    year_month_list = list(map(
+        lambda x: f'{datetime.fromtimestamp(x).year}-{datetime.fromtimestamp(x).month}',
+        datetime_list
+    ))
+    year_month_tuples = [(x, 1) for x in year_month_list]
+    count_dict = dict()
+    for (date_string, val) in year_month_tuples:
+        count_dict[date_string] = count_dict.get(date_string, 0) + val
+
+    return count_dict
+
+
+def purge_by_shop(data, db, Products, ImagesFull, ImagesSkinny):
+    dates_old_list = data['dates_old_list']
+    all_prods = db.session.query(
+        Products.prod_id,
+        Products.date,
+        Products.shop
+    ).filter(
+        Products.shop == data['shop']
+    ).all()
+
+    print(f'ALL Prods count: {len(all_prods)}')
+
+    prod_counter_in = 0
+    prod_counter_deleted = 0
+    img_counter_deleted = 0
+
+    for prod in all_prods:
+        prod_counter_in += 1
+        print(f'PRODS IN: {prod_counter_in}')
+        year_month = f'{datetime.fromtimestamp(prod.date).year}-{datetime.fromtimestamp(prod.date).month}'
+        if year_month in dates_old_list:
+            prod_result = Products.query.filter_by(prod_id=prod.prod_id).first()
+            if prod_result.is_fav == False:
+                prod_result.is_deleted = True
+                db.session.commit()
+                prod_counter_deleted += 1
+                print(f'PRODS DELETED: {prod_counter_deleted}')
+
+                img_skinny_results = ImagesSkinny.query.filter_by(prod_id=prod.prod_id).all()
+                for img_skinny_result in img_skinny_results:
+                    img_skinny_result.is_deleted = True
+                    db.session.commit()
+
+                img_full_results = ImagesFull.query.filter_by(prod_id=prod.prod_id).all()
+                for img_full_result in img_full_results:
+                    img_full_result.is_deleted = True
+                    db.session.commit()
+                    img_counter_deleted += 1
+                    print(f'IMAGES DELETED: {img_counter_deleted}')
+
+    return

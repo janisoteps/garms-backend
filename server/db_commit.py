@@ -40,6 +40,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
     size_stock = data['size_stock']
     in_stock = data['in_stock']
     encoding_vgg16 = data['encoding_vgg16']
+    is_deleted = False
 
     img_full_submission = ImagesModel(
         img_hash=img_hash,
@@ -49,6 +50,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         brand=brand,
         color_string=color_string,
         date=date,
+        date_updated=date,
         name=name,
         price=price,
         sale=sale,
@@ -79,7 +81,8 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         color_6_hex=color_6_hex,
         size_stock=size_stock,
         in_stock=in_stock,
-        encoding_vgg16=encoding_vgg16
+        encoding_vgg16=encoding_vgg16,
+        is_deleted=is_deleted
     )
 
     img_skinny_submission = SkinnyImagesModel(
@@ -90,6 +93,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         brand=brand,
         color_string=color_string,
         date=date,
+        date_updated=date,
         name=name,
         price=price,
         sale=sale,
@@ -113,7 +117,8 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         color_5=color_5,
         color_6=color_6,
         size_stock=size_stock,
-        in_stock=in_stock
+        in_stock=in_stock,
+        is_deleted=is_deleted
     )
 
     try:
@@ -134,20 +139,16 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
     else:
         print('Image ALREADY IN DB')
 
-        # existing_img_full_row.img_hash = img_hash
-        # existing_img_skinny_row.img_url = img_url
         existing_img_full_row.prod_id = prod_id
         existing_img_full_row.prod_url = prod_url
         existing_img_full_row.brand = brand
         existing_img_full_row.color_string = color_string
-        existing_img_full_row.date = date
+        existing_img_full_row.date_updated = date
         existing_img_full_row.name = name
         existing_img_full_row.price = price
         existing_img_full_row.sale = sale
         existing_img_full_row.saleprice = saleprice
         existing_img_full_row.discount_rate = discount_rate
-        # existing_img_full_row.sex = sex
-        # existing_img_full_row.shop = shop
         existing_img_full_row.kind_cats = kind_cats
         existing_img_full_row.pattern_cats = pattern_cats
         existing_img_full_row.color_cats = color_cats
@@ -171,22 +172,18 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         existing_img_full_row.color_6_hex = color_6_hex
         existing_img_full_row.size_stock = size_stock
         existing_img_full_row.in_stock = in_stock
-        # existing_img_full_row.encoding_vgg16 = encoding_vgg16
+        existing_img_full_row.is_deleted = is_deleted
 
-        # existing_img_skinny_row.img_hash = img_hash
-        # existing_img_skinny_row.img_url = img_url
         existing_img_skinny_row.prod_id = prod_id
         existing_img_skinny_row.prod_url = prod_url
         existing_img_skinny_row.brand = brand
         existing_img_skinny_row.color_string = color_string
-        existing_img_skinny_row.date = date
+        existing_img_skinny_row.date_updated = date
         existing_img_skinny_row.name = name
         existing_img_skinny_row.price = price
         existing_img_skinny_row.sale = sale
         existing_img_skinny_row.saleprice = saleprice
         existing_img_skinny_row.discount_rate = discount_rate
-        # existing_img_skinny_row.sex = sex
-        # existing_img_skinny_row.shop = shop
         existing_img_skinny_row.kind_cats = kind_cats
         existing_img_skinny_row.pattern_cats = pattern_cats
         existing_img_skinny_row.color_cats = color_cats
@@ -204,6 +201,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         existing_img_skinny_row.color_6 = color_6
         existing_img_skinny_row.size_stock = size_stock
         existing_img_skinny_row.in_stock = in_stock
+        existing_img_skinny_row.is_deleted = is_deleted
 
         db.session.commit()
 
@@ -240,6 +238,7 @@ def product_commit(db, ProductModel, data):
     size_stock = data['size_stock']
     in_stock = data['in_stock']
     is_fav = False
+    is_deleted = False
 
     product_submission = ProductModel(
         prod_id=prod_id,
@@ -250,6 +249,7 @@ def product_commit(db, ProductModel, data):
         color_string=color_string,
         currency=currency,
         date=date,
+        date_updated=date,
         description=description,
         image_hash=image_hash,
         image_urls=image_urls,
@@ -270,7 +270,8 @@ def product_commit(db, ProductModel, data):
         all_cats=all_cats,
         size_stock=size_stock,
         in_stock=in_stock,
-        is_fav=is_fav
+        is_fav=is_fav,
+        is_deleted=is_deleted
     )
 
     try:
@@ -288,12 +289,10 @@ def product_commit(db, ProductModel, data):
         print('PRODUCT ALREADY EXISTS')
 
         existing_product.name = name
-        # existing_product.prod_url = prod_url
-        # existing_product.brand = brand
         existing_product.category = category
         existing_product.color_string = color_string
         existing_product.currency = currency
-        existing_product.date = date
+        existing_product.date_updated = date
         existing_product.description = description
         existing_product.image_hash = image_hash
         existing_product.image_urls = image_urls
@@ -301,8 +300,6 @@ def product_commit(db, ProductModel, data):
         existing_product.sale = sale
         existing_product.saleprice = saleprice
         existing_product.discount_rate = discount_rate
-        # existing_product.sex = sex
-        # existing_product.shop = shop
         existing_product.size_stock = size_stock
         existing_product.kind_cats = kind_cats
         existing_product.pattern_cats = pattern_cats
@@ -315,6 +312,7 @@ def product_commit(db, ProductModel, data):
         existing_product.all_cats = all_cats
         existing_product.size_stock = size_stock
         existing_product.in_stock = in_stock
+        existing_product.is_deleted = is_deleted
 
         db.session.commit()
 

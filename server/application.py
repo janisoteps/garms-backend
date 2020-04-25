@@ -887,6 +887,17 @@ def old_data_purge():
             response = data_purge.delete_img_skinny_from_prods(db, query_img_skinny_db, query_prod_db)
             return json.dumps(response)
 
+        if query_type == 'count_dates_by_shop':
+            response = data_purge.count_prod_dates_by_shop(data, db, query_prod_db)
+            return json.dumps(response)
+
+        if query_type == 'purge_by_shop':
+            response = data_purge.purge_by_shop(data, db, query_prod_db, query_img_full_db, query_img_skinny_db)
+
+            return json.dumps({
+                'response': response
+            })
+
         else:
             return json.dumps(False)
 
