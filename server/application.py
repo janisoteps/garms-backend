@@ -23,6 +23,7 @@ import transformation.brand_transform as brand_transformation
 import transformation.name_transform as name_transformation
 import transformation.old_data_purge as data_purge
 import transformation.user_transform as user_transformation
+import transformation.preserve_faces_transform as preserve_faves
 import data.cats as cats
 from hashlib import sha256
 import random
@@ -34,6 +35,7 @@ migrate = Migrate(app, db)
 
 from models import User, InstaMentions, LoadingContent
 from models import ImagesFullWomenB, ImagesFullMenB, ImagesSkinnyWomenB, ImagesSkinnyMenB, ProductsWomenB, ProductsMenB
+from models import ImagesFullWomenA, ImagesFullMenA, ImagesSkinnyWomenA, ImagesSkinnyMenA, ProductsWomenA, ProductsMenA
 
 # # # # # # # Functions # # # # # # #
 
@@ -830,6 +832,33 @@ def name_transform():
         req_response = name_transformation.NameTransform().prod_name_fix(data, db, request_img_skinny_db, request_prod_db)
 
         return json.dumps(req_response)
+
+
+@app.route("/api/fave_preserve_transform", methods=['POST'])
+def fave_preserve_transform():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        request_img_skinny_db = ImagesSkinnyWomenB if data['sex'] == 'women' else ImagesSkinnyMenB
+        request_img_skinny_db_old = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
+        request_img_full_db = ImagesFullWomenB if data['sex'] == 'women' else ImagesFullMenB
+        request_img_full_db_old = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
+        request_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
+        request_prod_db_old = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+
+        req_response = preserve_faves.preserve_faves_transform(
+            db,
+            request_img_full_db,
+            request_img_full_db_old,
+            request_img_skinny_db,
+            request_img_skinny_db_old,
+            request_prod_db,
+            request_prod_db_old,
+            User,
+            data
+        )
+        return json.dumps({
+            'response': req_response
+        })
 
 
 @app.route("/api/add_vgg16", methods=['POST'])
