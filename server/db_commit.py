@@ -42,6 +42,8 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
     encoding_vgg16 = data['encoding_vgg16']
     is_deleted = False
 
+    print(prod_url)
+    
     img_full_submission = ImagesModel(
         img_hash=img_hash,
         img_url=img_url,

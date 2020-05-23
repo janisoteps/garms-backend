@@ -347,9 +347,11 @@ def commit_image():
 
         db_tables = data['db_tables']
         if db_tables == 'women_b':
+            print('uploading IMAGE WOMEN')
             upload_response = image_commit(db, ImagesFullWomenB, ImagesSkinnyWomenB, data)
             return upload_response
         else:
+            print('uploading IMAGE MEN')
             upload_response = image_commit(db, ImagesFullMenB, ImagesSkinnyMenB, data)
             return upload_response
 
@@ -362,9 +364,11 @@ def commit_product():
 
         db_tables = data['db_tables']
         if db_tables == 'women_b':
+            print('uploading WOMEN')
             upload_response = product_commit(db, ProductsWomenB, data)
             return upload_response
         else:
+            print('uploading MEN')
             upload_response = product_commit(db, ProductsMenB, data)
             return upload_response
 
