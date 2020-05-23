@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ImagesFullWomenASchema, ImagesFullMenASchema, ProductsWomenASchema, ProductsMenASchema
+from marshmallow_schema import ImagesFullSchema, ProductsSchema
 import numpy as np
 from numpy.linalg import norm
 from operator import itemgetter
@@ -184,14 +184,9 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
             if prod_search is not None:
                 prod_hash = prod_search.prod_id
                 if prod_hash not in prod_check:
-                    if req_sex == 'women':
-                        prod_serial = ProductsWomenASchema().dump(prod_search)
-                        prod_check.add(prod_hash)
-                        img_serial = ImagesFullWomenASchema().dump(img_query_result)
-                    else:
-                        prod_serial = ProductsMenASchema().dump(prod_search)
-                        prod_check.add(prod_hash)
-                        img_serial = ImagesFullMenASchema().dump(img_query_result)
+                    prod_serial = ProductsSchema().dump(prod_search)
+                    prod_check.add(prod_hash)
+                    img_serial = ImagesFullSchema().dump(img_query_result)
                     result_dict = {
                         'prod_serial': prod_serial[0],
                         'image_data': img_serial[0]

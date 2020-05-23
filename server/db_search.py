@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ImagesFullWomenASchema, ImagesFullMenASchema, ProductsWomenASchema, ProductsMenASchema
+from marshmallow_schema import ImagesFullSchema, ProductsSchema
 import scipy.spatial as spatial
 import numpy as np
 from numpy.linalg import norm
@@ -401,14 +401,9 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
         if prod_search is not None:
             prod_hash = prod_search.prod_id
             if prod_hash not in prod_check:
-                if req_sex == 'women':
-                    prod_serial = ProductsWomenASchema().dump(prod_search)
-                    prod_check.add(prod_hash)
-                    img_serial = ImagesFullWomenASchema().dump(obj['query_result'])
-                else:
-                    prod_serial = ProductsMenASchema().dump(prod_search)
-                    prod_check.add(prod_hash)
-                    img_serial = ImagesFullMenASchema().dump(obj['query_result'])
+                prod_serial = ProductsSchema().dump(prod_search)
+                prod_check.add(prod_hash)
+                img_serial = ImagesFullSchema().dump(obj['query_result'])
                 result_dict = {
                     'prod_serial': prod_serial[0],
                     'image_data': img_serial[0]
@@ -744,14 +739,9 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
             if prod_search is not None:
                 prod_hash = prod_search.prod_id
                 if prod_hash not in prod_check:
-                    if req_sex == 'women':
-                        prod_serial = ProductsWomenASchema().dump(prod_search)
-                        prod_check.add(prod_hash)
-                        img_serial = ImagesFullWomenASchema().dump(img_query_result)
-                    else:
-                        prod_serial = ProductsMenASchema().dump(prod_search)
-                        prod_check.add(prod_hash)
-                        img_serial = ImagesFullMenASchema().dump(img_query_result)
+                    prod_serial = ProductsSchema().dump(prod_search)
+                    prod_check.add(prod_hash)
+                    img_serial = ImagesFullSchema().dump(img_query_result)
                     result_dict = {
                         'prod_serial': prod_serial[0],
                         'image_data': img_serial[0]
@@ -1085,14 +1075,9 @@ def search_from_upload(request, db, Images, ImagesSkinny, Products):
             if prod_search is not None:
                 prod_hash = prod_search.prod_id
                 if prod_hash not in prod_check:
-                    if req_sex == 'women':
-                        prod_serial = ProductsWomenASchema().dump(prod_search)
-                        prod_check.add(prod_hash)
-                        img_serial = ImagesFullWomenASchema().dump(obj['query_result'])
-                    else:
-                        prod_serial = ProductsMenASchema().dump(prod_search)
-                        prod_check.add(prod_hash)
-                        img_serial = ImagesFullMenASchema().dump(obj['query_result'])
+                    prod_serial = ProductsSchema().dump(prod_search)
+                    prod_check.add(prod_hash)
+                    img_serial = ImagesFullSchema().dump(obj['query_result'])
 
                     result_dict = {
                         'prod_serial': prod_serial[0],
@@ -1387,11 +1372,11 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
                 prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
                 if prod_search is not None:
                     if req_sex == 'women':
-                        prod_serial = ProductsWomenASchema().dump(prod_search)
-                        img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
+                        prod_serial = ProductsSchema().dump(prod_search)
+                        img_serial = ImagesFullSchema().dump(img_table_query_result)
                     else:
-                        prod_serial = ProductsMenASchema().dump(prod_search)
-                        img_serial = ImagesFullMenASchema().dump(img_table_query_result)
+                        prod_serial = ProductsSchema().dump(prod_search)
+                        img_serial = ImagesFullSchema().dump(img_table_query_result)
                     prod_check.add(result_prod_id)
 
                     result_dict = {
@@ -1411,12 +1396,8 @@ def db_text_search(request, db, Products, Images, ImagesSkinny):
             if result_prod_id not in prod_check:
                 prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
                 if prod_search is not None:
-                    if req_sex == 'women':
-                        prod_serial = ProductsWomenASchema().dump(prod_search)
-                        img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
-                    else:
-                        prod_serial = ProductsMenASchema().dump(prod_search)
-                        img_serial = ImagesFullMenASchema().dump(img_table_query_result)
+                    prod_serial = ProductsSchema().dump(prod_search)
+                    img_serial = ImagesFullSchema().dump(img_table_query_result)
                     prod_check.add(result_prod_id)
 
                     result_dict = {
@@ -1478,16 +1459,8 @@ def db_text_search_infinite_v2(data, db, Products, Images, ImagesSkinny):
             # img_result = db.session.query(Images).filter(Images.prod_id == prod_id).first()
             prod_result = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
             if prod_result is not None:
-                if req_sex == 'women':
-                    # prod_serial = ProductsWomenASchema().dump(query_result)
-                    # img_serial = ImagesFullWomenASchema().dump(img_result)
-                    prod_serial = ProductsWomenASchema().dump(prod_result)
-                    img_serial = ImagesFullWomenASchema().dump(img_table_query_result)
-                else:
-                    # prod_serial = ProductsMenASchema().dump(query_result)
-                    # img_serial = ImagesFullMenASchema().dump(img_result)
-                    prod_serial = ProductsMenASchema().dump(prod_result)
-                    img_serial = ImagesFullMenASchema().dump(img_table_query_result)
+                prod_serial = ProductsSchema().dump(prod_result)
+                img_serial = ImagesFullSchema().dump(img_table_query_result)
 
                 result_dict = {
                     'prod_serial': prod_serial[0],
@@ -1579,7 +1552,7 @@ def db_test_search(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):
 
         result_prod_id = query_result_skinny.prod_id
         prod_search = db.session.query(ProductsV2).filter(ProductsV2.prod_id == result_prod_id).first()
-        prod_serial = ProductsMenASchema().dump(prod_search)
+        prod_serial = ProductsSchema().dump(prod_search)
 
         result_dict = {
             'count': result_len,

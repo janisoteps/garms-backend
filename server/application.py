@@ -9,7 +9,7 @@ import string
 from sqlalchemy import func, or_
 import aiohttp
 from get_features import get_features, get_features_light
-from marshmallow_schema import LoadingContentSchema, ImagesFullWomenASchema, ImagesFullMenASchema, ProductsWomenASchema, ProductsMenASchema
+from marshmallow_schema import LoadingContentSchema, ImagesFullSchema, ProductsSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite_v2, infinite_similar_images
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look, db_add_multiple_outfits
@@ -32,8 +32,8 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import User, ImagesFullWomenA, ImagesFullMenA, ImagesSkinnyWomenA, ImagesSkinnyMenA, InstaMentions, LoadingContent, ProductsWomenA, ProductsMenA
-
+from models import User, InstaMentions, LoadingContent
+from models import ImagesFullWomenB, ImagesFullMenB, ImagesSkinnyWomenB, ImagesSkinnyMenB, ProductsWomenB, ProductsMenB
 
 # # # # # # # Functions # # # # # # #
 
@@ -344,11 +344,11 @@ def commit_image():
         data = request.get_json(force=True)
 
         db_tables = data['db_tables']
-        if db_tables == 'women_a':
-            upload_response = image_commit(db, ImagesFullWomenA, ImagesSkinnyWomenA, data)
+        if db_tables == 'women_b':
+            upload_response = image_commit(db, ImagesFullWomenB, ImagesSkinnyWomenB, data)
             return upload_response
         else:
-            upload_response = image_commit(db, ImagesFullMenA, ImagesSkinnyMenA, data)
+            upload_response = image_commit(db, ImagesFullMenB, ImagesSkinnyMenB, data)
             return upload_response
 
 
@@ -359,11 +359,11 @@ def commit_product():
         data = request.get_json(force=True)
 
         db_tables = data['db_tables']
-        if db_tables == 'women_a':
-            upload_response = product_commit(db, ProductsWomenA, data)
+        if db_tables == 'women_b':
+            upload_response = product_commit(db, ProductsWomenB, data)
             return upload_response
         else:
-            upload_response = product_commit(db, ProductsMenA, data)
+            upload_response = product_commit(db, ProductsMenB, data)
             return upload_response
 
 
@@ -385,9 +385,9 @@ def text_search():
         req_sex = request.args.get('sex')
         if req_sex == 'women':
             print('searching from WOMEN')
-            res = db_text_search(request, db, ProductsWomenA, ImagesFullWomenA, ImagesSkinnyWomenA)
+            res = db_text_search(request, db, ProductsWomenB, ImagesFullWomenB, ImagesSkinnyWomenB)
         else:
-            res = db_text_search(request, db, ProductsMenA, ImagesFullMenA, ImagesSkinnyMenA)
+            res = db_text_search(request, db, ProductsMenB, ImagesFullMenB, ImagesSkinnyMenB)
 
         return res
 
@@ -397,11 +397,10 @@ def text_search_infinite():
     if request.method == 'POST':
         data = request.get_json(force=True)
         sex = data['sex']
-        query_prod_db = ProductsWomenA if sex == 'women' else ProductsMenA
-        query_skinny_img_db = ImagesSkinnyWomenA if sex == 'women' else ImagesSkinnyMenA
-        query_full_img_db = ImagesFullWomenA if sex == 'women' else ImagesFullMenA
+        query_prod_db = ProductsWomenB if sex == 'women' else ProductsMenB
+        query_skinny_img_db = ImagesSkinnyWomenB if sex == 'women' else ImagesSkinnyMenB
+        query_full_img_db = ImagesFullWomenB if sex == 'women' else ImagesFullMenB
 
-        # res = db_text_search_infinite(data, db, query_prod_db, query_full_img_db, query_skinny_img_db)
         res = db_text_search_infinite_v2(data, db, query_prod_db, query_full_img_db, query_skinny_img_db)
         return res
 
@@ -443,9 +442,9 @@ def search_from_image():
         data = json.loads(data)
         req_sex = data['sex']
         if req_sex == 'women':
-            results = search_from_upload(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
+            results = search_from_upload(request, db, ImagesFullWomenB, ImagesSkinnyWomenB, ProductsWomenB)
         else:
-            results = search_from_upload(request, db, ImagesFullMenA, ImagesSkinnyMenA, ProductsMenA)
+            results = search_from_upload(request, db, ImagesFullMenB, ImagesSkinnyMenB, ProductsMenB)
         # Make it HTTP friendly
         res = jsonify(res=results)
 
@@ -462,10 +461,10 @@ def search_similar():
         data = json.loads(data)
         req_sex = data['sex']
         if req_sex == 'women':
-            search_results = search_similar_images(request, db, ImagesFullWomenA, ImagesSkinnyWomenA, ProductsWomenA)
+            search_results = search_similar_images(request, db, ImagesFullWomenB, ImagesSkinnyWomenB, ProductsWomenB)
             res = jsonify(res=search_results)
         else:
-            search_results = search_similar_images(request, db, ImagesFullMenA, ImagesSkinnyMenA, ProductsMenA)
+            search_results = search_similar_images(request, db, ImagesFullMenB, ImagesSkinnyMenB, ProductsMenB)
             res = jsonify(res=search_results)
 
         return res
@@ -479,11 +478,17 @@ def search_similar_infinite():
         print('Calling search_similar_images')
         data = request.get_json(force=True)
         data = json.loads(data)
-        req_img_full_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
-        req_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
-        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        req_img_full_db = ImagesFullWomenB if data['sex'] == 'women' else ImagesFullMenB
+        req_img_skinny_db = ImagesSkinnyWomenB if data['sex'] == 'women' else ImagesSkinnyMenB
+        req_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
 
-        search_results, search_cats, req_color, req_img_hash = infinite_similar_images(request, db, req_img_full_db, req_img_skinny_db, req_prod_db)
+        search_results, search_cats, req_color, req_img_hash = infinite_similar_images(
+            request,
+            db,
+            req_img_full_db,
+            req_img_skinny_db,
+            req_prod_db
+        )
         res = jsonify(res=search_results, cats=search_cats, color=req_color, img_hash=req_img_hash)
 
         return res
@@ -496,9 +501,9 @@ def image_search_infinite():
         print('Calling image_search_infinite')
         data = request.get_json(force=True)
         # data = json.loads(data)
-        req_img_full_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
-        req_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
-        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        req_img_full_db = ImagesFullWomenB if data['sex'] == 'women' else ImagesFullMenB
+        req_img_skinny_db = ImagesSkinnyWomenB if data['sex'] == 'women' else ImagesSkinnyMenB
+        req_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
 
         search_results = db_search_from_image(request, db, req_img_full_db, req_img_skinny_db, req_prod_db)
         res = jsonify(res=search_results)
@@ -511,7 +516,7 @@ def test_search():
     print('Search similar requested, request method', str(request.method))
     if request.method == 'POST':
         print('Calling test_search')
-        search_results = db_test_search(request, db, ImagesFullMenA, ImagesSkinnyMenA, ProductsMenA)
+        search_results = db_test_search(request, db, ImagesFullMenB, ImagesSkinnyMenB, ProductsMenB)
 
         # Make it HTTP friendly
         res = jsonify(res=search_results)
@@ -567,9 +572,9 @@ def add_outfit():
         data = json.loads(data)
         sex = data['sex']
         if sex == 'women':
-            add_outfit_response = db_add_outfit(db, User, ProductsWomenA, data)
+            add_outfit_response = db_add_outfit(db, User, ProductsWomenB, data)
         else:
-            add_outfit_response = db_add_outfit(db, User, ProductsMenA, data)
+            add_outfit_response = db_add_outfit(db, User, ProductsMenB, data)
 
         return add_outfit_response
 
@@ -579,7 +584,7 @@ def add_multiple_outfits():
     if request.method == 'POST':
         data = request.get_json(force=True)
         data = json.loads(data)
-        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        req_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
         add_outfit_response = db_add_multiple_outfits(db, User, req_prod_db, data)
 
         return add_outfit_response
@@ -608,27 +613,27 @@ def get_products():
         if sex == 'women':
             for prod_hash in prod_hashes:
                 conditions.append(
-                    (ProductsWomenA.prod_id == prod_hash)
+                    (ProductsWomenB.prod_id == prod_hash)
                 )
-            query = db.session.query(ProductsWomenA).filter(
+            query = db.session.query(ProductsWomenB).filter(
                 or_(*conditions)
             )
             query_results = query.all()
             for query_result in query_results:
-                prod_serial = ProductsWomenASchema().dump(query_result)
+                prod_serial = ProductsSchema().dump(query_result)
                 prod_results.append(prod_serial)
 
         else:
             for prod_hash in prod_hashes:
                 conditions.append(
-                    (ProductsMenA.prod_id == prod_hash)
+                    (ProductsMenB.prod_id == prod_hash)
                 )
-            query = db.session.query(ProductsMenA).filter(
+            query = db.session.query(ProductsMenB).filter(
                 or_(*conditions)
             )
             query_results = query.all()
             for query_result in query_results:
-                prod_serial = ProductsMenASchema().dump(query_result)
+                prod_serial = ProductsSchema().dump(query_result)
                 prod_results.append(prod_serial)
 
         return json.dumps(prod_results)
@@ -643,9 +648,9 @@ def get_prod_hash():
         img_hash = data['img_hash']
         sex = data['sex']
         if sex == 'women':
-            product = db.session.query(ProductsWomenA).filter(ProductsWomenA.image_hash.any(img_hash)).first()
+            product = db.session.query(ProductsWomenB).filter(ProductsWomenB.image_hash.any(img_hash)).first()
         else:
-            product = db.session.query(ProductsMenA).filter(ProductsMenA.image_hash.any(img_hash)).first()
+            product = db.session.query(ProductsMenB).filter(ProductsMenB.image_hash.any(img_hash)).first()
         prod_id = product.prod_id
         print({'prod_id': prod_id})
         return json.dumps({'prod_id': prod_id})
@@ -657,9 +662,9 @@ def recommend_tags():
         data = request.get_json(force=True)
         req_sex = data['sex']
         if req_sex == 'women':
-            suggestions = recommend_similar_tags(db, User, ProductsWomenA, data)
+            suggestions = recommend_similar_tags(db, User, ProductsWomenB, data)
         else:
-            suggestions = recommend_similar_tags(db, User, ProductsMenA, data)
+            suggestions = recommend_similar_tags(db, User, ProductsMenB, data)
         return suggestions
 
 
@@ -667,7 +672,7 @@ def recommend_tags():
 def recommend_random():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        req_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
         suggestions = recommend_from_random(db, req_prod_db, data)
 
         return suggestions
@@ -677,7 +682,7 @@ def recommend_random():
 def recommend_from_onboarding():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        req_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        req_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
         suggestions = recommend_from_onboarding_faves(db, req_prod_db, data)
 
         return suggestions
@@ -690,9 +695,9 @@ def recommend_deals():
         sex = data['sex']
 
         if sex == 'women':
-            suggestions = get_deals(db, ImagesSkinnyWomenA, ProductsWomenA, data)
+            suggestions = get_deals(db, ImagesSkinnyWomenB, ProductsWomenB, data)
         else:
-            suggestions = get_deals(db, ImagesSkinnyMenA, ProductsMenA, data)
+            suggestions = get_deals(db, ImagesSkinnyMenB, ProductsMenB, data)
 
         return suggestions
 
@@ -702,7 +707,7 @@ def recommend_onboarding():
     if request.method == 'POST':
         data = request.get_json(force=True)
         sex = data['sex']
-        req_prod_db = ProductsWomenA if sex == 'women' else ProductsMenA
+        req_prod_db = ProductsWomenB if sex == 'women' else ProductsMenB
 
         suggestions = onboarding_recommend(db, req_prod_db, data)
 
@@ -717,13 +722,13 @@ def get_image():
         sex = data['sex']
 
         if sex == 'women':
-            query = db.session.query(ImagesFullWomenA).filter(ImagesFullWomenA.img_hash == img_hash)
+            query = db.session.query(ImagesFullWomenB).filter(ImagesFullWomenB.img_hash == img_hash)
             query_result = query.first()
-            img_serial = ImagesFullWomenASchema().dump(query_result)
+            img_serial = ImagesFullSchema().dump(query_result)
         else:
-            query = db.session.query(ImagesFullMenA).filter(ImagesFullMenA.img_hash == img_hash)
+            query = db.session.query(ImagesFullMenB).filter(ImagesFullMenB.img_hash == img_hash)
             query_result = query.first()
-            img_serial = ImagesFullMenASchema().dump(query_result)
+            img_serial = ImagesFullSchema().dump(query_result)
 
         return json.dumps(img_serial)
 
@@ -733,7 +738,7 @@ def cat_transform():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        req_response = cat_transformation.CatTransform().cat_transform(cats, db, ImagesFullMenA, data)
+        req_response = cat_transformation.CatTransform().cat_transform(cats, db, ImagesFullMenB, data)
 
         return json.dumps(req_response)
 
@@ -743,7 +748,7 @@ def cat_cleanse_transform():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        req_response = cat_transformation.cat_clean_transform(cats, db, ImagesSkinnyWomenA, data)
+        req_response = cat_transformation.cat_clean_transform(cats, db, ImagesSkinnyWomenB, data)
 
         return json.dumps(req_response)
 
@@ -753,7 +758,7 @@ def cat_fix_liu():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        req_response = cat_transformation.cat_fix_liu(db, ImagesSkinnyWomenA, data)
+        req_response = cat_transformation.cat_fix_liu(db, ImagesSkinnyWomenB, data)
 
         return json.dumps(req_response)
 
@@ -763,7 +768,7 @@ def cat_transform_boohoo():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        req_response = cat_transformation.cat_fix_boohoo(db, ImagesSkinnyWomenA, data, cats)
+        req_response = cat_transformation.cat_fix_boohoo(db, ImagesSkinnyWomenB, data, cats)
 
         return json.dumps(req_response)
 
@@ -773,7 +778,7 @@ def cat_transform_borg():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        req_response = cat_transformation.add_borg_cat(db, ImagesSkinnyMenA, data)
+        req_response = cat_transformation.add_borg_cat(db, ImagesSkinnyMenB, data)
 
         return json.dumps(req_response)
 
@@ -783,7 +788,7 @@ def cat_transform_sweatpants():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        req_response_women = cat_transformation.add_sweatpant_cat(db, ImagesSkinnyWomenA, data)
+        req_response_women = cat_transformation.add_sweatpant_cat(db, ImagesSkinnyWomenB, data)
         # req_response_men = cat_transformation.add_sweatpant_cat(db, ImagesSkinnyMenA, data)
 
         # return json.dumps({
@@ -800,7 +805,7 @@ def enc_transform():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        req_response = enc_transformation.EncTransform().enc_dim_transform(db, ImagesFullMenA, data)
+        req_response = enc_transformation.EncTransform().enc_dim_transform(db, ImagesFullMenB, data)
 
         return json.dumps(req_response)
 
@@ -810,7 +815,7 @@ def brand_transform():
     if request.method == 'POST':
         data = request.get_json(force=True)
 
-        req_response = brand_transformation.BrandTransform().add_brand_to_images(db, ImagesFullMenA, ProductsMenA, data)
+        req_response = brand_transformation.BrandTransform().add_brand_to_images(db, ImagesFullMenB, ProductsMenB, data)
 
         return json.dumps(req_response)
 
@@ -819,8 +824,8 @@ def brand_transform():
 def name_transform():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        request_img_skinny_db = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
-        request_prod_db = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        request_img_skinny_db = ImagesSkinnyWomenB if data['sex'] == 'women' else ImagesSkinnyMenB
+        request_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
 
         req_response = name_transformation.NameTransform().prod_name_fix(data, db, request_img_skinny_db, request_prod_db)
 
@@ -834,7 +839,7 @@ def add_vgg16():
         img_hash = data['img_hash']
         encoding_vgg16 = data['encoding_vgg16']
         try:
-            existing_img = ImagesFullMenA.query.filter_by(img_hash=img_hash).first()
+            existing_img = ImagesFullMenB.query.filter_by(img_hash=img_hash).first()
         except:
             existing_img = None
 
@@ -853,7 +858,7 @@ def add_vgg16():
 @app.route("/api/count_in_stock", methods=['GET'])
 def count_in_stock():
     if request.method == 'GET':
-        stock_aggr = db.session.query(ImagesFullMenA.in_stock, func.count(ImagesFullMenA.in_stock)).group_by(ImagesFullMenA.in_stock).all()
+        stock_aggr = db.session.query(ImagesFullMenB.in_stock, func.count(ImagesFullMenB.in_stock)).group_by(ImagesFullMenB.in_stock).all()
 
         return json.dumps({
             'response': stock_aggr
@@ -866,9 +871,9 @@ def old_data_purge():
         data = request.get_json(force=True)
         query_type = data['query_type']
         query_sex = data['sex']
-        query_prod_db = ProductsWomenA if query_sex == 'women' else ProductsMenA
-        query_img_skinny_db = ImagesSkinnyWomenA if query_sex == 'women' else ImagesSkinnyMenA
-        query_img_full_db = ImagesFullWomenA if query_sex == 'women' else ImagesFullMenA
+        query_prod_db = ProductsWomenB if query_sex == 'women' else ProductsMenB
+        query_img_skinny_db = ImagesSkinnyWomenB if query_sex == 'women' else ImagesSkinnyMenB
+        query_img_full_db = ImagesFullWomenB if query_sex == 'women' else ImagesFullMenB
 
         if query_type == 'faves':
             response = data_purge.count_faved_prods(db, query_prod_db)
@@ -922,7 +927,7 @@ def user_transform():
 @app.route("/api/count_vgg16", methods=['GET'])
 def count_vgg16():
     if request.method == 'GET':
-        vgg16_none_count = db.session.query(ImagesFullMenA).filter(ImagesFullMenA.encoding_vgg16 == None).count()
+        vgg16_none_count = db.session.query(ImagesFullMenB).filter(ImagesFullMenB.encoding_vgg16 == None).count()
 
         return json.dumps({
             'null_count': vgg16_none_count
@@ -933,7 +938,7 @@ def count_vgg16():
 def count_all():
     if request.method == 'GET':
         # row_count = db.session.query(ProductsWomenA).count()
-        row_count = db.session.query(ImagesSkinnyWomenA).count()
+        row_count = db.session.query(ImagesSkinnyWomenB).count()
         # row_count = db.session.query(ImagesFullWomenA).count()
 
         return json.dumps({
@@ -944,7 +949,10 @@ def count_all():
 @app.route("/api/count_prod_brands", methods=['GET'])
 def count_prod_brands():
     if request.method == 'GET':
-        prod_brand_aggr = db.session.query(ProductsMenA.brand, func.count(ProductsMenA.brand)).group_by(ProductsMenA.brand).all()
+        prod_brand_aggr = db.session.query(
+            ProductsMenB.brand,
+            func.count(ProductsMenB.brand)
+        ).group_by(ProductsMenB.brand).all()
 
         return json.dumps({
             'response': prod_brand_aggr
@@ -992,6 +1000,3 @@ def health():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', threaded=True, port=5000)
-
-# if __name__ == "__main__":
-#     app.run(host='0.0.0.0', port=80)
