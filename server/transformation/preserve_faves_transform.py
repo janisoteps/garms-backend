@@ -2,6 +2,7 @@ import os
 import json
 import time
 
+
 # Iterate through all rows in Image db and recalculate kind, filter and all_cats columns
 class PreserveFaves:
     def preserve_faves_transform(
@@ -63,12 +64,15 @@ class PreserveFaves:
                                     style_cats=img_result.style_cats,
                                     material_cats=img_result.material_cats,
                                     attribute_cats=img_result.attribute_cats,
-                                    length_cats=[],
+                                    length_cats=img_result.length_cats,
                                     filter_cats=img_result.filter_cats,
                                     all_cats=img_result.all_cats,
                                     color_1=img_result.color_1,
                                     color_2=img_result.color_2,
                                     color_3=img_result.color_3,
+                                    color_4=img_result.color_4,
+                                    color_5=img_result.color_5,
+                                    color_6=img_result.color_6,
                                     size_stock=img_result.size_stock,
                                     in_stock=img_result.in_stock
                                 )
@@ -94,7 +98,7 @@ class PreserveFaves:
                                     style_cats=img_result.style_cats,
                                     material_cats=img_result.material_cats,
                                     attribute_cats=img_result.attribute_cats,
-                                    length_cats=[],
+                                    length_cats=img_result.length_cats,
                                     filter_cats=img_result.filter_cats,
                                     all_cats=img_result.all_cats,
                                     color_1=img_result.color_1,
@@ -103,6 +107,12 @@ class PreserveFaves:
                                     color_2_hex=img_result.color_2_hex,
                                     color_3=img_result.color_3,
                                     color_3_hex=img_result.color_3_hex,
+                                    color_4=img_result.color_4,
+                                    color_4_hex=img_result.color_4_hex,
+                                    color_5=img_result.color_5,
+                                    color_5_hex=img_result.color_5_hex,
+                                    color_6=img_result.color_6,
+                                    color_6_hex=img_result.color_6_hex,
                                     size_stock=img_result.size_stock,
                                     in_stock=img_result.in_stock,
                                     encoding_vgg16=img_result.encoding_vgg16
@@ -123,7 +133,7 @@ class PreserveFaves:
                                     price=prod_result.price,
                                     sale=prod_result.sale,
                                     saleprice=prod_result.saleprice,
-                                    discount_rate=0,
+                                    discount_rate=prod_result.discount_rate,
                                     sex=prod_result.sex,
                                     shop=prod_result.shop,
                                     kind_cats=prod_result.kind_cats,
@@ -132,7 +142,7 @@ class PreserveFaves:
                                     style_cats=prod_result.style_cats,
                                     material_cats=prod_result.material_cats,
                                     attribute_cats=prod_result.attribute_cats,
-                                    length_cats=[],
+                                    length_cats=prod_result.length_cats,
                                     filter_cats=prod_result.filter_cats,
                                     all_cats=prod_result.all_cats,
                                     size_stock=img_result.size_stock,
