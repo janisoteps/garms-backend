@@ -48,6 +48,7 @@ def preserve_faves_transform(
                                 brand=img_result.brand,
                                 color_string=img_result.color_string,
                                 date=img_result.date,
+                                date_updated=img_result.date_updated,
                                 name=img_result.name,
                                 price=img_result.price,
                                 sale=img_result.sale,
@@ -71,7 +72,8 @@ def preserve_faves_transform(
                                 color_5=img_result.color_5,
                                 color_6=img_result.color_6,
                                 size_stock=img_result.size_stock,
-                                in_stock=img_result.in_stock
+                                in_stock=img_result.in_stock,
+                                is_deleted=False
                             )
 
                             img_submission = Images(
@@ -82,6 +84,7 @@ def preserve_faves_transform(
                                 brand=img_result.brand,
                                 color_string=img_result.color_string,
                                 date=img_result.date,
+                                date_updated=img_result.date_updated,
                                 name=img_result.name,
                                 price=img_result.price,
                                 sale=img_result.sale,
@@ -112,7 +115,8 @@ def preserve_faves_transform(
                                 color_6_hex=img_result.color_6_hex,
                                 size_stock=img_result.size_stock,
                                 in_stock=img_result.in_stock,
-                                encoding_vgg16=img_result.encoding_vgg16
+                                encoding_vgg16=[],
+                                is_deleted=False
                             )
 
                             product_submission = Products(
@@ -124,6 +128,7 @@ def preserve_faves_transform(
                                 color_string=prod_result.color_string,
                                 currency=prod_result.currency,
                                 date=prod_result.date,
+                                date_updated=prod_result.date_updated,
                                 description=prod_result.description,
                                 image_hash=prod_result.image_hash,
                                 image_urls=prod_result.image_urls,
@@ -144,7 +149,8 @@ def preserve_faves_transform(
                                 all_cats=prod_result.all_cats,
                                 size_stock=img_result.size_stock,
                                 in_stock=img_result.in_stock,
-                                is_fav=prod_result.is_fav
+                                is_fav=prod_result.is_fav,
+                                is_deleted=False
                             )
 
                             existing_skinny_rows = db.session.query(ImagesSkinny).filter(
