@@ -18,6 +18,8 @@ def preserve_faves_transform(
     if data['transform_key'] == key_string:
         all_users = db.session.query(
             User
+        ).filter(
+            User.sex == data['sex']
         ).all()
 
         counter = 0
