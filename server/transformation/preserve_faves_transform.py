@@ -25,7 +25,7 @@ def preserve_faves_transform(
         for user in all_users:
             user_counter += 1
             print(f'USER NR: {user_counter}')
-            if user_counter > 5:
+            if user_counter > 6:
                 wardrobe = user.wardrobe
                 if wardrobe is not None:
                     print(f'Preserving wardrobe of: {user.email}')
