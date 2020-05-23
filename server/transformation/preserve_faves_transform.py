@@ -4,7 +4,6 @@ import time
 
 
 def preserve_faves_transform(
-        self,
         db,
         Images,
         ImagesV2,
