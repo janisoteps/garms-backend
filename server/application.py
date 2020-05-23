@@ -23,7 +23,7 @@ import transformation.brand_transform as brand_transformation
 import transformation.name_transform as name_transformation
 import transformation.old_data_purge as data_purge
 import transformation.user_transform as user_transformation
-import transformation.preserve_faces_transform as preserve_faves
+import transformation.preserve_faves_transform as preserve_faves
 import data.cats as cats
 from hashlib import sha256
 import random
