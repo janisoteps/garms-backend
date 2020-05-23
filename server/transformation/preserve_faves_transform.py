@@ -120,7 +120,7 @@ def preserve_faves_transform(
                                 color_6_hex=img_result.color_6_hex,
                                 size_stock=img_result.size_stock,
                                 in_stock=img_result.in_stock,
-                                encoding_vgg16=[],
+                                encoding_vgg16=None,
                                 is_deleted=False
                             )
 

@@ -581,6 +581,7 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
     query_conditions.append(
         (ImagesSkinny.is_deleted is not True)
     )
+
     if len(req_brands) > 0:
         for req_brand in req_brands:
             req_brand_lower = req_brand.lower()

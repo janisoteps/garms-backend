@@ -43,7 +43,6 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
     is_deleted = False
 
     print(prod_url)
-    
     img_full_submission = ImagesModel(
         img_hash=img_hash,
         img_url=img_url,
