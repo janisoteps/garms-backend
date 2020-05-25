@@ -865,6 +865,38 @@ def fave_preserve_transform():
         })
 
 
+@app.route("/api/get_faved_images", methods=['POST'])
+def get_faved_images():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        request_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
+
+        req_response = preserve_faves.get_fav_images(db, request_prod_db, data)
+
+        return json.dumps(req_response)
+
+
+@app.route("/api/get_img_data", methods=['POST'])
+def get_img_data():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        request_img_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
+
+        req_response = preserve_faves.get_img_data(db, request_img_db, ImagesFullSchema, data)
+
+        return json.dumps(req_response)
+
+
+# @app.route("/api/update_img_enc", methods=['POST'])
+# def update_img_enc():
+#     if request.method == 'POST':
+#         data = request.get_json(force=True)
+#         request_img_db = ImagesFullWomenB if data['sex'] == 'women' else ImagesFullMenB
+#         req_response = preserve_faves.update_img_enc(db, request_img_db, data)
+#
+#         return json.dumps(req_response)
+
+
 @app.route("/api/add_vgg16", methods=['POST'])
 def add_vgg16():
     if request.method == 'POST':

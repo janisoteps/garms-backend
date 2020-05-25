@@ -187,3 +187,52 @@ def preserve_faves_transform(
                             print(f'{counter} PRODS')
 
         return json.dumps(True)
+
+
+def get_fav_images(db, Products, data):
+    key_string = os.environ['TRANSFORM_KEY']
+    if data['transform_key'] == key_string:
+        faved_prods = db.session.query(
+            Products
+        ).filter(
+            Products.is_fav == True
+        ).all()
+
+        img_hash_list = []
+        for faved_prod in faved_prods:
+            img_hashes = faved_prod.image_hash
+            for img_hash in img_hashes:
+                img_hash_list.append(img_hash)
+
+        return img_hash_list
+
+
+def get_img_data(db, ImagesFull, ImagesFullSchema, data):
+    key_string = os.environ['TRANSFORM_KEY']
+    if data['transform_key'] == key_string:
+        img_query_result = db.session.query(
+            ImagesFull
+        ).filter(
+            ImagesFull.img_hash == data['img_hash']
+        ).first()
+
+        img_serial = ImagesFullSchema().dump(img_query_result)
+        result_dict = {
+            'image_data': img_serial[0]
+        }
+        return result_dict
+
+
+# def update_img_enc(db, ImagesFull, data):
+#     key_string = os.environ['TRANSFORM_KEY']
+#     if data['transform_key'] == key_string:
+#         img_query_result = db.session.query(
+#             ImagesFull
+#         ).filter(
+#             ImagesFull.img_hash == data['img_hash']
+#         ).first()
+#
+#         img_query_result.encoding_vgg16 = data['encoding_vgg16']
+#         db.session.commit()
+#
+#         return json.dumps(True)
