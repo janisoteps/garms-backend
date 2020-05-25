@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ProductsWomenASchema, ProductsMenASchema
+from marshmallow_schema import ProductsSchema
 import json
 from random import shuffle
 import random
@@ -94,7 +94,7 @@ def recommend_similar_tags(db, User, Products, data):
                 # prod_results = []
                 for query_result in query_results:
                     if len(query_result.image_urls) > 0:
-                        prod_serial = ProductsWomenASchema().dump(query_result)
+                        prod_serial = ProductsSchema().dump(query_result)
 
                         suggestions.append({
                             'look_name': 'all' if req_look_name is None else req_look_name,
@@ -112,10 +112,7 @@ def recommend_similar_tags(db, User, Products, data):
             prod_results = []
             for query_result in query_results:
                 if len(query_result.image_urls) > 0:
-                    if req_sex == 'women':
-                        prod_serial = ProductsWomenASchema().dump(query_result)
-                    else:
-                        prod_serial = ProductsMenASchema().dump(query_result)
+                    prod_serial = ProductsSchema().dump(query_result)
                     prod_results.append(prod_serial)
             suggestions.append({
                 'look_name': 'All',
@@ -153,10 +150,7 @@ def recommend_similar_tags(db, User, Products, data):
         prod_results = []
         for query_result in query_results:
             if len(query_result.image_urls) > 0:
-                if req_sex == 'women':
-                    prod_serial = ProductsWomenASchema().dump(query_result)
-                else:
-                    prod_serial = ProductsMenASchema().dump(query_result)
+                prod_serial = ProductsSchema().dump(query_result)
                 prod_results.append(prod_serial)
 
         suggestions = [
@@ -231,10 +225,7 @@ def recommend_from_onboarding_faves(db, Products, data):
     prod_results = []
     for query_result in query_results:
         if len(query_result.image_urls) > 0:
-            if req_sex == 'women':
-                prod_serial = ProductsWomenASchema().dump(query_result)
-            else:
-                prod_serial = ProductsMenASchema().dump(query_result)
+            prod_serial = ProductsSchema().dump(query_result)
             prod_results.append(prod_serial)
 
     suggestions = [
@@ -281,10 +272,7 @@ def recommend_from_random(db, Products, data):
     prod_results = []
     for query_result in query_results:
         if len(query_result.image_urls) > 0:
-            if req_sex == 'women':
-                prod_serial = ProductsWomenASchema().dump(query_result)
-            else:
-                prod_serial = ProductsMenASchema().dump(query_result)
+            prod_serial = ProductsSchema().dump(query_result)
             prod_results.append(prod_serial)
 
     suggestions = [
@@ -338,10 +326,7 @@ def onboarding_recommend(db, Products, data):
     prod_results = []
 
     for query_result in query_results:
-        if req_sex == 'women':
-            prod_serial = ProductsWomenASchema().dump(query_result)
-        else:
-            prod_serial = ProductsMenASchema().dump(query_result)
+        prod_serial = ProductsSchema().dump(query_result)
         prod_results.append(prod_serial)
 
     suggestions = {

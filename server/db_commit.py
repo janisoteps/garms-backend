@@ -42,6 +42,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
     encoding_vgg16 = data['encoding_vgg16']
     is_deleted = False
 
+    print(prod_url)
     img_full_submission = ImagesModel(
         img_hash=img_hash,
         img_url=img_url,
@@ -170,6 +171,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         existing_img_full_row.color_5_hex = color_5_hex
         existing_img_full_row.color_6 = color_6
         existing_img_full_row.color_6_hex = color_6_hex
+        existing_img_full_row.encoding_vgg16 = encoding_vgg16
         existing_img_full_row.size_stock = size_stock
         existing_img_full_row.in_stock = in_stock
         existing_img_full_row.is_deleted = is_deleted
