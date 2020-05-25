@@ -8,7 +8,7 @@ from flask import render_template, request, jsonify
 import string
 from sqlalchemy import func, or_
 import aiohttp
-from get_features import get_features, get_features_light
+from get_features import get_features_light
 from marshmallow_schema import LoadingContentSchema, ImagesFullSchema, ProductsSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite_v2, infinite_similar_images
@@ -409,21 +409,6 @@ def text_search_infinite():
 
         res = db_text_search_infinite_v2(data, db, query_prod_db, query_full_img_db, query_skinny_img_db)
         return res
-
-
-# Return color, encoding and category predictions from uploaded image
-@app.route("/api/img_features", methods=['POST'])
-def img_features():
-    if request.method == 'POST':
-        if request.files.get("image"):
-            post_image = request.files["image"].read()
-            # Obtain features from all AI servers
-            features = get_features(post_image)
-
-            # Make it HTTP friendly
-            res = jsonify(res=features)
-
-            return res
 
 
 @app.route("/api/img_features_light", methods=['POST'])
