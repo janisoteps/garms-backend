@@ -8,15 +8,16 @@ from flask import render_template, request, jsonify
 import string
 from sqlalchemy import func, or_
 import aiohttp
-from get_features import get_features_light
+from search.get_features import get_features_light
 from marshmallow_schema import LoadingContentSchema, ImagesFullSchema, ProductsSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
-from db_search import search_similar_images, search_from_upload, db_text_search, db_test_search, db_text_search_infinite_v2, infinite_similar_images
+from search.db_search import search_similar_images, db_test_search, infinite_similar_images
+from search.db_text_search import db_text_search_infinite_v2, db_text_search, db_text_color_search
+from search.db_image_search import db_search_from_image
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look, db_add_multiple_outfits
 from db_recommend import recommend_similar_tags, recommend_from_random, onboarding_recommend, recommend_from_onboarding_faves
 from db_deals import get_deals
 from send_email import password_reset_email, registration_email
-from db_image_search import db_search_from_image
 import transformation.cat_transform as cat_transformation
 import transformation.enc_transform as enc_transformation
 import transformation.brand_transform as brand_transformation
@@ -411,6 +412,18 @@ def text_search_infinite():
         return res
 
 
+@app.route("/api/text_color_search", methods=['POST'])
+def text_color_search():
+    if request.method == 'POST':
+        data = request.get_json(force=True)
+        sex = data['sex']
+        query_skinny_img_db = ImagesSkinnyWomenB if sex == 'women' else ImagesSkinnyMenB
+        query_full_img_db = ImagesFullWomenB if sex == 'women' else ImagesFullMenB
+
+        res = db_text_color_search(data, db, query_full_img_db, query_skinny_img_db)
+        return res
+
+
 @app.route("/api/img_features_light", methods=['POST'])
 def img_features_light():
     if request.method == 'POST':
@@ -425,21 +438,21 @@ def img_features_light():
             return res
 
 
-# Return color, encoding and category predictions from uploaded image
-@app.route("/api/search_from_image", methods=['POST'])
-def search_from_image():
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-        data = json.loads(data)
-        req_sex = data['sex']
-        if req_sex == 'women':
-            results = search_from_upload(request, db, ImagesFullWomenB, ImagesSkinnyWomenB, ProductsWomenB)
-        else:
-            results = search_from_upload(request, db, ImagesFullMenB, ImagesSkinnyMenB, ProductsMenB)
-        # Make it HTTP friendly
-        res = jsonify(res=results)
-
-        return res
+# # Return color, encoding and category predictions from uploaded image
+# @app.route("/api/search_from_image", methods=['POST'])
+# def search_from_image():
+#     if request.method == 'POST':
+#         data = request.get_json(force=True)
+#         data = json.loads(data)
+#         req_sex = data['sex']
+#         if req_sex == 'women':
+#             results = search_from_upload(request, db, ImagesFullWomenB, ImagesSkinnyWomenB, ProductsWomenB)
+#         else:
+#             results = search_from_upload(request, db, ImagesFullMenB, ImagesSkinnyMenB, ProductsMenB)
+#         # Make it HTTP friendly
+#         res = jsonify(res=results)
+#
+#         return res
 
 
 # Search for similar products based on selected product
