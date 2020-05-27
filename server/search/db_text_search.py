@@ -422,14 +422,20 @@ def db_text_color_search(data, db, Images, ImagesSkinny):
     search_words = data['search_words']
     prev_prod_ids = data['prev_prod_ids']
     search_color = data['color']
-    search_limit = 1000
+    max_price = int(data['max_price'])
+    req_brands = data['brands']
+    search_limit = 2000
     result_limit = 100
     tag_list = cats.Cats()
     query_conditions = []
     query_conds_all_cats = []
+    brand_conds = []
     all_cats = tag_list.all_cats
     all_cats_search = []
     string_list = [word.strip().lower() for word in search_words]
+
+    if sum(search_color) == 0:
+        search_color = [color + 1 for color in search_color]
 
     for word in string_list:
         for cat in all_cats:
@@ -461,10 +467,38 @@ def db_text_color_search(data, db, Images, ImagesSkinny):
                 ImagesSkinny.prod_id != prev_prod_id
             )
 
+    if len(req_brands) > 0:
+        for req_brand in req_brands:
+            req_brand_lower = req_brand.lower()
+            brand_conds.append(
+                (func.lower(ImagesSkinny.brand).ilike('%{0}%'.format(req_brand_lower)))
+            )
+
+    if max_price < 1000000:
+        query_conditions.append(
+            or_(
+                (ImagesSkinny.price < max_price),
+                and_(
+                    (ImagesSkinny.sale == True), (ImagesSkinny.saleprice < max_price)
+                )
+            )
+        )
+        query_conds_all_cats.append(
+            or_(
+                (ImagesSkinny.price < max_price),
+                and_(
+                    (ImagesSkinny.sale == True), (ImagesSkinny.saleprice < max_price)
+                )
+            )
+        )
+
     query_results = db.session.query(ImagesSkinny, Images).filter(
         ImagesSkinny.img_hash == Images.img_hash
     ).filter(
-        and_(*query_conds_all_cats)
+        and_(
+            and_(*query_conds_all_cats),
+            or_(*brand_conds)
+        )
     ).limit(search_limit).all()
 
     print(f'QUERY RESULT LENGTH: {len(query_results)}')
@@ -472,13 +506,17 @@ def db_text_color_search(data, db, Images, ImagesSkinny):
         query_results_extended = db.session.query(ImagesSkinny, Images).filter(
             ImagesSkinny.img_hash == Images.img_hash
         ).filter(
-            and_(*query_conditions)
+            and_(
+                and_(*query_conditions),
+                or_(*brand_conds)
+            )
         ).limit(search_limit).all()
         query_results += query_results_extended
     print(f'QUERY RESULT LENGTH: {len(query_results)}')
 
     if len(query_results) == 0:
-        return []
+        res = jsonify(res=[])
+        return res
     else:
         color_1_list = []
         color_2_list = []
@@ -537,12 +575,8 @@ def db_text_color_search(data, db, Images, ImagesSkinny):
         prod_check = set()
         print('Obtaining result data')
         for result_dict in closest_n_results_color:
-            print(result_dict)
             img_query_result = result_dict['query_result']
-            print(img_query_result)
             prod_hash = img_query_result.prod_id
-            prod_hash = img_query_result.prod_id
-            print(prod_hash)
             if prod_hash not in prod_check:
                 prod_check.add(prod_hash)
                 img_serial = ImagesFullSchema().dump(img_query_result)
