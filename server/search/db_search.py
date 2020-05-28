@@ -516,7 +516,12 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
             if word not in kind_cats_search and word not in length_cats_search and word not in pattern_cats_search and word not in material_cats_search and word not in style_cats_search:
                 rest_cats_search.append(word)
 
-    kind_cats_search = kind_cats_search[:3]
+    kind_cats_search = list(set(kind_cats_search[:3]))
+    length_cats_search = list(set(length_cats_search))
+    pattern_cats_search = list(set(pattern_cats_search))
+    material_cats_search = list(set(material_cats_search))
+    style_cats_search = list(set(style_cats_search))
+    rest_cats_search = list(set(rest_cats_search))
     print('kind cats')
     print(kind_cats_search)
     print('length cats')
@@ -612,13 +617,15 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
         and_(
             and_(*query_conditions),
             and_(*query_conds_cats_kind),
-            and_(*query_conds_cats_length),
-            and_(*query_conds_cats_pattern),
-            and_(*query_conds_cats_material),
-            and_(*query_conds_cats_style),
+            or_(*query_conds_cats_length),
+            or_(*query_conds_cats_pattern),
+            or_(*query_conds_cats_material),
+            or_(*query_conds_cats_style),
+            or_(*query_conds_cats_rest)
         )
     ).limit(search_limit).all()
     print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
+
     if len(query_results) < 50:
         relaxed_query_results = db.session.query(ImagesSkinny, ImagesFull).filter(
             ImagesSkinny.img_hash == ImagesFull.img_hash
@@ -626,25 +633,9 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
             and_(
                 and_(*query_conditions),
                 and_(*query_conds_cats_kind),
-                and_(*query_conds_cats_length),
-                or_(*query_conds_cats_pattern),
-                or_(*query_conds_cats_material),
-                or_(*query_conds_cats_style),
+                or_(*query_conds_cats_length)
             )
-        ).limit(300).all()
-        query_results += relaxed_query_results
-    print(f'NEXT QUERY RESULT LENGTH: {len(query_results)}')
-    if len(query_results) < 50:
-        relaxed_query_results = db.session.query(ImagesSkinny, ImagesFull).filter(
-            ImagesSkinny.img_hash == ImagesFull.img_hash
-        ).filter(
-            and_(
-                and_(*query_conditions),
-                and_(*query_conds_cats_kind),
-                and_(*query_conds_cats_length),
-                or_(*query_conds_cats_pattern),
-            )
-        ).limit(300).all()
+        ).limit(search_limit).all()
         query_results += relaxed_query_results
     print(f'TOTAL QUERY RESULT LENGTH: {len(query_results)}')
 

@@ -12,7 +12,7 @@ from search.get_features import get_features_light
 from marshmallow_schema import LoadingContentSchema, ImagesFullSchema, ProductsSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
 from search.db_search import search_similar_images, db_test_search, infinite_similar_images
-from search.db_text_search import db_text_search_infinite_v2, db_text_search, db_text_color_search
+from search.db_text_search import db_text_search_infinite_v2, db_text_color_search
 from search.db_image_search import db_search_from_image
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look, db_add_multiple_outfits
 from db_recommend import recommend_similar_tags, recommend_from_random, onboarding_recommend, recommend_from_onboarding_faves
@@ -385,18 +385,18 @@ def submit_instagram():
         return insta_submit_response
 
 
-# Trigram search for products with a search string
-@app.route("/api/text_search", methods=['get'])
-def text_search():
-    if request.method == 'GET':
-        req_sex = request.args.get('sex')
-        if req_sex == 'women':
-            print('searching from WOMEN')
-            res = db_text_search(request, db, ProductsWomenB, ImagesFullWomenB, ImagesSkinnyWomenB)
-        else:
-            res = db_text_search(request, db, ProductsMenB, ImagesFullMenB, ImagesSkinnyMenB)
-
-        return res
+# # Trigram search for products with a search string
+# @app.route("/api/text_search", methods=['get'])
+# def text_search():
+#     if request.method == 'GET':
+#         req_sex = request.args.get('sex')
+#         if req_sex == 'women':
+#             print('searching from WOMEN')
+#             res = db_text_search(request, db, ProductsWomenB, ImagesFullWomenB, ImagesSkinnyWomenB)
+#         else:
+#             res = db_text_search(request, db, ProductsMenB, ImagesFullMenB, ImagesSkinnyMenB)
+#
+#         return res
 
 
 @app.route("/api/text_search_infinite", methods=['POST'])
@@ -420,7 +420,8 @@ def text_color_search():
         query_skinny_img_db = ImagesSkinnyWomenB if sex == 'women' else ImagesSkinnyMenB
         query_full_img_db = ImagesFullWomenB if sex == 'women' else ImagesFullMenB
 
-        res = db_text_color_search(data, db, query_full_img_db, query_skinny_img_db)
+        result_list = db_text_color_search(data, db, query_full_img_db, query_skinny_img_db)
+        res = jsonify(res=result_list)
         return res
 
 
