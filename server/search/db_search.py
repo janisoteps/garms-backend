@@ -516,7 +516,12 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
             if word not in kind_cats_search and word not in length_cats_search and word not in pattern_cats_search and word not in material_cats_search and word not in style_cats_search:
                 rest_cats_search.append(word)
 
-    kind_cats_search = kind_cats_search[:3]
+    kind_cats_search = list(set(kind_cats_search[:3]))
+    length_cats_search = list(set(length_cats_search))
+    pattern_cats_search = list(set(pattern_cats_search))
+    material_cats_search = list(set(material_cats_search))
+    style_cats_search = list(set(style_cats_search))
+    rest_cats_search = list(set(rest_cats_search))
     print('kind cats')
     print(kind_cats_search)
     print('length cats')
@@ -612,13 +617,15 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
         and_(
             and_(*query_conditions),
             and_(*query_conds_cats_kind),
-            and_(*query_conds_cats_length),
-            and_(*query_conds_cats_pattern),
-            and_(*query_conds_cats_material),
-            and_(*query_conds_cats_style),
+            or_(*query_conds_cats_length),
+            or_(*query_conds_cats_pattern),
+            or_(*query_conds_cats_material),
+            or_(*query_conds_cats_style),
+            or_(*query_conds_cats_rest)
         )
     ).limit(search_limit).all()
     print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
+
     if len(query_results) < 50:
         relaxed_query_results = db.session.query(ImagesSkinny, ImagesFull).filter(
             ImagesSkinny.img_hash == ImagesFull.img_hash
@@ -626,25 +633,9 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
             and_(
                 and_(*query_conditions),
                 and_(*query_conds_cats_kind),
-                and_(*query_conds_cats_length),
-                or_(*query_conds_cats_pattern),
-                or_(*query_conds_cats_material),
-                or_(*query_conds_cats_style),
+                or_(*query_conds_cats_length)
             )
-        ).limit(300).all()
-        query_results += relaxed_query_results
-    print(f'NEXT QUERY RESULT LENGTH: {len(query_results)}')
-    if len(query_results) < 50:
-        relaxed_query_results = db.session.query(ImagesSkinny, ImagesFull).filter(
-            ImagesSkinny.img_hash == ImagesFull.img_hash
-        ).filter(
-            and_(
-                and_(*query_conditions),
-                and_(*query_conds_cats_kind),
-                and_(*query_conds_cats_length),
-                or_(*query_conds_cats_pattern),
-            )
-        ).limit(300).all()
+        ).limit(search_limit).all()
         query_results += relaxed_query_results
     print(f'TOTAL QUERY RESULT LENGTH: {len(query_results)}')
 
@@ -778,743 +769,342 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
 #######################################################################################################################
 #######################################################################################################################
 
-
-def search_from_upload(request, db, Images, ImagesSkinny, Products):
-    data = request.get_json(force=True)
-    data = json.loads(data)
-    print('Request received')
-    req_tags = data['tags']
-    req_sex = data['sex']
-    # req_shop_excl = data['no_shop']
-    req_color_1 = data['color_1']
-    # req_color_2 = data['color_2']
-    # req_encoding = data['encoding_rcnn']
-    req_vgg16_encoding = data['vgg16_encoding']
-
-    result_limit = 2000
-
-    req_vgg16_encoding_arr = np.asarray(req_vgg16_encoding)
-    # req_encoding_arr = np.asarray(req_encoding)
-    search_string_clean = ' '.join(req_tags)
-    print(f'Req tags: {req_tags}')
-
-    tag_list = cats.Cats()
-    kind_cats = tag_list.kind_cats
-    pattern_cats = tag_list.pattern_cats
-    color_cats = tag_list.color_cats
-    style_cats = tag_list.style_cats
-    material_cats = tag_list.material_cats
-    attribute_cats = tag_list.attribute_cats
-    length_cats = tag_list.length_cats
-    filter_cats = tag_list.filter_cats
-    all_cats = tag_list.all_cats
-
-    kind_cats_search = []
-    pattern_cats_search = []
-    color_cats_search = []
-    style_cats_search = []
-    material_cats_search = []
-    attribute_cats_search = []
-    length_cats_search = []
-    filter_cats_search = []
-    all_cats_search = []
-
-    for word in req_tags:
-        for cat in kind_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                kind_cats_search.append(cat)
-        for cat in pattern_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                pattern_cats_search.append(cat)
-        for cat in color_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                color_cats_search.append(cat)
-        for cat in style_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                style_cats_search.append(cat)
-        for cat in material_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                material_cats_search.append(cat)
-        for cat in attribute_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                attribute_cats_search.append(cat)
-        for cat in length_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                length_cats_search.append(cat)
-        for cat in filter_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                filter_cats_search.append(cat)
-        for cat in all_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                all_cats_search.append(cat)
-
-    print('kind_cats_search')
-    print(kind_cats_search)
-    print('pattern_cats_search')
-    print(pattern_cats_search)
-    print('color_cats_search')
-    print(color_cats_search)
-    print('style_cats_search')
-    print(style_cats_search)
-    print('material_cats_search')
-    print(material_cats_search)
-    print('attribute_cats_search')
-    print(attribute_cats_search)
-    print('length_cats_search')
-    print(length_cats_search)
-    print('filter_cats_search')
-    print(filter_cats_search)
-    print('all_cats_search')
-    print(all_cats_search)
-
-    print('Assembling db query conditions')
-    conditions_base = []
-    conditions_kind_cats = []
-    conditions_pattern_cats = []
-    conditions_color_cats = []
-    conditions_style_cats = []
-    conditions_material_cats = []
-    conditions_attribute_cats = []
-    conditions_length_cats = []
-    conditions_filter_cats = []
-    conditions_all_cats = []
-
-    query_conditions_all = []
-
-    for kind_search_cat in kind_cats_search:
-        conditions_kind_cats.append(
-            (ImagesSkinny.kind_cats.any(kind_search_cat))
-        )
-
-    if req_sex == 'women':
-        for pattern_search_cat in pattern_cats_search:
-            conditions_pattern_cats.append(
-                (ImagesSkinny.pattern_cats.any(pattern_search_cat))
-            )
-
-        for color_search_cat in color_cats_search:
-            conditions_color_cats.append(
-                (ImagesSkinny.color_cats.any(color_search_cat))
-            )
-
-    for style_search_cat in style_cats_search:
-        conditions_style_cats.append(
-            (ImagesSkinny.style_cats.any(style_search_cat))
-        )
-
-    for material_search_cat in material_cats_search:
-        conditions_material_cats.append(
-            (ImagesSkinny.material_cats.any(material_search_cat))
-        )
-
-    for attribute_search_cat in attribute_cats_search:
-        conditions_attribute_cats.append(
-            (ImagesSkinny.attribute_cats.any(attribute_search_cat))
-        )
-
-    if req_sex == 'women':
-        for length_search_cat in length_cats_search:
-            conditions_length_cats.append(
-                (ImagesSkinny.length_cats.any(length_search_cat))
-            )
-
-    for filter_search_cat in filter_cats_search:
-        conditions_filter_cats.append(
-            (ImagesSkinny.filter_cats.any(filter_search_cat))
-        )
-
-    if len(req_sex) > 2:
-        if req_sex != 'both':
-            conditions_base.append(
-                (ImagesSkinny.sex == req_sex)
-            )
-
-    query_conditions_all.append(
-        (func.lower(ImagesSkinny.name).op('%%')(search_string_clean))
-    )
-
-    conditions_base.append(
-        (ImagesSkinny.in_stock == True)
-    )
-    conditions_base.append(
-        (Images.encoding_vgg16 != None)
-    )
-
-    # ====== MAIN QUERY ======
-    img_table_query_results = (db.session.query(ImagesSkinny, Images).filter(
-        ImagesSkinny.img_hash == Images.img_hash
-    ).filter(
-        and_(
-            and_(*conditions_base),
-            and_(*conditions_kind_cats),
-            or_(*conditions_pattern_cats),
-            or_(*conditions_color_cats),
-            or_(*conditions_style_cats),
-            or_(*conditions_material_cats),
-            or_(*conditions_attribute_cats),
-            and_(*conditions_length_cats),
-            and_(*conditions_filter_cats)
-        )
-    ).limit(result_limit).all())
-
-    print(f'RESULT LENGTH: {len(img_table_query_results)}')
-
-    if len(img_table_query_results) < 500:
-        print('ADDING RELAXED RESULTS')
-        query_results_relaxed = (db.session.query(ImagesSkinny, Images).filter(
-            ImagesSkinny.img_hash == Images.img_hash
-        ).filter(
-            and_(
-                and_(*conditions_base),
-                and_(*conditions_kind_cats),
-                or_(*conditions_pattern_cats),
-                or_(*conditions_style_cats),
-                or_(*conditions_length_cats),
-                or_(*conditions_filter_cats)
-            )
-        ).limit(500 - len(img_table_query_results)).all())
-
-        print(f'{len(query_results_relaxed)} RELAXED RESULTS ADDED')
-
-        img_table_query_results += query_results_relaxed
-
-    if len(img_table_query_results) < 200:
-        print('ADDING EVEN MORE RELAXED RESULTS')
-        query_results_relaxed_2 = (db.session.query(ImagesSkinny, Images).filter(
-            ImagesSkinny.img_hash == Images.img_hash
-        ).filter(
-            and_(
-                and_(*conditions_base),
-                and_(*conditions_kind_cats),
-                or_(*query_conditions_all),
-                or_(*conditions_filter_cats),
-            )
-        ).limit(200 - len(img_table_query_results)).all())
-
-        print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
-
-        img_table_query_results += query_results_relaxed_2
-
-    if len(img_table_query_results) < 200:
-        print('ADDING EVEN MORE RELAXED RESULTS')
-        query_results_relaxed_3 = (db.session.query(ImagesSkinny, Images).filter(
-            ImagesSkinny.img_hash == Images.img_hash
-        ).filter(
-            and_(
-                and_(*conditions_base),
-                or_(*conditions_kind_cats)
-            )
-        ).limit(200 - len(img_table_query_results)).all())
-
-        print(f'{len(query_results_relaxed_3)} MORE RELAXED RESULTS ADDED')
-
-        img_table_query_results += query_results_relaxed_3
-
-    if len(img_table_query_results) == 0:
-        return 'No results'
-    else:
-        print('Query results obtained')
-
-        # CALCULATE COLOR DISTANCE
-        color_list = []
-        for img_table_query_result in img_table_query_results:
-            query_result = img_table_query_result[1]
-            req_color_norm_1 = np.array(req_color_1, dtype=int) / np.sum(np.array(req_color_1, dtype=int))
-            # req_color_norm_2 = np.array(req_color_2, dtype=int) / np.sum(np.array(req_color_2, dtype=int))
-            query_color_1_norm = np.array(query_result.color_1, dtype=int) / np.sum(
-                np.array(query_result.color_1, dtype=int))
-            query_color_2_norm = np.array(query_result.color_2, dtype=int) / np.sum(
-                np.array(query_result.color_2, dtype=int))
-            query_color_3_norm = np.array(query_result.color_3, dtype=int) / np.sum(
-                np.array(query_result.color_3, dtype=int))
-
-            # compute the chi-squared distances
-            distance_color_1 = calc_chi_distance(req_color_norm_1, query_color_1_norm)
-            distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
-            distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
-            # distance_color_1_2 = calc_chi_distance(req_color_norm_2, query_color_1_norm)
-            # distance_color_2_2 = calc_chi_distance(req_color_norm_2, query_color_2_norm)
-            # distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
-            distance_color = 2 * min([
-                distance_color_1,
-                distance_color_2,
-                distance_color_3
-            ])
-            # distance_color = 2 * (distance_color_1 + distance_color_2)
-            # print('Chi distance: ', str(distance_color))
-
-            distance_color_euc_1 = int(
-                spatial.distance.euclidean(np.array(req_color_1, dtype=int),
-                                           np.array(query_result.color_1, dtype=int),
-                                           w=None))
-            distance_color_euc_2 = int(
-                spatial.distance.euclidean(np.array(req_color_1, dtype=int),
-                                           np.array(query_result.color_2, dtype=int),
-                                           w=None))
-            distance_color_euc_3 = int(
-                spatial.distance.euclidean(np.array(req_color_1, dtype=int),
-                                           np.array(query_result.color_3, dtype=int),
-                                           w=None))
-
-            distance_color_euc = (1 / 500) * (2 * min([
-                distance_color_euc_1,
-                distance_color_euc_2,
-                distance_color_euc_3
-            ]))
-            # distance_color_euc = (1 / 500) * (2 * (distance_color_euc_1 + distance_color_euc_2))
-            # print('Euclidean distance: ', str(distance_color_euc))
-            color_query_result = {
-                'encoding_vgg16': query_result.encoding_vgg16,
-                'img_hash': query_result.img_hash,
-                'color_dist': distance_color + distance_color_euc,
-                'prod_id': query_result.prod_id,
-                'query_result': query_result
-            }
-            color_list.append(color_query_result)
-
-        sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
-        top_color_list = sorted_color_list[0:500]
-        print('Closest colors calculated')
-
-        # Calculate VGG16 encoding distances
-        vgg16_arrays = []
-        for query_result in top_color_list:
-            vgg16_arrays.append(query_result['encoding_vgg16'])
-        vgg16_matrix = np.asarray(vgg16_arrays)
-        print(f'vgg16_matrix.shape : {vgg16_matrix.shape}')
-        print(f'req_vgg16_encoding_arr.shape : {req_vgg16_encoding_arr.shape}')
-        dist_vgg16_arr = np.linalg.norm(vgg16_matrix - req_vgg16_encoding_arr, axis=1)
-        closest_n_vgg16_ind = dist_vgg16_arr.argsort()[:150]
-        closest_n_vgg16_results = [top_color_list[x] for x in closest_n_vgg16_ind]
-
-        final_sorted_color_list = sorted(closest_n_vgg16_results, key=itemgetter('color_dist'))
-        final_top_color_list = final_sorted_color_list[0:80]
-
-        result_list = []
-        prod_check = set()
-        print('Obtaining result data')
-        for obj in final_top_color_list:
-            result_prod_id = obj['prod_id']
-            prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-            if prod_search is not None:
-                prod_hash = prod_search.prod_id
-                if prod_hash not in prod_check:
-                    prod_serial = ProductsSchema().dump(prod_search)
-                    prod_check.add(prod_hash)
-                    img_serial = ImagesFullSchema().dump(obj['query_result'])
-
-                    result_dict = {
-                        'prod_serial': prod_serial[0],
-                        'image_data': img_serial[0]
-                    }
-                    result_list.append(result_dict)
-
-        return result_list
+#
+# def search_from_upload(request, db, Images, ImagesSkinny, Products):
+#     data = request.get_json(force=True)
+#     data = json.loads(data)
+#     print('Request received')
+#     req_tags = data['tags']
+#     req_sex = data['sex']
+#     # req_shop_excl = data['no_shop']
+#     req_color_1 = data['color_1']
+#     # req_color_2 = data['color_2']
+#     # req_encoding = data['encoding_rcnn']
+#     req_vgg16_encoding = data['vgg16_encoding']
+#
+#     result_limit = 2000
+#
+#     req_vgg16_encoding_arr = np.asarray(req_vgg16_encoding)
+#     # req_encoding_arr = np.asarray(req_encoding)
+#     search_string_clean = ' '.join(req_tags)
+#     print(f'Req tags: {req_tags}')
+#
+#     tag_list = cats.Cats()
+#     kind_cats = tag_list.kind_cats
+#     pattern_cats = tag_list.pattern_cats
+#     color_cats = tag_list.color_cats
+#     style_cats = tag_list.style_cats
+#     material_cats = tag_list.material_cats
+#     attribute_cats = tag_list.attribute_cats
+#     length_cats = tag_list.length_cats
+#     filter_cats = tag_list.filter_cats
+#     all_cats = tag_list.all_cats
+#
+#     kind_cats_search = []
+#     pattern_cats_search = []
+#     color_cats_search = []
+#     style_cats_search = []
+#     material_cats_search = []
+#     attribute_cats_search = []
+#     length_cats_search = []
+#     filter_cats_search = []
+#     all_cats_search = []
+#
+#     for word in req_tags:
+#         for cat in kind_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 kind_cats_search.append(cat)
+#         for cat in pattern_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 pattern_cats_search.append(cat)
+#         for cat in color_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 color_cats_search.append(cat)
+#         for cat in style_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 style_cats_search.append(cat)
+#         for cat in material_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 material_cats_search.append(cat)
+#         for cat in attribute_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 attribute_cats_search.append(cat)
+#         for cat in length_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 length_cats_search.append(cat)
+#         for cat in filter_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 filter_cats_search.append(cat)
+#         for cat in all_cats:
+#             if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
+#                 all_cats_search.append(cat)
+#
+#     print('kind_cats_search')
+#     print(kind_cats_search)
+#     print('pattern_cats_search')
+#     print(pattern_cats_search)
+#     print('color_cats_search')
+#     print(color_cats_search)
+#     print('style_cats_search')
+#     print(style_cats_search)
+#     print('material_cats_search')
+#     print(material_cats_search)
+#     print('attribute_cats_search')
+#     print(attribute_cats_search)
+#     print('length_cats_search')
+#     print(length_cats_search)
+#     print('filter_cats_search')
+#     print(filter_cats_search)
+#     print('all_cats_search')
+#     print(all_cats_search)
+#
+#     print('Assembling db query conditions')
+#     conditions_base = []
+#     conditions_kind_cats = []
+#     conditions_pattern_cats = []
+#     conditions_color_cats = []
+#     conditions_style_cats = []
+#     conditions_material_cats = []
+#     conditions_attribute_cats = []
+#     conditions_length_cats = []
+#     conditions_filter_cats = []
+#     conditions_all_cats = []
+#
+#     query_conditions_all = []
+#
+#     for kind_search_cat in kind_cats_search:
+#         conditions_kind_cats.append(
+#             (ImagesSkinny.kind_cats.any(kind_search_cat))
+#         )
+#
+#     if req_sex == 'women':
+#         for pattern_search_cat in pattern_cats_search:
+#             conditions_pattern_cats.append(
+#                 (ImagesSkinny.pattern_cats.any(pattern_search_cat))
+#             )
+#
+#         for color_search_cat in color_cats_search:
+#             conditions_color_cats.append(
+#                 (ImagesSkinny.color_cats.any(color_search_cat))
+#             )
+#
+#     for style_search_cat in style_cats_search:
+#         conditions_style_cats.append(
+#             (ImagesSkinny.style_cats.any(style_search_cat))
+#         )
+#
+#     for material_search_cat in material_cats_search:
+#         conditions_material_cats.append(
+#             (ImagesSkinny.material_cats.any(material_search_cat))
+#         )
+#
+#     for attribute_search_cat in attribute_cats_search:
+#         conditions_attribute_cats.append(
+#             (ImagesSkinny.attribute_cats.any(attribute_search_cat))
+#         )
+#
+#     if req_sex == 'women':
+#         for length_search_cat in length_cats_search:
+#             conditions_length_cats.append(
+#                 (ImagesSkinny.length_cats.any(length_search_cat))
+#             )
+#
+#     for filter_search_cat in filter_cats_search:
+#         conditions_filter_cats.append(
+#             (ImagesSkinny.filter_cats.any(filter_search_cat))
+#         )
+#
+#     if len(req_sex) > 2:
+#         if req_sex != 'both':
+#             conditions_base.append(
+#                 (ImagesSkinny.sex == req_sex)
+#             )
+#
+#     query_conditions_all.append(
+#         (func.lower(ImagesSkinny.name).op('%%')(search_string_clean))
+#     )
+#
+#     conditions_base.append(
+#         (ImagesSkinny.in_stock == True)
+#     )
+#     conditions_base.append(
+#         (Images.encoding_vgg16 != None)
+#     )
+#
+#     # ====== MAIN QUERY ======
+#     img_table_query_results = (db.session.query(ImagesSkinny, Images).filter(
+#         ImagesSkinny.img_hash == Images.img_hash
+#     ).filter(
+#         and_(
+#             and_(*conditions_base),
+#             and_(*conditions_kind_cats),
+#             or_(*conditions_pattern_cats),
+#             or_(*conditions_color_cats),
+#             or_(*conditions_style_cats),
+#             or_(*conditions_material_cats),
+#             or_(*conditions_attribute_cats),
+#             and_(*conditions_length_cats),
+#             and_(*conditions_filter_cats)
+#         )
+#     ).limit(result_limit).all())
+#
+#     print(f'RESULT LENGTH: {len(img_table_query_results)}')
+#
+#     if len(img_table_query_results) < 500:
+#         print('ADDING RELAXED RESULTS')
+#         query_results_relaxed = (db.session.query(ImagesSkinny, Images).filter(
+#             ImagesSkinny.img_hash == Images.img_hash
+#         ).filter(
+#             and_(
+#                 and_(*conditions_base),
+#                 and_(*conditions_kind_cats),
+#                 or_(*conditions_pattern_cats),
+#                 or_(*conditions_style_cats),
+#                 or_(*conditions_length_cats),
+#                 or_(*conditions_filter_cats)
+#             )
+#         ).limit(500 - len(img_table_query_results)).all())
+#
+#         print(f'{len(query_results_relaxed)} RELAXED RESULTS ADDED')
+#
+#         img_table_query_results += query_results_relaxed
+#
+#     if len(img_table_query_results) < 200:
+#         print('ADDING EVEN MORE RELAXED RESULTS')
+#         query_results_relaxed_2 = (db.session.query(ImagesSkinny, Images).filter(
+#             ImagesSkinny.img_hash == Images.img_hash
+#         ).filter(
+#             and_(
+#                 and_(*conditions_base),
+#                 and_(*conditions_kind_cats),
+#                 or_(*query_conditions_all),
+#                 or_(*conditions_filter_cats),
+#             )
+#         ).limit(200 - len(img_table_query_results)).all())
+#
+#         print(f'{len(query_results_relaxed_2)} MORE RELAXED RESULTS ADDED')
+#
+#         img_table_query_results += query_results_relaxed_2
+#
+#     if len(img_table_query_results) < 200:
+#         print('ADDING EVEN MORE RELAXED RESULTS')
+#         query_results_relaxed_3 = (db.session.query(ImagesSkinny, Images).filter(
+#             ImagesSkinny.img_hash == Images.img_hash
+#         ).filter(
+#             and_(
+#                 and_(*conditions_base),
+#                 or_(*conditions_kind_cats)
+#             )
+#         ).limit(200 - len(img_table_query_results)).all())
+#
+#         print(f'{len(query_results_relaxed_3)} MORE RELAXED RESULTS ADDED')
+#
+#         img_table_query_results += query_results_relaxed_3
+#
+#     if len(img_table_query_results) == 0:
+#         return 'No results'
+#     else:
+#         print('Query results obtained')
+#
+#         # CALCULATE COLOR DISTANCE
+#         color_list = []
+#         for img_table_query_result in img_table_query_results:
+#             query_result = img_table_query_result[1]
+#             req_color_norm_1 = np.array(req_color_1, dtype=int) / np.sum(np.array(req_color_1, dtype=int))
+#             # req_color_norm_2 = np.array(req_color_2, dtype=int) / np.sum(np.array(req_color_2, dtype=int))
+#             query_color_1_norm = np.array(query_result.color_1, dtype=int) / np.sum(
+#                 np.array(query_result.color_1, dtype=int))
+#             query_color_2_norm = np.array(query_result.color_2, dtype=int) / np.sum(
+#                 np.array(query_result.color_2, dtype=int))
+#             query_color_3_norm = np.array(query_result.color_3, dtype=int) / np.sum(
+#                 np.array(query_result.color_3, dtype=int))
+#
+#             # compute the chi-squared distances
+#             distance_color_1 = calc_chi_distance(req_color_norm_1, query_color_1_norm)
+#             distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
+#             distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
+#             # distance_color_1_2 = calc_chi_distance(req_color_norm_2, query_color_1_norm)
+#             # distance_color_2_2 = calc_chi_distance(req_color_norm_2, query_color_2_norm)
+#             # distance_color_3_2 = calc_chi_distance(req_color_norm_2, query_color_3_norm)
+#             distance_color = 2 * min([
+#                 distance_color_1,
+#                 distance_color_2,
+#                 distance_color_3
+#             ])
+#             # distance_color = 2 * (distance_color_1 + distance_color_2)
+#             # print('Chi distance: ', str(distance_color))
+#
+#             distance_color_euc_1 = int(
+#                 spatial.distance.euclidean(np.array(req_color_1, dtype=int),
+#                                            np.array(query_result.color_1, dtype=int),
+#                                            w=None))
+#             distance_color_euc_2 = int(
+#                 spatial.distance.euclidean(np.array(req_color_1, dtype=int),
+#                                            np.array(query_result.color_2, dtype=int),
+#                                            w=None))
+#             distance_color_euc_3 = int(
+#                 spatial.distance.euclidean(np.array(req_color_1, dtype=int),
+#                                            np.array(query_result.color_3, dtype=int),
+#                                            w=None))
+#
+#             distance_color_euc = (1 / 500) * (2 * min([
+#                 distance_color_euc_1,
+#                 distance_color_euc_2,
+#                 distance_color_euc_3
+#             ]))
+#             # distance_color_euc = (1 / 500) * (2 * (distance_color_euc_1 + distance_color_euc_2))
+#             # print('Euclidean distance: ', str(distance_color_euc))
+#             color_query_result = {
+#                 'encoding_vgg16': query_result.encoding_vgg16,
+#                 'img_hash': query_result.img_hash,
+#                 'color_dist': distance_color + distance_color_euc,
+#                 'prod_id': query_result.prod_id,
+#                 'query_result': query_result
+#             }
+#             color_list.append(color_query_result)
+#
+#         sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
+#         top_color_list = sorted_color_list[0:500]
+#         print('Closest colors calculated')
+#
+#         # Calculate VGG16 encoding distances
+#         vgg16_arrays = []
+#         for query_result in top_color_list:
+#             vgg16_arrays.append(query_result['encoding_vgg16'])
+#         vgg16_matrix = np.asarray(vgg16_arrays)
+#         print(f'vgg16_matrix.shape : {vgg16_matrix.shape}')
+#         print(f'req_vgg16_encoding_arr.shape : {req_vgg16_encoding_arr.shape}')
+#         dist_vgg16_arr = np.linalg.norm(vgg16_matrix - req_vgg16_encoding_arr, axis=1)
+#         closest_n_vgg16_ind = dist_vgg16_arr.argsort()[:150]
+#         closest_n_vgg16_results = [top_color_list[x] for x in closest_n_vgg16_ind]
+#
+#         final_sorted_color_list = sorted(closest_n_vgg16_results, key=itemgetter('color_dist'))
+#         final_top_color_list = final_sorted_color_list[0:80]
+#
+#         result_list = []
+#         prod_check = set()
+#         print('Obtaining result data')
+#         for obj in final_top_color_list:
+#             result_prod_id = obj['prod_id']
+#             prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
+#             if prod_search is not None:
+#                 prod_hash = prod_search.prod_id
+#                 if prod_hash not in prod_check:
+#                     prod_serial = ProductsSchema().dump(prod_search)
+#                     prod_check.add(prod_hash)
+#                     img_serial = ImagesFullSchema().dump(obj['query_result'])
+#
+#                     result_dict = {
+#                         'prod_serial': prod_serial[0],
+#                         'image_data': img_serial[0]
+#                     }
+#                     result_list.append(result_dict)
+#
+#         return result_list
 
 
 #######################################################################################################################
 #######################################################################################################################
-
-
-def db_text_search(request, db, Products, Images, ImagesSkinny):
-    search_string = request.args.get('search_string')
-    print('search string: ' + search_string)
-    search_string.replace('+', ' ')
-    req_sex = request.args.get('sex')
-
-    string_list = search_string.strip().lower().split()
-    linking_words = ['with', 'on', 'under', 'over', 'at', 'like', 'in', 'for', 'as', 'after', 'by', 'and']
-    string_list_clean = [e for e in string_list if e not in linking_words]
-    print('Cleaned string list', str(string_list_clean))
-    search_string_clean = ' '.join(string_list_clean)
-
-    color_rgb_dict = colors.Colors().color_rgb
-    search_color = None
-    for word in string_list_clean:
-        if word in color_rgb_dict:
-            search_color = color_rgb_dict[word]
-
-    if search_color is not None:
-        search_limit = 1000
-        relaxed_threshold = 300
-        relaxed_limit = 500
-    else:
-        search_limit = 80
-        relaxed_threshold = 80
-        relaxed_limit = 80
-
-    maternity = False
-    tag_list = cats.Cats()
-    kind_cats = tag_list.kind_cats
-    pattern_cats = tag_list.pattern_cats
-    color_cats = tag_list.color_cats
-    style_cats = tag_list.style_cats
-    material_cats = tag_list.material_cats
-    attribute_cats = tag_list.attribute_cats
-    length_cats = tag_list.length_cats
-    filter_cats = tag_list.filter_cats
-    all_cats = tag_list.all_cats
-
-    kind_cats_search = []
-    pattern_cats_search = []
-    color_cats_search = []
-    style_cats_search = []
-    material_cats_search = []
-    attribute_cats_search = []
-    length_cats_search = []
-    filter_cats_search = []
-    all_cats_search = []
-
-    for word in string_list_clean:
-        for cat in kind_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                kind_cats_search.append(cat)
-        for cat in pattern_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                pattern_cats_search.append(cat)
-        for cat in color_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                color_cats_search.append(cat)
-        for cat in style_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                style_cats_search.append(cat)
-        for cat in material_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                material_cats_search.append(cat)
-        for cat in attribute_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                attribute_cats_search.append(cat)
-        for cat in length_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                length_cats_search.append(cat)
-        for cat in filter_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                filter_cats_search.append(cat)
-        for cat in all_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                all_cats_search.append(cat)
-
-    print('kind_cats_search')
-    print(kind_cats_search)
-    print('pattern_cats_search')
-    print(pattern_cats_search)
-    print('color_cats_search')
-    print(color_cats_search)
-    print('style_cats_search')
-    print(style_cats_search)
-    print('material_cats_search')
-    print(material_cats_search)
-    print('attribute_cats_search')
-    print(attribute_cats_search)
-    print('length_cats_search')
-    print(length_cats_search)
-    print('filter_cats_search')
-    print(filter_cats_search)
-    print('all_cats_search')
-    print(all_cats_search)
-    # all_cat_search_arr = np.zeros(len(all_cats))
-    # for req_tag in all_search_cats:
-    #     if req_tag in all_cats:
-    #         all_cat_search_arr[all_cats.index(req_tag)] = 1
-    #     if req_tag in ['mom', 'mamalicious', 'maternity']:
-    #         maternity = True
-
-    query_conditions = []
-    query_conditions_kind = []
-    query_conditions_all = []
-    for kind_cat in kind_cats_search:
-        query_conditions.append(
-            ImagesSkinny.kind_cats.any(kind_cat)
-        )
-        query_conditions_kind.append(
-            ImagesSkinny.kind_cats.any(kind_cat)
-        )
-
-    if req_sex == 'women':
-        for pattern_cat in pattern_cats_search:
-            query_conditions.append(
-                ImagesSkinny.pattern_cats.any(pattern_cat)
-            )
-
-        for color_cat in color_cats_search:
-            query_conditions.append(
-                ImagesSkinny.color_cats.any(color_cat)
-            )
-
-    for style_cat in style_cats_search:
-        query_conditions.append(
-            ImagesSkinny.style_cats.any(style_cat)
-        )
-
-    for material_cat in material_cats_search:
-        query_conditions.append(
-            ImagesSkinny.material_cats.any(material_cat)
-        )
-
-    for attribute_cat in attribute_cats_search:
-        query_conditions.append(
-            ImagesSkinny.attribute_cats.any(attribute_cat)
-        )
-
-    if req_sex == 'women':
-        for length_cat in length_cats_search:
-            query_conditions.append(
-                ImagesSkinny.length_cats.any(length_cat)
-            )
-
-    for filter_cat in filter_cats_search:
-        query_conditions.append(
-            ImagesSkinny.filter_cats.any(filter_cat)
-        )
-
-    if len(req_sex) > 2:
-        if req_sex != 'both':
-            query_conditions.append(
-                (ImagesSkinny.sex == req_sex)
-            )
-            query_conditions_all.append(
-                (ImagesSkinny.sex == req_sex)
-            )
-
-    query_conditions.append(
-        (ImagesSkinny.shop != 'Boohoo')
-    )
-
-    query_conditions.append(
-        (ImagesSkinny.in_stock == True)
-    )
-    query_conditions.append(
-        (Images.encoding_vgg16 != None)
-    )
-
-    query_conditions_all.append(
-        func.lower(ImagesSkinny.name).op('@@')(func.plainto_tsquery(search_string_clean))
-    )
-
-    # ========= MAIN QUERY ===========
-    # query_results = (db.session.query(ImagesSkinny, Images).filter(
-    #     ImagesSkinny.img_hash == Images.img_hash
-    # ).filter(
-    #     and_(*query_conditions)
-    # ).limit(search_limit).all())
-
-    query_results = (db.session.query(ImagesSkinny, Images).filter(
-        ImagesSkinny.img_hash == Images.img_hash
-    ).filter(
-        and_(
-            and_(*query_conditions_all),
-            and_(*query_conditions)
-        )
-    ).limit(search_limit).all())
-
-    print(f'MAIN QUERY RESULT LENGTH: {len(query_results)}')
-
-    if len(query_results) < relaxed_threshold:
-        # RELAXED QUERY
-        relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
-            ImagesSkinny.img_hash == Images.img_hash
-        ).filter(
-            and_(
-                and_(*query_conditions_kind),
-                and_(*query_conditions_all)
-            )
-        ).limit(relaxed_limit).all())
-        query_results += relaxed_query_results
-    print(f'NEXT RESULT LENGTH: {len(query_results)}')
-
-    if len(query_results) < relaxed_threshold:
-        # RELAXED QUERY
-        relaxed_query_results = (db.session.query(ImagesSkinny, Images).filter(
-            ImagesSkinny.img_hash == Images.img_hash
-        ).filter(
-            and_(
-                and_(*query_conditions_all)
-            )
-        ).limit(relaxed_limit).all())
-        query_results += relaxed_query_results
-    print(f'TOTAL RESULT LENGTH: {len(query_results)}')
-
-    if search_color is not None:
-        print('SORTING BY COLOR')
-        color_list = []
-        for img_table_query_result in query_results:
-            query_result = img_table_query_result[0]
-            req_color_norm_1 = np.array(search_color, dtype=int) / np.sum(np.array(search_color, dtype=int))
-
-            query_color_1_norm = np.array(query_result.color_1, dtype=int) / np.sum(
-                np.array(query_result.color_1, dtype=int))
-            query_color_2_norm = np.array(query_result.color_2, dtype=int) / np.sum(
-                np.array(query_result.color_2, dtype=int))
-            query_color_3_norm = np.array(query_result.color_3, dtype=int) / np.sum(
-                np.array(query_result.color_3, dtype=int))
-
-            # compute the chi-squared distances
-            distance_color_1 = calc_chi_distance(req_color_norm_1, query_color_1_norm)
-            distance_color_2 = calc_chi_distance(req_color_norm_1, query_color_2_norm)
-            distance_color_3 = calc_chi_distance(req_color_norm_1, query_color_3_norm)
-
-            distance_color = 10 * distance_color_1 + 3 * distance_color_2 + distance_color_3
-
-            distance_color_euc_1 = int(
-                spatial.distance.euclidean(np.array(search_color, dtype=int),
-                                           np.array(query_result.color_1, dtype=int),
-                                           w=None))
-            distance_color_euc_2 = int(
-                spatial.distance.euclidean(np.array(search_color, dtype=int),
-                                           np.array(query_result.color_2, dtype=int),
-                                           w=None))
-            distance_color_euc_3 = int(
-                spatial.distance.euclidean(np.array(search_color, dtype=int),
-                                           np.array(query_result.color_3, dtype=int),
-                                           w=None))
-
-            distance_color_euc = (1 / 500) * min([
-                distance_color_euc_1,
-                distance_color_euc_2,
-                distance_color_euc_3
-            ])
-
-            color_query_result = {
-                'img_hash': query_result.img_hash,
-                'color_dist': distance_color + distance_color_euc,
-                'prod_id': query_result.prod_id,
-                'query_result': img_table_query_result
-            }
-            color_list.append(color_query_result)
-
-        sorted_color_list = sorted(color_list, key=itemgetter('color_dist'))
-        top_color_list = sorted_color_list[0:80]
-        result_list = []
-        prod_check = set()
-        print('Obtaining result data')
-        for color_dict in top_color_list:
-            img_table_query_result = color_dict['query_result'][1]
-            result_prod_id = color_dict['prod_id']
-            if result_prod_id not in prod_check:
-                # prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-                # if prod_search is not None:
-                if req_sex == 'women':
-                    # prod_serial = ProductsSchema().dump(prod_search)
-                    img_serial = ImagesFullSchema().dump(img_table_query_result)
-                else:
-                    # prod_serial = ProductsSchema().dump(prod_search)
-                    img_serial = ImagesFullSchema().dump(img_table_query_result)
-                prod_check.add(result_prod_id)
-
-                result_dict = {
-                    'prod_serial': [],
-                    'image_data': img_serial[0]
-                }
-                result_list.append(result_dict)
-
-    else:
-        result_list = []
-        prod_check = set()
-        print('Obtaining result data')
-        for query_result in query_results:
-            img_table_query_result = query_result[1]
-            result_prod_id = img_table_query_result.prod_id
-
-            if result_prod_id not in prod_check:
-                # prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-                # if prod_search is not None:
-                # prod_serial = ProductsSchema().dump(prod_search)
-                img_serial = ImagesFullSchema().dump(img_table_query_result)
-                prod_check.add(result_prod_id)
-
-                result_dict = {
-                    'prod_serial': [],
-                    'image_data': img_serial[0]
-                }
-                result_list.append(result_dict)
-
-    res = jsonify(res=result_list, tags=all_cats_search)
-    return res
-
-
-def db_text_search_infinite_v2(data, db, Products, Images, ImagesSkinny):
-    search_string = data['search_string']
-    req_sex = data['sex']
-    prev_prod_ids = data['prev_prod_ids']
-    search_limit = 100
-    tag_list = cats.Cats()
-    query_conditions = []
-    query_conds_all_cats = []
-    all_cats = tag_list.all_cats
-    all_cats_search = []
-    string_list = search_string.strip().lower().split()
-    search_string_clean = ' '.join(string_list)
-
-    print(f'search_string: {search_string_clean}')
-    for word in string_list:
-        for cat in all_cats:
-            if cat == word or f'{cat}s' == word or f'{cat}es' == word or f'{cat}ed' == word or f'{cat}d' == word:
-                all_cats_search.append(cat)
-
-    for cat_search in all_cats_search:
-        query_conds_all_cats.append(
-            ImagesSkinny.all_cats.any(cat_search)
-            # ImagesSkinny.name.ilike('%{}%'.format(cat_search))
-        )
-
-    for clean_string in string_list:
-        query_conditions.append(
-            ImagesSkinny.name.ilike('%{}%'.format(clean_string))
-        )
-    query_conditions.append(
-        ImagesSkinny.is_deleted.isnot(True)
-    )
-    query_conds_all_cats.append(
-        ImagesSkinny.is_deleted.isnot(True)
-    )
-
-    if prev_prod_ids is not None:
-        for prev_prod_id in prev_prod_ids:
-            query_conditions.append(
-                ImagesSkinny.prod_id != prev_prod_id
-            )
-            query_conds_all_cats.append(
-                ImagesSkinny.prod_id != prev_prod_id
-            )
-
-    query_results = db.session.query(ImagesSkinny, Images).filter(
-            ImagesSkinny.img_hash == Images.img_hash
-        ).filter(
-            and_(*query_conds_all_cats)
-        ).limit(search_limit).all()
-
-    print(f'QUERY RESULT LENGTH: {len(query_results)}')
-    if len(query_results) < 30:
-        query_results_extended = db.session.query(ImagesSkinny, Images).filter(
-        ImagesSkinny.img_hash == Images.img_hash
-    ).filter(
-        and_(*query_conditions)
-    ).limit(search_limit).all()
-        query_results += query_results_extended
-    print(f'QUERY RESULT LENGTH: {len(query_results)}')
-
-    result_list = []
-    prod_check = set()
-    for query_result in query_results:
-        img_table_query_result = query_result[1]
-        result_prod_id = img_table_query_result.prod_id
-        # prod_id = query_result.prod_id
-        if result_prod_id not in prod_check:
-            # img_result = db.session.query(Images).filter(Images.prod_id == prod_id).first()
-            prod_result = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-            if prod_result is not None:
-                prod_serial = ProductsSchema().dump(prod_result)
-                img_serial = ImagesFullSchema().dump(img_table_query_result)
-
-                result_dict = {
-                    'prod_serial': prod_serial[0],
-                    'image_data': img_serial[0]
-                }
-                result_list.append(result_dict)
-                prod_check.add(result_prod_id)
-
-    res = jsonify(res=result_list, tags=all_cats_search)
-    return res
 
 
 def db_test_search(request, db, ImagesV2, ImagesV2Skinny, ProductsV2):

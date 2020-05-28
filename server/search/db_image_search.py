@@ -180,17 +180,17 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
         for result_dict in top_encoding_list:
             img_query_result = result_dict['query_result']
             result_prod_id = img_query_result.prod_id
-            prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
-            if prod_search is not None:
-                prod_hash = prod_search.prod_id
-                if prod_hash not in prod_check:
-                    prod_serial = ProductsSchema().dump(prod_search)
-                    prod_check.add(prod_hash)
-                    img_serial = ImagesFullSchema().dump(img_query_result)
-                    result_dict = {
-                        'prod_serial': prod_serial[0],
-                        'image_data': img_serial[0]
-                    }
-                    result_list.append(result_dict)
+            # prod_search = db.session.query(Products).filter(Products.prod_id == result_prod_id).first()
+            # if prod_search is not None:
+            prod_hash = img_query_result.prod_id
+            if prod_hash not in prod_check:
+                # prod_serial = ProductsSchema().dump(prod_search)
+                prod_check.add(prod_hash)
+                img_serial = ImagesFullSchema().dump(img_query_result)
+                result_dict = {
+                    'prod_serial': [],
+                    'image_data': img_serial[0]
+                }
+                result_list.append(result_dict)
 
         return result_list
