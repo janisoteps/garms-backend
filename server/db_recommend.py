@@ -1,5 +1,5 @@
 from sqlalchemy import func, any_, and_, or_
-from marshmallow_schema import ProductsSchema
+from marshmallow_schema import ProductsSchema, ImagesSkinnySchema
 import json
 from random import shuffle
 import random
@@ -285,53 +285,69 @@ def recommend_from_random(db, Products, data):
     return json.dumps(suggestions)
 
 
-def onboarding_recommend(db, Products, data):
+def onboarding_recommend(db, ImagesSkinny, data):
     req_sex = data['sex']
     exception_cats = [
+        'backpack',
+        'bag',
         'beachwear',
+        'belt',
         'bikini',
+        'bodysuit',
         'bottom',
         'bra',
         'bralet',
         'bralette',
         'brief',
+        'card holder',
+        'handbag',
         'knickers',
         'lingerie',
         'lipstick',
         'makeup',
+        'mamalicious',
+        'maternity',
         'swim',
         'swimming',
         'swimsuit',
         'swimwear',
+        'thong',
+        'tote',
         'underwear',
         'watch',
         'watches'
     ]
     rand_conds = []
     rand_conds.append(
-        (Products.prod_id.isnot(None))
+        (ImagesSkinny.prod_id.isnot(None))
     )
     rand_conds.append(
-        Products.is_deleted.isnot(True)
+        ImagesSkinny.is_deleted.isnot(True)
     )
-    for exception_cat in exception_cats:
-        rand_conds.append(
-            (~Products.name.ilike('%{}%'.format(exception_cat)))
-        )
 
-    query = db.session.query(Products).filter(
+    query = db.session.query(ImagesSkinny).filter(
         and_(*rand_conds)
     )
-    query_results = query.order_by(func.random()).limit(6).all()
-    prod_results = []
+    query_results = query.order_by(func.random()).limit(100).all()
 
+    recommend_results = []
+    prod_check = set()
     for query_result in query_results:
-        prod_serial = ProductsSchema().dump(query_result)
-        prod_results.append(prod_serial)
+        prod_hash = query_result.prod_id
+        if prod_hash not in prod_check and len(recommend_results) < 6:
+            prod_check.add(prod_hash)
+            contains_except = False
+            for exception_cat in exception_cats:
+                if exception_cat in query_result.name.lower():
+                    contains_except = True
+
+            if contains_except == False:
+                img_serial = ImagesSkinnySchema().dump(query_result)
+                recommend_results.append(img_serial)
 
     suggestions = {
             'look_name': None,
-            'prod_suggestions': prod_results
+            'prod_suggestions': recommend_results
         }
 
     return json.dumps(suggestions)

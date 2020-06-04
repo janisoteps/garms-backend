@@ -712,7 +712,7 @@ def recommend_onboarding():
     if request.method == 'POST':
         data = request.get_json(force=True)
         sex = data['sex']
-        req_prod_db = ProductsWomenB if sex == 'women' else ProductsMenB
+        req_prod_db = ImagesSkinnyWomenB if sex == 'women' else ImagesSkinnyMenB
 
         suggestions = onboarding_recommend(db, req_prod_db, data)
 
