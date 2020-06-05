@@ -158,7 +158,7 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
         closest_n_results_color = [{
             'query_result': query_results[idx][1],
             'color_dist': color_dist_total[idx]
-        } for idx in closest_color_idx]
+        } for idx in closest_color_idx if len(query_results[idx][1].encoding_vgg16) == 512]
         print(f'Closest colors calculated, length: {len(closest_n_results_color)}')
 
         for query_result_dict in closest_n_results_color:
