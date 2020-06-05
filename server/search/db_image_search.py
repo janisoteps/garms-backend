@@ -162,13 +162,8 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
         print(f'Closest colors calculated, length: {len(closest_n_results_color)}')
 
         for query_result_dict in closest_n_results_color:
-            # if len(query_result_dict['query_result'].encoding_vgg16) != 512:
-            #     print(query_result_dict['query_result'].encoding_vgg16)
             vgg16_enc_list.append(query_result_dict['query_result'].encoding_vgg16)
         vgg16_enc_matrix = np.array(vgg16_enc_list)
-
-        print(f'vgg16_enc_matrix shape: {vgg16_enc_matrix.shape}')
-        print(f'target_encoding_arr shape: {target_encoding_arr.shape}')
 
         dist_encoding_arr = np.linalg.norm(vgg16_enc_matrix - target_encoding_arr, axis=1)
         closest_n_enc_ind = dist_encoding_arr.argsort()[0:int(len(query_results) / 4)]
