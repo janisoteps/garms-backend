@@ -30,6 +30,7 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
     prev_prod_ids = data['prev_prod_ids']
     max_price = int(data['max_price'])
     req_brands = data['brands']
+    discount_rate = data['discount_rate']
     result_limit = 2000
 
     tag_list = cats.Cats()
@@ -79,6 +80,7 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
         ImagesSkinny.is_deleted.isnot(True)
     )
     if prev_prod_ids is not None:
+        print(f'adding prev prod IDs: {len(prev_prod_ids)}')
         for prev_prod_id in prev_prod_ids:
             base_conditions.append(
                 ImagesSkinny.prod_id != prev_prod_id
@@ -98,6 +100,9 @@ def db_search_from_image(request, db, ImagesFull, ImagesSkinny, Products):
                 )
             )
         )
+    base_conditions.append(
+        (ImagesSkinny.discount_rate >= discount_rate)
+    )
 
     query_results = db.session.query(ImagesSkinny, ImagesFull).filter(
         ImagesSkinny.img_hash == ImagesFull.img_hash
