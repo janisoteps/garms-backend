@@ -10,6 +10,19 @@ import data.cats as cats
 import data.colors as colors
 
 
+def calc_chi_distance(hist_1, hist_2, eps=1e-10):
+    # compute the chi-squared distance
+    distance = 0.5 * np.sum([((a - b) ** 2) / (a + b + eps) for (a, b) in zip(hist_1, hist_2)])
+
+    return distance
+
+
+def calc_cross_entropy(vector_1, vector_2):
+    dist = np.sum(vector_1 * np.log(vector_2) + (1 - vector_1) * np.log(1 - vector_2))
+
+    return dist
+
+
 def search_similar_images(request, db, Images, ImagesSkinny, Products):
     data = request.get_json(force=True)
     data = json.loads(data)
@@ -20,6 +33,7 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
     req_sex = data['sex']
     max_price = int(data['max_price'])
     req_brands = data['brands']
+    discount_rate = data['discount_rate']
 
     req_image_data = Images.query.filter_by(img_hash=req_img_hash).first()
 
@@ -207,6 +221,9 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
     )
     query_conditions_no_results.append(
         func.lower(ImagesSkinny.name).op('@@')(func.plainto_tsquery(search_string_clean))
+    )
+    conditions_base.append(
+        (ImagesSkinny.discount_rate > discount_rate)
     )
 
     # ====== MAIN QUERY ======
@@ -413,19 +430,6 @@ def search_similar_images(request, db, Images, ImagesSkinny, Products):
     return result_list
 
 
-def calc_chi_distance(hist_1, hist_2, eps=1e-10):
-    # compute the chi-squared distance
-    distance = 0.5 * np.sum([((a - b) ** 2) / (a + b + eps) for (a, b) in zip(hist_1, hist_2)])
-
-    return distance
-
-
-def calc_cross_entropy(vector_1, vector_2):
-    dist = np.sum(vector_1 * np.log(vector_2) + (1 - vector_1) * np.log(1 - vector_2))
-
-    return dist
-
-
 #######################################################################################################################
 #######################################################################################################################
 
@@ -438,11 +442,13 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
     req_tags_positive = data['tags_positive']
     req_tags_negative = data['tags_negative']
     req_color_1 = data['color_1']
-    print(req_color_1)
+    print(f'req_color_1: {req_color_1}')
     req_sex = data['sex']
     max_price = int(data['max_price'])
     req_brands = data['brands']
     initial_req = data['initial_req']
+    discount_rate = data['discount_rate']
+    print(f'discount_rate: {discount_rate}')
     try:
         prev_prod_ids = data['prev_prod_ids']
     except:
@@ -455,9 +461,9 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
     if req_tags_positive is None:
         req_tags_positive = req_image_data.all_cats
     if len(req_color_1) == 0:
-        color_list = [req_image_data.color_1, req_image_data.color_2, req_image_data.color_3]
-        color_sums = [sum(color) for color in color_list]
-        req_color_1 = color_list[color_sums.index(np.median(color_sums))]
+        # color_list = [req_image_data.color_1, req_image_data.color_2, req_image_data.color_3]
+        # color_sums = [sum(color) for color in color_list]
+        req_color_1 = req_image_data.color_1
 
     req_vgg16_enc = req_image_data.encoding_vgg16
     tag_list = cats.Cats()
@@ -590,6 +596,10 @@ def infinite_similar_images(request, db, ImagesFull, ImagesSkinny, Products):
     query_conditions.append(
         (ImagesFull.encoding_vgg16.isnot(None))
     )
+    if discount_rate > 0:
+        query_conditions.append(
+            (ImagesSkinny.discount_rate >= discount_rate)
+        )
 
     if len(req_brands) > 0:
         for req_brand in req_brands:
