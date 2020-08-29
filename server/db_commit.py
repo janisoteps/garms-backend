@@ -37,6 +37,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
     color_5_hex = data['color_5_hex']
     color_6 = data['color_6']
     color_6_hex = data['color_6_hex']
+    color_hist = data['color_hist']
     size_stock = data['size_stock']
     in_stock = data['in_stock']
     encoding_vgg16 = data['encoding_vgg16']
@@ -80,6 +81,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         color_5_hex=color_5_hex,
         color_6=color_6,
         color_6_hex=color_6_hex,
+        color_hist=color_hist,
         size_stock=size_stock,
         in_stock=in_stock,
         encoding_vgg16=encoding_vgg16,
@@ -171,6 +173,7 @@ def image_commit(db, ImagesModel, SkinnyImagesModel, data):
         existing_img_full_row.color_5_hex = color_5_hex
         existing_img_full_row.color_6 = color_6
         existing_img_full_row.color_6_hex = color_6_hex
+        existing_img_full_row.color_hist = color_hist
         existing_img_full_row.encoding_vgg16 = encoding_vgg16
         existing_img_full_row.size_stock = size_stock
         existing_img_full_row.in_stock = in_stock
