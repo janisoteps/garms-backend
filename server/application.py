@@ -11,7 +11,8 @@ import aiohttp
 from search.get_features import get_features_light
 from marshmallow_schema import LoadingContentSchema, ImagesFullSchema, ProductsSchema
 from db_commit import image_commit, product_commit, insta_mention_commit
-from search.db_search import search_similar_images, db_test_search, infinite_similar_images
+# from search.db_search import search_similar_images, db_test_search, infinite_similar_images
+from search.db_search import db_test_search, infinite_similar_images
 from search.db_text_search import db_text_search_infinite_v2, db_text_color_search
 from search.db_image_search import db_search_from_image
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look, db_add_multiple_outfits
@@ -36,7 +37,7 @@ migrate = Migrate(app, db)
 
 from models import User, InstaMentions, LoadingContent
 from models import ImagesFullWomenB, ImagesFullMenB, ImagesSkinnyWomenB, ImagesSkinnyMenB, ProductsWomenB, ProductsMenB
-from models import ImagesFullWomenA, ImagesFullMenA, ImagesSkinnyWomenA, ImagesSkinnyMenA, ProductsWomenA, ProductsMenA
+# from models import ImagesFullWomenA, ImagesFullMenA, ImagesSkinnyWomenA, ImagesSkinnyMenA, ProductsWomenA, ProductsMenA
 
 # # # # # # # Functions # # # # # # #
 
@@ -457,22 +458,22 @@ def img_features_light():
 
 
 # Search for similar products based on selected product
-@app.route("/api/search_similar", methods=['POST'])
-def search_similar():
-    print('Search similar requested, request method', str(request.method))
-    if request.method == 'POST':
-        print('Calling search_similar_images')
-        data = request.get_json(force=True)
-        data = json.loads(data)
-        req_sex = data['sex']
-        if req_sex == 'women':
-            search_results = search_similar_images(request, db, ImagesFullWomenB, ImagesSkinnyWomenB, ProductsWomenB)
-            res = jsonify(res=search_results)
-        else:
-            search_results = search_similar_images(request, db, ImagesFullMenB, ImagesSkinnyMenB, ProductsMenB)
-            res = jsonify(res=search_results)
-
-        return res
+# @app.route("/api/search_similar", methods=['POST'])
+# def search_similar():
+#     print('Search similar requested, request method', str(request.method))
+#     if request.method == 'POST':
+#         print('Calling search_similar_images')
+#         data = request.get_json(force=True)
+#         data = json.loads(data)
+#         req_sex = data['sex']
+#         if req_sex == 'women':
+#             search_results = search_similar_images(request, db, ImagesFullWomenB, ImagesSkinnyWomenB, ProductsWomenB)
+#             res = jsonify(res=search_results)
+#         else:
+#             search_results = search_similar_images(request, db, ImagesFullMenB, ImagesSkinnyMenB, ProductsMenB)
+#             res = jsonify(res=search_results)
+#
+#         return res
 
 
 # Search for similar products based on selected product
@@ -841,12 +842,12 @@ def name_transform():
 def fave_preserve_transform():
     if request.method == 'POST':
         data = request.get_json(force=True)
-        request_img_skinny_db = ImagesSkinnyWomenB if data['sex'] == 'women' else ImagesSkinnyMenB
-        request_img_skinny_db_old = ImagesSkinnyWomenA if data['sex'] == 'women' else ImagesSkinnyMenA
-        request_img_full_db = ImagesFullWomenB if data['sex'] == 'women' else ImagesFullMenB
-        request_img_full_db_old = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
-        request_prod_db = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
-        request_prod_db_old = ProductsWomenA if data['sex'] == 'women' else ProductsMenA
+        request_img_skinny_db = ImagesSkinnyWomenC if data['sex'] == 'women' else ImagesSkinnyMenC
+        request_img_skinny_db_old = ImagesSkinnyWomenB if data['sex'] == 'women' else ImagesSkinnyMenB
+        request_img_full_db = ImagesFullWomenC if data['sex'] == 'women' else ImagesFullMenC
+        request_img_full_db_old = ImagesFullWomenB if data['sex'] == 'women' else ImagesFullMenB
+        request_prod_db = ProductsWomenC if data['sex'] == 'women' else ProductsMenC
+        request_prod_db_old = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
 
         req_response = preserve_faves.preserve_faves_transform(
             db,
@@ -875,15 +876,15 @@ def get_faved_images():
         return json.dumps(req_response)
 
 
-@app.route("/api/get_img_data", methods=['POST'])
-def get_img_data():
-    if request.method == 'POST':
-        data = request.get_json(force=True)
-        request_img_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
-
-        req_response = preserve_faves.get_img_data(db, request_img_db, ImagesFullSchema, data)
-
-        return json.dumps(req_response)
+# @app.route("/api/get_img_data", methods=['POST'])
+# def get_img_data():
+#     if request.method == 'POST':
+#         data = request.get_json(force=True)
+#         request_img_db = ImagesFullWomenA if data['sex'] == 'women' else ImagesFullMenA
+#
+#         req_response = preserve_faves.get_img_data(db, request_img_db, ImagesFullSchema, data)
+#
+#         return json.dumps(req_response)
 
 
 # @app.route("/api/update_img_enc", methods=['POST'])
