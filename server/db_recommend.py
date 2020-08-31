@@ -84,6 +84,7 @@ def recommend_similar_tags(db, User, Products, data):
                         (Products.sex == req_sex),
                         Products.prod_id.isnot(None),
                         Products.is_deleted.isnot(True),
+                        Products.is_old.isnot(True),
                         Products.price > 40,
                         Products.price < 100
                     )
@@ -136,6 +137,9 @@ def recommend_similar_tags(db, User, Products, data):
         )
         rand_conds.append(
             Products.is_deleted.isnot(True)
+        )
+        rand_conds.append(
+            Products.is_old.isnot(True)
         )
         if prev_prod_ids is not None:
             for prev_prod_id in prev_prod_ids:
@@ -206,6 +210,9 @@ def recommend_from_onboarding_faves(db, Products, data):
         (Products.prod_id.isnot(None))
     )
     recommend_conds.append(
+        (Products.is_old.isnot(True))
+    )
+    recommend_conds.append(
         Products.is_deleted.isnot(True)
     )
     if prev_prod_ids is not None:
@@ -254,6 +261,9 @@ def recommend_from_random(db, Products, data):
     )
     rand_conds.append(
         (Products.prod_id.isnot(None))
+    )
+    rand_conds.append(
+        (Products.is_old.isnot(True))
     )
     rand_conds.append(
         Products.is_deleted.isnot(True)

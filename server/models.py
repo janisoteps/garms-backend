@@ -1282,6 +1282,7 @@ class ProductsWomenC(db.Model):
     in_stock = db.Column(db.Boolean)
     is_fav = db.Column(db.Boolean)
     is_deleted = db.Column(db.Boolean)
+    is_old = db.Column(db.Boolean)
 
     def __init__(self,
                  prod_id,
@@ -1314,7 +1315,8 @@ class ProductsWomenC(db.Model):
                  size_stock,
                  in_stock,
                  is_fav,
-                 is_deleted):
+                 is_deleted,
+                 is_old):
         self.prod_id = prod_id
         self.name = name
         self.prod_url = prod_url
@@ -1346,6 +1348,7 @@ class ProductsWomenC(db.Model):
         self.in_stock = in_stock
         self.is_fav = is_fav
         self.is_deleted = is_deleted
+        self.is_old = is_old
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
@@ -1494,6 +1497,7 @@ class ProductsMenC(db.Model):
     in_stock = db.Column(db.Boolean)
     is_fav = db.Column(db.Boolean)
     is_deleted = db.Column(db.Boolean)
+    is_old = db.Column(db.Boolean)
 
     def __init__(self,
                  prod_id,
@@ -1526,7 +1530,8 @@ class ProductsMenC(db.Model):
                  size_stock,
                  in_stock,
                  is_fav,
-                 is_deleted):
+                 is_deleted,
+                 is_old):
         self.prod_id = prod_id
         self.name = name
         self.prod_url = prod_url
@@ -1558,6 +1563,7 @@ class ProductsMenC(db.Model):
         self.in_stock = in_stock
         self.is_fav = is_fav
         self.is_deleted = is_deleted
+        self.is_old = is_old
 
     def __repr__(self):
         return '<id={}>'.format(self.id)
