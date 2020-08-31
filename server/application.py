@@ -13,6 +13,7 @@ from marshmallow_schema import LoadingContentSchema, ImagesFullSchema, ProductsS
 from db_commit import image_commit, product_commit, insta_mention_commit
 # from search.db_search import search_similar_images, db_test_search, infinite_similar_images
 from search.db_search import db_test_search, infinite_similar_images
+from search.db_filtered_search import similar_image_histogram_search
 from search.db_text_search import db_text_search_infinite_v2, db_text_color_search
 from search.db_image_search import db_search_from_image
 from db_wardrobe import db_add_look, db_remove_look, db_get_looks, db_add_outfit, db_remove_outfit, db_rename_look, db_add_multiple_outfits
@@ -38,7 +39,7 @@ migrate = Migrate(app, db)
 from models import User, InstaMentions, LoadingContent
 from models import ImagesFullWomenC, ImagesFullMenC, ImagesSkinnyWomenC, ImagesSkinnyMenC, ProductsWomenC, ProductsMenC
 # from models import ImagesFullWomenA, ImagesFullMenA, ImagesSkinnyWomenA, ImagesSkinnyMenA, ProductsWomenA, ProductsMenA
-# from models import ImagesFullWomenB, ImagesFullMenB, ImagesSkinnyWomenB, ImagesSkinnyMenB, ProductsWomenB, ProductsMenB
+from models import ImagesFullWomenB, ImagesFullMenB, ImagesSkinnyWomenB, ImagesSkinnyMenB, ProductsWomenB, ProductsMenB
 
 # # # # # # # Functions # # # # # # #
 
@@ -489,14 +490,24 @@ def search_similar_infinite():
         req_img_skinny_db = ImagesSkinnyWomenC if data['sex'] == 'women' else ImagesSkinnyMenC
         req_prod_db = ProductsWomenC if data['sex'] == 'women' else ProductsMenC
 
-        search_results, search_cats, req_color, req_img_hash = infinite_similar_images(
-            request,
-            db,
-            req_img_full_db,
-            req_img_skinny_db,
-            req_prod_db
-        )
-        res = jsonify(res=search_results, cats=search_cats, color=req_color, img_hash=req_img_hash)
+        req_color_1 = data['color_1']
+        if len(req_color_1) > 0:
+            search_results, search_cats, req_color, req_img_hash = infinite_similar_images(
+                request,
+                db,
+                req_img_full_db,
+                req_img_skinny_db,
+                req_prod_db
+            )
+            res = jsonify(res=search_results, cats=search_cats, color=req_color, img_hash=req_img_hash)
+        else:
+            search_results, search_cats, req_img_hash = similar_image_histogram_search(
+                request,
+                db,
+                req_img_full_db,
+                req_img_skinny_db
+            )
+            res = jsonify(res=search_results, cats=search_cats, color=[], img_hash=req_img_hash)
 
         return res
 
@@ -844,11 +855,11 @@ def fave_preserve_transform():
     if request.method == 'POST':
         data = request.get_json(force=True)
         request_img_skinny_db = ImagesSkinnyWomenC if data['sex'] == 'women' else ImagesSkinnyMenC
-        request_img_skinny_db_old = ImagesSkinnyWomenC if data['sex'] == 'women' else ImagesSkinnyMenC
+        request_img_skinny_db_old = ImagesSkinnyWomenB if data['sex'] == 'women' else ImagesSkinnyMenB
         request_img_full_db = ImagesFullWomenC if data['sex'] == 'women' else ImagesFullMenC
-        request_img_full_db_old = ImagesFullWomenC if data['sex'] == 'women' else ImagesFullMenC
+        request_img_full_db_old = ImagesFullWomenB if data['sex'] == 'women' else ImagesFullMenB
         request_prod_db = ProductsWomenC if data['sex'] == 'women' else ProductsMenC
-        request_prod_db_old = ProductsWomenC if data['sex'] == 'women' else ProductsMenC
+        request_prod_db_old = ProductsWomenB if data['sex'] == 'women' else ProductsMenB
 
         req_response = preserve_faves.preserve_faves_transform(
             db,

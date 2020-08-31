@@ -118,9 +118,10 @@ def preserve_faves_transform(
                                 color_5_hex=img_result.color_5_hex,
                                 color_6=img_result.color_6,
                                 color_6_hex=img_result.color_6_hex,
+                                color_hist=None,
                                 size_stock=img_result.size_stock,
                                 in_stock=img_result.in_stock,
-                                encoding_vgg16=None,
+                                encoding_vgg16=img_result.encoding_vgg16,
                                 is_deleted=False
                             )
 
@@ -155,7 +156,8 @@ def preserve_faves_transform(
                                 size_stock=img_result.size_stock,
                                 in_stock=img_result.in_stock,
                                 is_fav=prod_result.is_fav,
-                                is_deleted=False
+                                is_deleted=False,
+                                is_old=True
                             )
 
                             existing_skinny_rows = db.session.query(ImagesSkinny).filter(
@@ -174,12 +176,15 @@ def preserve_faves_transform(
                                 db.session.add(img_submission)
                                 db.session.commit()
 
-                            existing_prod_rows = db.session.query(Products).filter(
+                            existing_prod = db.session.query(Products).filter(
                                 Products.prod_id == wardrobe_prod_id
-                            ).all()
-                            if len(existing_prod_rows) == 0:
+                            ).first()
+                            if existing_prod is None:
                                 print(f'add prod: {prod_result.prod_id}')
                                 db.session.add(product_submission)
+                                db.session.commit()
+                            else:
+                                existing_prod.is_old = True
                                 db.session.commit()
 
                             print(f'PROD PRESERVED: {img_result.name}')
