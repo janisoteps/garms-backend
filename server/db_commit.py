@@ -244,6 +244,7 @@ def product_commit(db, ProductModel, data):
     in_stock = data['in_stock']
     is_fav = False
     is_deleted = False
+    is_old = False
 
     product_submission = ProductModel(
         prod_id=prod_id,
@@ -276,7 +277,8 @@ def product_commit(db, ProductModel, data):
         size_stock=size_stock,
         in_stock=in_stock,
         is_fav=is_fav,
-        is_deleted=is_deleted
+        is_deleted=is_deleted,
+        is_old=is_old
     )
 
     try:
@@ -318,6 +320,7 @@ def product_commit(db, ProductModel, data):
         existing_product.size_stock = size_stock
         existing_product.in_stock = in_stock
         existing_product.is_deleted = is_deleted
+        is_old.is_deleted = is_old
 
         db.session.commit()
 
